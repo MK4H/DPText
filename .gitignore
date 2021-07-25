@@ -1,1 +1,14 @@
 en/*.pdf
+vzor-dp
+*.aux
+*.bak
+*.sav
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.log
+*.out
+*.toc
+*.xmpi

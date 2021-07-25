@@ -1,0 +1,48 @@
+\chapter*{Cross-correlation}
+\addcontentsline{toc}{chapter}{Cross-correlation}
+
+% TODO: Cite wikipedia or find some other introduction
+In signal processing, cross-correlation is a function describing similarity of two series based on their relative displacement. Cross-correlation of functions \(f\) and \(g\), denoted as \(f \star g\) is defined by the following formula:
+\[
+	(f \star g)(\tau) = \int_{-\infty}^{\infty} \overline{f(t)}g(t + \tau) \,dt,
+\] 
+
+where \(\overline{f(t)}\) denotes the complex conjugate of \(f(t)\) and \(\tau\) is the displacement of the two functions \(f\) and \(g\).
+
+% TODO: Circular cross correlation
+% TODO: FFT based cross corr
+\[
+	(f \star g)
+\]
+
+
+% TODO: 2D cross correlation
+
+\section{Goals}
+
+The goal of this thesis is to measure and quantify the effectiveness of optimizations for different cross-correlation usage patterns. This section will illustrate the problems solved using cross-correlation from existing literature and select a few we will try to implement optimized cross-correlation implementations and measure their effectiveness compared to the original implementations.
+
+
+\subsection{Image processing}
+
+In this thesis, we will mostly target works from the field of image processing. In this field, 2D version of cross-correlation is mostly used to find a  black and white image or a piece of a black and white image represented as integer matrix in another image. This can be done to find a displacement of a certain point of interest between images of one item taken at different times, as is done in \citet{misko} and \citet{zhang2015}. \citet{misko}
+computes cross-correlation between multiple subregions of a reference image with the corresponding subregion in multiple deformed images. %TODO: More
+
+% TODO: Usecases
+
+\subsection{Time series processing}
+
+\citet{Clark2011} on the other hand computes cross-correlation of the signal from each antenna with the signal from all other antennas.
+
+
+\citet{Kapinchev2015} computes cross-correlation of one input signal with a number of masks to determine the values for all depths in parallel. The presented implementation does cross-correlation with each mask separately, computing them sequentially one after another, but this is due to the memory limitations of the hardware at the time and the optimal solution would be to compute the cross-correlation of the input signal with all masks in parallel.
+
+\subsection{Computation patterns}
+As we have shown in the previous section, there are many different usage patterns for cross-correlation. We can split them into three general groups:
+
+\begin{enumerate}
+	\item one to many,
+	\item a large number of pairs,
+	\item all to all.
+\end{enumerate} 
+
