@@ -1,103 +1,3 @@
-% Encoding: UTF-8
-%
-%  An example of a bibliographical database for bibTeX
-%
-%  Recommended software for maintenance of *.bib files:
-%    JabRef, http://jabref.sourceforge.net/
-%
-%  BEWARE:
-%
-%    *  If a name contains a capital letter, which must be kept such,
-%       use curly brackets ({T}hailand, {HIV}).
-%
-%  ===========================================================================
-
-@Book{Andel07,
-  author    = {Anděl, J.},
-  publisher = {Matfyzpress},
-  title     = {Základy matematické statistiky},
-  year      = {2007},
-  address   = {Praha},
-  isbn      = {80-7378-001-1},
-  series    = {Druhé opravené vydání},
-  groups    = {Examples},
-}
-
-@Book{Andel98,
-  author    = {Anděl, J.},
-  publisher = {Matfyzpress},
-  title     = {Statistické metody},
-  year      = {1998},
-  address   = {Praha},
-  isbn      = {80-85863-27-8},
-  series    = {Druhé přepracované vydání},
-  groups    = {Examples},
-}
-
-@Article{Cox72,
-  author  = {Cox, D. R.},
-  journal = {Journal of the Royal Statistical Society, Series B},
-  title   = {Regression models and life-tables (with {D}iscussion)},
-  year    = {1972},
-  number  = {2},
-  pages   = {187--220},
-  volume  = {34},
-  groups  = {Examples},
-}
-
-@Article{DempsterLairdRubin77,
-  author  = {Dempster, A. P. and Laird, N. M. and Rubin, D. B.},
-  journal = {Journal of the Royal Statistical Society, Series B},
-  title   = {Maximum likelihood from incomplete data via the {EM} algorithm},
-  year    = {1977},
-  number  = {1},
-  pages   = {1--38},
-  volume  = {39},
-  groups  = {Examples},
-}
-
-@Article{Genberget08,
-  author  = {Genberg, B. L. and Kulich, M. and Kawichai, S. and Modiba, P. and Chingono, A. and Kilonzo, G. P. and Richter, L. and Pettifor, A. and Sweat, M. and Celentano, D. D.},
-  journal = {Journal of Acquired Immune Deficiency Syndrome},
-  title   = {{HIV} risk behaviors in Sub-{S}aharan {A}frica and {N}orthern {T}hailand: {B}aseline behavioral data from project {A}ccept},
-  year    = {2008},
-  pages   = {309--319},
-  volume  = {49},
-  groups  = {Examples},
-}
-
-@Article{KaplanMeier58,
-  author  = {Kaplan, E. L. and Meier, P.},
-  journal = {Journal of the American Statistical Association},
-  title   = {Nonparametric estimation from incomplete observations},
-  year    = {1958},
-  number  = {282},
-  pages   = {457--481},
-  volume  = {53},
-  groups  = {Examples},
-}
-
-@Book{LehmannCasella98,
-  author    = {Lehmann, E. L. and Casella, G.},
-  publisher = {Springer-Verlag},
-  title     = {Theory of Point Estimation},
-  year      = {1998},
-  address   = {New York},
-  isbn      = {0-387-98502-6},
-  series    = {{S}econd {E}dition},
-  groups    = {Examples},
-}
-
-@Article{Student08,
-  author  = {Student},
-  journal = {Biometrika},
-  title   = {On the probable error of the mean},
-  year    = {1908},
-  pages   = {1-25},
-  volume  = {6},
-  groups  = {Examples},
-}
-
 @InProceedings{Kapinchev2015,
   author          = {Konstantin Kapinchev and Adrian Bradu and Frederick Barnes and Adrian Podoleanu},
   title           = {GPU implementation of cross-correlation for image generation in real time},
@@ -148,6 +48,54 @@
   doi      = {https://doi.org/10.1016/j.optlaseng.2015.01.012},
   keywords = {Digital image correlation, Inverse compositional Gauss–Newton algorithm, Parallel computing, Graphics processing unit, Compute unified device architecture},
   url      = {https://www.sciencedirect.com/science/article/pii/S0143816615000135},
+}
+
+@Article{gpuacro,
+  author = {Jon Peddie},
+  title  = {Is it Time to Rename the GPU?},
+  url    = {https://www.computer.org/publications/tech-news/chasing-pixels/is-it-time-to-rename-the-gpu},
+}
+
+@Article{gpulaunch,
+  author = {NVIDIA},
+  title  = {NVIDIA Launches the World's First Graphics Processing Unit: GeForce 256},
+  url    = {https://web.archive.org/web/20160412035751/http://www.nvidia.com/object/IO_20020111_5424.html},
+}
+
+@TechReport{paper:gpu_history,
+  institution = {University of Belgrade/School of Electrical Engineering, Belgrade, Serbia},
+  title       = {Evolution and Trends in GPU Computing},
+  year        = {2012},
+}
+
+@Book{book:paraproc,
+  author    = {David B. Kirk and Wen-mei W. Hwu},
+  editor    = {Todd Green},
+  publisher = {Elsevier Inc.},
+  title     = {Programming Massively Parallel Processors},
+  year      = {2013},
+}
+
+@TechReport{paper:accelerator,
+  author      = {David Tarditi and Sidd Puri and Jose Oglesby},
+  institution = {Microsoft Research},
+  title       = {Accelerator: Using Data Parallelism to Program GPUs forGeneral-Purpose Uses},
+}
+
+@Misc{pic:crosscorr,
+  author       = {{Wikimedia Commons contributors}},
+  howpublished = {\url{https://commons.wikimedia.org/w/index.php?title=File:Comparison_convolution_correlation.svg&oldid=607616339}},
+  month        = nov,
+  title        = {Visual comparison of convolution, cross-correlationand autocorrelation.},
+  year         = {2021},
+  url          = {https://commons.wikimedia.org/w/index.php?title=File:Comparison_convolution_correlation.svg&oldid=607616339},
+}
+
+@Misc{site:cuda,
+  author       = {Nvidia},
+  howpublished = {\url{https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html}},
+  title        = {{CUDA C++ Programming Guide}},
+  year         = {2022},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}

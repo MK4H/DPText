@@ -1,0 +1,12 @@
+\chapter{Introduction}
+Cross-correlation is a function evaluating the level of similarity between two signals or functions based on their relative displacement. It is one of the key operations in both analog and digital signal processing, as described by \citep{Kapinchev2015}. 
+
+It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography and many other fields. Due to the computational complexity of cross-corellation, the time required for its computation is often crucial for the performance of the overall system.
+
+Due to the amounts of data which needs to be processed by cross-correlation, simple sequential CPU-based implementations and even more advanced parallel CPU-based implementations fail to satisfy the need for fast computation times. Due to the nature of cross-correlation, it lends itself nicely to parallelization and the possibility to use the high throughput and massive amounts of computational power provided by GPUs.
+
+This thesis builds on top of the thesis "Employing GPU to Process Data from Electron Microscope" by \citep{misko}, which uses cross-corellation as one of the steps in the data processing pipeline. Based on the measurements presented in the thesis, cross-correlation was determined to be the most time consuming part of the processing. The goal of this thesis is to analyze the possibilities of optimizing the GPU implementation of cross-correlation for this and similar use cases. 
+
+\input{crosscorr}
+\input{gpu}
+\input{goals}

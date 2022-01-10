@@ -51,10 +51,12 @@
 \usepackage{paralist}       % improved enumerate and itemize
 \usepackage{xcolor}         % typesetting in color
 
+\graphicspath{ {./img/} }
+
 %%% Basic information on the thesis
 
 % Thesis title in English (exactly as in the formal assignment)
-\def\ThesisTitle{Thesis title}
+\def\ThesisTitle{Accelerating cross-correlation with GPUs}
 
 % Author of the thesis
 \def\ThesisAuthor{Karel Maděra}
@@ -114,9 +116,7 @@ Abstract.
 \tableofcontents
 
 %%% Each chapter is kept in a separate file
-\include{crosscorr}
-\include{gpu}
-\include{chap02}
+\include{introduction}
 
 \include{epilog}
 
