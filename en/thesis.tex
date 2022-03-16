@@ -51,6 +51,47 @@
 \usepackage{paralist}       % improved enumerate and itemize
 \usepackage{xcolor}         % typesetting in color
 
+\usepackage{listings}
+\usepackage{enumitem}
+
+\usepackage{hyperref}
+
+
+\usepackage{color}
+\definecolor{bluekeywords}{rgb}{0,0,1}
+\definecolor{classgreen}{rgb}{0.17,0.57,0.68}
+\definecolor{greencomments}{rgb}{0,0.5,0}
+\definecolor{redstrings}{rgb}{0.64,0.08,0.08}
+\definecolor{black}{rgb}{0,0,0}
+\definecolor{blueattributes}{rgb}{0.37,0.52,0.62}
+\definecolor{interfaceyellow}{rgb}{0.60,0.66,0.11}
+
+\lstdefinestyle{cuda} {
+	language=C++,
+	commentstyle=\color{greencomments},
+	stringstyle=\color{redstrings}\ttfamily, 
+	keywordstyle=\color{bluekeywords},
+%	morekeywords={  },
+	emphstyle=[1]{\color{classgreen}},
+	emphstyle=[2]{\color{interfaceyellow}}
+}
+
+\lstset{	
+	captionpos=b,
+	%numbers=left,
+	%numberstyle=\tiny,
+	columns=flexible,
+	frame=single, 
+	showspaces=false,
+	showtabs=false,
+	breaklines=true,
+	showstringspaces=false,
+	breakatwhitespace=true,
+	escapeinside={(*@}{@*)},
+	basicstyle=\ttfamily,
+	tabsize=2
+}
+
 \graphicspath{ {./img/} }
 
 %%% Basic information on the thesis
@@ -62,7 +103,7 @@
 \def\ThesisAuthor{Karel Maděra}
 
 % Year when the thesis is submitted
-\def\YearSubmitted{2021}
+\def\YearSubmitted{2022}
 
 % Name of the department or institute, where the work was officially assigned
 % (according to the Organizational Structure of MFF UK in English,
@@ -103,7 +144,13 @@ Abstract.
 %% Most settings are pre-set by the pdfx package.
 \hypersetup{unicode}
 \hypersetup{breaklinks=true}
-
+% PDF metadata
+% https://tex.stackexchange.com/questions/26529/how-can-i-generate-pdf-metadata-from-latex
+\hypersetup{
+	pdftitle={\ThesisTitle},
+	pdfauthor={\ThesisAuthor},
+	pdfkeywords={\Keywords},
+}
 % Definitions of macros (see description inside)
 \include{macros}
 
@@ -117,6 +164,10 @@ Abstract.
 
 %%% Each chapter is kept in a separate file
 \include{introduction}
+
+\include{crosscorr}
+\include{cuda}
+\include{goals}
 
 \include{epilog}
 

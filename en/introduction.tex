@@ -1,12 +1,26 @@
-\chapter{Introduction}
-Cross-correlation is a function evaluating the level of similarity between two signals or functions based on their relative displacement. It is one of the key operations in both analog and digital signal processing, as described by \citep{Kapinchev2015}. 
+\chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
 
-It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography and many other fields. Due to the computational complexity of cross-corellation, the time required for its computation is often crucial for the performance of the overall system.
+The field of Signal processing is present everywhere in the today's world. From image processing through seismology to particle physics, the need to analyze, modify or synthesize signals such as sound, images and other scientific measurements is shared throughout many fields. One of the commonly used algorithms in signal processing is cross-correlation, which will be the subject of this thesis. The aim is to analyze, implement and evaluate possible methods of optimization and parallelization of definition based cross-correlation algorithm. The implementations will then be further compared to the generally used implementation based on Fast Fourier transform.
 
-Due to the amounts of data which needs to be processed by cross-correlation, simple sequential CPU-based implementations and even more advanced parallel CPU-based implementations fail to satisfy the need for fast computation times. Due to the nature of cross-correlation, it lends itself nicely to parallelization and the possibility to use the high throughput and massive amounts of computational power provided by GPUs.
+\section*{Motivation}
 
-This thesis builds on top of the thesis "Employing GPU to Process Data from Electron Microscope" by \citep{misko}, which uses cross-corellation as one of the steps in the data processing pipeline. Based on the measurements presented in the thesis, cross-correlation was determined to be the most time consuming part of the processing. The goal of this thesis is to analyze the possibilities of optimizing the GPU implementation of cross-correlation for this and similar use cases. 
+Cross-correlation is one of the key operations in both analog and digital signal processing. %\citep{Kapinchev2015}
+It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography, and many other fields. For many of these applications, the computational complexity of cross-corellation is often the limiting factor in the data processing pipeline. The amount of input data combined with the computational complexity make simple sequential CPU-based implementations and even more advanced parallel CPU-based implementation inadequate.
 
-\input{crosscorr}
-\input{gpu}
-\input{goals}
+Algorithms based on the definition of cross-correlation or on Fast Fourier transform (FFT) can take advantage of the inherent high degree of data parallelism in the definition of cross-correlation or FFT to utilize the high throughput and massive amounts of computational power provided by massively parallel systems in the form of GPUs, or Graphical processing units. 
+
+% TODO: This is basically repeated in the Goals
+This thesis is a continuation of the thesis "Employing GPU to Process Data from Electron Microscope" \citep{misko}, which uses both basic definition based cross-corellation as well as one based on FFT. This thesis aims to compare the asymptotically faster FFT based algorithm with the asymptotically slower definition based algorithm and provide an optimized implementation of the definition based algorithm which, for the input sizes used by the original thesis, will be faster than the FFT based implementation.
+
+\section*{Goals}
+The goal of this thesis is to analyze the possibilities for optimization and parallelization of the definition based algorithm and provide detailed measurements and comparisons of with the FFT based algorithm for range of input forms and sizes. The optimizations and parallelization of the definition based algorithm will utilize capabilities provided by the CUDA platform.
+
+In steps, this thesis will:
+\begin{itemize}
+	\item analyze optimizations of the definition based algorithm, focused on parallelization using CUDA platform,
+	\item compare the optimized implementations with one based on Fast Fourier transform,
+	\item measure different input sizes and types for both the optimized definition based and Fast Fourier transform based algorithms
+\end{itemize}
+
+
