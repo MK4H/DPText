@@ -5,16 +5,15 @@ The field of Signal processing is present everywhere in the today's world. From 
 
 \section*{Motivation}
 
-Cross-correlation is one of the key operations in both analog and digital signal processing. %\citep{Kapinchev2015}
-It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography, and many other fields. For many of these applications, the computational complexity of cross-corellation is often the limiting factor in the data processing pipeline. The amount of input data combined with the computational complexity make simple sequential CPU-based implementations and even more advanced parallel CPU-based implementation inadequate.
+Cross-correlation is one of the key operations in both analog and digital signal processing.
+It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography, and many other fields \citep{Kapinchev2015}. For many of these applications, the computational complexity of cross-corellation is often the limiting factor in the data processing pipeline. The amount of input data combined with the computational complexity make simple sequential CPU-based implementations and even more advanced parallel CPU-based implementation inadequate.
 
-Algorithms based on the definition of cross-correlation or on Fast Fourier transform (FFT) can take advantage of the inherent high degree of data parallelism in the definition of cross-correlation or FFT to utilize the high throughput and massive amounts of computational power provided by massively parallel systems in the form of GPUs, or Graphical processing units. 
+Algorithms based on the definition of cross-correlation or on Fast Fourier transform (FFT) can take advantage of the inherent high degree of data parallelism in the definition of cross-correlation or FFT respectively to utilize the high throughput and massive amounts of computational power provided by massively parallel systems in the form of Graphical processing units (GPU).
 
-% TODO: This is basically repeated in the Goals
 This thesis is a continuation of the thesis "Employing GPU to Process Data from Electron Microscope" \citep{misko}, which uses both basic definition based cross-corellation as well as one based on FFT. This thesis aims to compare the asymptotically faster FFT based algorithm with the asymptotically slower definition based algorithm and provide an optimized implementation of the definition based algorithm which, for the input sizes used by the original thesis, will be faster than the FFT based implementation.
 
 \section*{Goals}
-The goal of this thesis is to analyze the possibilities for optimization and parallelization of the definition based algorithm and provide detailed measurements and comparisons of with the FFT based algorithm for range of input forms and sizes. The optimizations and parallelization of the definition based algorithm will utilize capabilities provided by the CUDA platform.
+The goal of this thesis is to analyze the possibilities for optimization and parallelization of the definition based algorithm and provide detailed measurements and comparisons with the FFT based algorithm for range of input forms and sizes. The optimizations and parallelization of the definition based algorithm will utilize capabilities provided by the CUDA platform.
 
 In steps, this thesis will:
 \begin{itemize}

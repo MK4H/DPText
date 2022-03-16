@@ -1,23 +1,23 @@
 \chapter{CUDA}
 
-This chapter describes the Compute Unified Device Architecture, better known by its acronym CUDA, a "general purpose parallel computing platform and programming model" \citep{site:cuda}, which allows simplified utilization of NVIDIA GPUs for solving complex computational problems.
+This chapter describes the Compute Unified Device Architecture, better known by its acronym CUDA, a "general purpose parallel computing platform and programming model" \citep{site:cuda}, which allows simplified utilization of NVIDIA Graphics processing units (GPU) for solving complex computational problems.
 
 First we describe the advantages and disadvantages of the GPU hardware. Next we describe the basic programming model, after which we provide more detail about features useful for parallelization of cross-correlation.
 
 \section{GPU}
 \label{sec:gpu}
 
-CPUs are optimized to process a single stream of instructions working on a single stream of data as fast as possible. This requires CPU design to minimize instruction latency, which is achieved by using branch predictions, multiple levels of caching, and other such mechanisms. On the other hand, GPUs are optimized for throughput of a single stream of instructions working on multiple streams of data. The single stream of instructions is executed many times in parallel, which allows GPU to hide high latency operations by switching to other threads instead of trying to optimize for lower latency of each instruction. The thread switching is made instantaneous by assigning each thread separate registers in the register file.
+Central processing unit (CPU) is optimized to process a single stream of instructions working on a single stream of data as fast as possible. This requires CPU design to minimize instruction latency, which is achieved by using branch predictions, multiple levels of caching, and other such mechanisms. On the other hand, GPU is optimized for throughput of a single stream of instructions working on multiple streams of data. The single stream of instructions is executed many times in parallel, which allows GPU to hide high latency operations by switching to other threads instead of trying to optimize for lower latency of each instruction. The thread switching is made instantaneous by keeping the execution context, such as registers, of all threads resident at all times.
 
 This leads to the principle of \textbf{occupancy}, where GPU requires high number of threads to properly hide the high latency of each operation. Especially for small inputs, care needs to be taken so that the processing is split between enough threads to saturate the GPU.
 
-The need to assign each thread separate registers in the register file also highlights one of the limiting factors of occupancy, \textbf{register pressure}. Code requiring too many registers may limit the number of threads which can actually be executed in parallel, limiting occupancy, or leading to register spilling into slower types of memory, limiting performance.
+The need to assign each thread separate registers in the register file as part of the execution context also highlights one of the limiting factors of occupancy, \textbf{register pressure}. Code requiring too many registers may limit the number of threads which can actually be executed in parallel, limiting occupancy, or leading to register spilling into slower types of memory, limiting performance.
 
 
 \section{Programming model}
 \label{sec:programming_model}
 
-CUDA distinguishes two parts of the system running two types of code. First is the \textit{host} code running on the host part of the system. This is standard C++ program running on the CPU, accessing system memory and calling the operating system, as any other standard C++ program would. The second part is the \textit{device} code, running on a device or on multiple devices. Each device corresponds to a single GPU (or a single GPU slice since Ampere).
+CUDA distinguishes two parts of the system running two types of code. First is the \textit{host} code running on the host part of the system. This is standard C++ program running on the CPU, accessing system memory and calling the operating system, as any other standard C++ program would. The second part is the \textit{device} code, running on a device or on multiple devices. Each device corresponds to a single GPU \footnote{Or a single GPU slice since Ampere}.
 
 Both parts of the code are programmed in the same language, CUDA C++, which is an extension to the C++ language, with some restrictions to the device code and some parts of the language only usable in the device code.
 One of the important things CUDA C++ introduces are \textit{function execution space specifiers}, which are attributes added to a function declaration and which specify if the given function is part of the host code, device code or if it should be compiled both for host and device code. The available \textit{function execution space specifiers} are:
@@ -44,7 +44,7 @@ If branching occurs, as can be seen in Figure \ref{fig:thread_divergence_old}, a
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\textwidth]{cuda_thread_divergence_old.png}
-	\caption{Branching in device code.}
+	\caption{Branching in device \citep{site:cuda}.}
 	\label{fig:thread_divergence_old}
 \end{figure}
 
@@ -61,7 +61,7 @@ Apart from being grouped into warps, threads on the device are also grouped into
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\textwidth]{grid_of_thread_blocks.png}
-	\caption{Thread grouping hierarchy.}
+	\caption{Thread grouping hierarchy \citep{site:cuda}.}
 	\label{fig:thread_hierarchy}
 \end{figure}
 
@@ -77,12 +77,13 @@ CUDA provides several mechanisms for thread cooperation. Threads can cooperate o
 	\item warp level.
 \end{itemize}
 
-On \textbf{grid level}, the only available tools for cooperation are atomic operations on global memory. These operations can be used to perform read-modify-write on a 32-bit or 64-bit word in global memory without introducing race conditions.
-
 The rest of this subsection describes the older API using intrinsic functions. The newer Cooperative Groups API, which is a superset of the older API, is described in the subsection \ref{sec:cooperative_groups}.
 
+\subsubsection{Grid level}
+On grid level, the only available tools for cooperation are atomic operations on global memory. These operations can be used to perform read-modify-write on a 32-bit or 64-bit word in global memory without introducing race conditions.
 
-On a \textbf{thread block level}, threads can use two mechanisms for cooperation:
+\subsubsection{Thread block level}
+On a thread block level, threads can use two mechanisms for cooperation:
 \begin{itemize}
 	\item shared memory,
 	\item synchronization barrier.
@@ -96,8 +97,9 @@ Shared memory is a small on-chip memory, described in more detail in the subsect
 To synchronize access to shared memory between threads of the thread block, we use synchronization barrier \texttt{\_\_syncthreads()}. All threads in the block must execute the call to \texttt{\_\_syncthreads()} before any of the threads can proceed beyond the call to \texttt{\_\_syncthreads()}. 
 The \texttt{\_\_syncthreads()} function also serves as memory barrier. % TODO: Maybe describe what memory barrier is
 
+\subsubsection{Warp level}
 % TODO: Describe masks for all the functions
-On \textbf{warp level}, threads of the warp, or lanes as they are referred to in the documentation, can utilize intrinsic functions to exchange data without the use of shared memory and perform simple hardware accelerated operations. For operations, warps can perform:
+On warp level, threads of the warp, or lanes as they are referred to in the documentation, can utilize intrinsic functions to exchange data without the use of shared memory and perform simple hardware accelerated operations. For operations, warps can perform:
 \begin{itemize}
 	\item reduce-and-broadcast operations,
 	\item broadcast-and-compare operations,
@@ -105,7 +107,7 @@ On \textbf{warp level}, threads of the warp, or lanes as they are referred to in
 \end{itemize}
 
 % This is important as this is the basis of one of our algorithms
-For \textbf{data exchange}, CUDA C++ provides several warp shuffle instructions. There are four source-lane addressing modes:
+For data exchange, CUDA C++ provides several warp shuffle instructions. There are four source-lane addressing modes:
 \begin{itemize}
 	\item direct lane index,
 	\item copy from lane with ID lower by \textit{delta},
@@ -115,9 +117,9 @@ For \textbf{data exchange}, CUDA C++ provides several warp shuffle instructions.
 
 The data exchange does not have to span the whole warp. Shuffle operations allow the warp to be subdivided into groups with width of any power of 2.
 
-Only direct lane indexing performs lane index wrap around. If the given lane index is out of range $[0:width - 1]$, the actual lane index is computed as $srcLane \mod width$. In other addressing modes, the lanes with out of range source lane index are left unchanged, receiving the value they pass in. The wrap around mechanism allows us to rotate data between threads instead of just shifting. The direct lane indexing can also be used to broadcast a value from a single lane to all other lanes. % TODO: Maybe mention how the wrap around can be used to implement ring buffer shifting between two parts of a buffer
+Only direct lane indexing performs lane index wrap around. If the given lane index is out of the range $[0:width - 1]$, the actual lane index is computed as $srcLane \mod width$. In other addressing modes, the lanes with out of range source lane index are left unchanged, receiving the value they pass in. The wrap around mechanism allows us to rotate data between threads instead of just shifting. The direct lane indexing can also be used to broadcast a value from a single lane to all other lanes. % TODO: Maybe mention how the wrap around can be used to implement ring buffer shifting between two parts of a buffer
 
-For warp level \textbf{operations}, the reduce-and-broadcast operations receive a single integer value from each lane which they compare to zero, making it effectively a boolean. The results of the comparison are then reduced in one of the following ways and the result is broadcast to all threads:
+For warp level operations, the reduce-and-broadcast operations receive a single integer value from each lane which they compare to zero, making it effectively a boolean. The results of the comparison are then reduced in one of the following ways and the result is broadcast to all threads:
 \begin{itemize}
 	\item result is non-zero if and only if all of the values are non-zero,
 	\item result is non-zero if any of the values are non-zero,
@@ -130,7 +132,7 @@ The broadcast-and-compare operations broadcast the value given by each lane and 
 	\item mask if all threads in mask gave the same value, 0 otherwise.
 \end{itemize}
 
-Finally, there are the general reduce operations. Add, min, max operations are implemented for signed or unsigned integer values. And, or, xor operations are implemented for unsigned integers only.
+Finally, there are the general reduce operations. \textit{Add}, \textit{min}, \textit{max} operations are implemented for signed or unsigned integer values. \textit{And}, \textit{or}, \textit{xor} operations are implemented for unsigned integers only.
 
 The API described in this subsection forms the basis of thread cooperation in CUDA. Most of this API is available since the early versions of CUDA. Subsection \ref{sec:cooperative_groups} will describe a newer Cooperative groups API, which builds on top of and extends the API described in this subsection.
 
@@ -183,7 +185,7 @@ From the point of view of a CUDA thread, there are several types of memory avail
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\textwidth]{memory-spaces-on-cuda-device.png}
-	\caption{Memory types on a CUDA device.}
+	\caption{Memory types on a CUDA device \citep{site:cuda}.}
 	\label{fig:memory_types}
 \end{figure}
 
@@ -191,12 +193,12 @@ Local and global memory are both allocated from device memory, and as such have 
 
 \textbf{Local memory} is private for each thread, allocated automatically based on the requirements of the CUDA compiler. This type of memory is used for register spilling, arrays with non-constant indexing and large structures or arrays which would consume too much register space. 
 
-\textbf{Global memory} is shared by all threads of a kernel, and as such any access which could lead to race condition must be synchronized using atomic operations, as described in the section \ref{sec:thread_cooperation}. Global memory is allocated by the host code using \texttt{cudaMalloc} family of functions. When host code transfers data to the device using \texttt{cudaMemcpy} or any other means, global memory is the part of device memory this data will reside in. The pointers returned by \texttt{cudaMalloc} and possibly used in \texttt{cudaMemcpy} are then passed as arguments to the kernel. Device code can then use these to access the global memory. 
+\textbf{Global memory} is shared by all threads of a kernel, and as such any access which could lead to race condition must be synchronized using atomic operations, as described in Section \ref{sec:thread_cooperation}. Global memory is allocated by the host code using \texttt{cudaMalloc} family of functions. When host code transfers data to the device using \texttt{cudaMemcpy} or any other means, global memory is the part of device memory this data will reside in. The pointers returned by \texttt{cudaMalloc} and possibly used in \texttt{cudaMemcpy} are then passed as arguments to the kernel. Device code can then use these to access the global memory. 
 
 \textbf{Shared memory}, as mentioned in the section \ref{sec:thread_cooperation}, is expected to be a low-latency memory near each processor core (much like an L1 cache). The relation with L1 cache can be seen in the fact that each kernel can configure the proportion between hardware allocated to L1 cache and to Shared memory, which means these memories share the same underlying hardware. Shared memory can be allocated either dynamically by declaring an array type variable with the memory space specifier \texttt{\_\_shared\_\_} and providing the size to be allocated during kernel launch, or statically by defining the variable with static size.
 
 
-\textbf{Registers} are the fastest memory available. Compared to CPUs, GPUs provide large amount of registers. For all recent GPU generations, the register file provides 65536 32bit registers. % TODO: Per SM, describe SMs somehwere above
+\textbf{Registers} are the fastest memory available. Compared to CPUs, GPUs provide large amount of registers. For all recent GPU generations, the register file provides 65536 32bit registers. 
 
 \subsection{Streaming multiprocessor}
 \label{sec:sm}
@@ -209,7 +211,7 @@ Each thread block is assigned to a single SM exclusively, and each SM can run mu
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\textwidth]{volta_sm.png}
-	\caption{Streaming multiprocessor.}
+	\caption{Streaming multiprocessor \citep{paper:volta}.}
 	\label{fig:volta_sm}
 \end{figure}
 

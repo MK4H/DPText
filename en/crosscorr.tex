@@ -4,7 +4,7 @@
 %\addcontentsline{toc}{chapter}{Cross-correlation}
 
 % TODO: Cite wikipedia or find some other introduction
-In this chapter, we define cross-correlation and its variants. We first define one-dimensional cross-correlation, extending it into multiple dimensions and introducing circular cross-correlation. We then describe how these variations are used to compute cross-correlation using Fast Fourier transform. Lastly we describe the possibilities for optimization and parallelization of cross-correlation, with real-world usage examples where these optimizations could be used.
+In this chapter, we define cross-correlation and describe the ways for its computation. We first define one-dimensional cross-correlation, extending it into multiple dimensions and introducing circular cross-correlation. We then describe how circular cross-correlation is used to compute cross-correlation using discrete Fourier transform. Lastly we describe the possibilities for optimization and parallelization of cross-correlation, with real-world usage examples where these optimizations could be used.
 % TODO: Maybe mention different data layouts such as one_to_one, one_to_many etc.
 
 
@@ -44,7 +44,7 @@ For two discrete functions \( f, g : \mathbb{Z}^2 \rightarrow \mathbb{R} \), cro
 (f \star g)[m,n] = \sum_{i=-\infty}^{\infty} \sum_{j=-\infty}^{\infty} \overline{f[m,n]}g[m + i,n + j],
 \]
 
-Even though cross-correlation is defined on the whole $\mathbb{Z}$ for one dimension and $\mathbb{Z}^2$ for two dimensions, most use cases of cross-correlation work only on finite inputs, such as image processing working on finite images. The only values we are interested in are when the two images overlap, which limits the computation to $(w_1 + w_2 - 1) * (h_1 + h_2 - 1)$, where $w_i$ denotes width of the image $i$ and $h_i$ denotes the height of the image $i$.
+Even though cross-correlation is defined on the whole $\mathbb{Z}$ for one dimension and $\mathbb{Z}^2$ for two dimensions, most use cases of cross-correlation work only on finite inputs, such as image processing working on finite images. The only values we are interested in are when the two images overlap, which limits the computation to $(w_1 + w_2 - 1) * (h_1 + h_2 - 1)$ resulting values, where $w_i$ denotes width of the image $i$ and $h_i$ denotes the height of the image $i$.
 
 This limits the part of the output we are interested in and leads us to time complexity of the definition based algorithm, or \textit{naive} algorithm as it is called in the code associated with the thesis. For each of the $(w_1 + w_2 - 1) * (h_1 + h_2 - 1)$ output values, we need to multiply the overlapping pixel values and sum all the multiplication results together. There will be at most $min(w_1, w_2) * min(h_1, h_2)$ overlapping pixels. For simplicity, let us work with two images of size $w_i*h_i$. Then the time complexity of the definition based algorithm is $((2*w_i-1)*(2 * h_i - 1) * (w_i * h_i))$, which gives us asymptotic complexity of $\mathcal{O}(w_i^2*h_i^2)$.
 
@@ -71,19 +71,33 @@ Based on the Cross-Correlation Theorem \citep{thesis:wang}, circular cross-corre
 
 where $\mathbb{F}(x)$ and $\mathbb{F}(y)$ denote discrete Fourier Transform of series $x$ and $y$ respectively, $\overline{\mathbb{F}(x)}$ denotes complex conjugate of the discrete Fourier Transform, $*$ denotes element-wise multiplication of two series and $\mathbb{F}^{-1}$ denotes inverse discrete Fourier Transform.
 
-As described by \citep{misko}, to compute non-circular (linear) cross-correlation of non-periodic series of size \textit{N}, such as an image, we pad both series with \textit{N} zeroes to size \textit{2N}. The results of circular cross-correlation are then the results of linear cross-correlation, just circularly shifted by $N-1$ places to the right with one additional 0 value. 
+As described by \citet{misko}, to compute non-circular (linear) cross-correlation of non-periodic series of size \textit{N}, such as an image, we pad both series with \textit{N} zeros to size \textit{2N}, as can be see in Figure \ref{fig:circular_cross_corr}. The results of circular cross-correlation are then the results of linear cross-correlation, only circularly shifted by $N-1$ places to the left with one additional 0 value at index $N$. 
 
-% TODO: Maybe steal image from misko
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{0.8\textwidth}
+	\input{img/circular_cross_corr.drawio.pdf_tex}
+	\caption{Comparison of linear and circular cross-correlation \citep{misko}.}
+	\label{fig:circular_cross_corr}
+\end{figure}
 
-This process can be expanded into two dimensions, where we pad the images with \textit{N} rows and \textit{N} columns of zeroes, compute 2D discrete Fourier transform. Here the circular shift of the results can be inverted by swapping top-left with bottom-right and top-right with bottom-left quadrants, while discarding row \textit{N} and column \textit{N} which will be zero \citep{misko}. 
 
-% TODO: Again maybe steal image from misko
+This process can be expanded into two dimensions, where the matrices are padded with \textit{N} rows and \textit{N} columns of zeros before being passed through 2D discrete Fourier transform. Here the circular shift of the results can be inverted, as shown by Figure \ref{fig:quadrant_swap}, by swapping top-left with bottom-right and top-right with bottom-left quadrants, while discarding row \textit{N} and column \textit{N} which will be filled with zeros \citep{misko}. 
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{0.8\textwidth}
+	\input{img/quadrant_swap.drawio.pdf_tex}
+	\caption{Result quadrant swap.}
+	\label{fig:quadrant_swap}
+\end{figure}
+
 
 Based on this description, we can deduce the time complexity of the algorithm. For two matrices $a,b \in \mathbb{R}^{h \times w}$,the steps of the algorithm are:
 \begin{enumerate}
-	\item Padding $a_p, b_p \in \mathbb{R}^{2h \times 2w}$ of $a$ and $b$ with $h$ rows and $w$ columns of zeroes in $\mathcal{O}(h*w)$;
+	\item Padding $a_p, b_p \in \mathbb{R}^{2h \times 2w}$ of $a$ and $b$ with $h$ rows and $w$ columns of zeros in $\mathcal{O}(h*w)$;
 	\item Discrete Fourier Transform $A,B 
-	in \mathbb{C}^{2h \times 2w}$ $A$ of $a_p$ and $B$ of $b_p$ in $\mathcal{O}(h*w*\log_2(h*w))$;
+	\in \mathbb{C}^{2h \times 2w}$ of $a_p$ and $b_p$ in $\mathcal{O}(h*w*\log_2(h*w))$;
 	\item Element-wise multiplication, also known as Hadamard product, $C \in \mathbb{C}^{2h \times 2w}: C = \overline{A} \circ B$, where $\overline{A}$ denotes complex conjugate of $A$, in $\mathcal{O}(w_i*h_i)$;
 	\item Discrete Fourier Transform $c \in \mathbb{R}^{2h \times 2w}$ of $C$ in $\mathcal{O}(h*w*\log_2(h*w))$;
 	\item Quadrant swap in $\mathcal{O}(h*w)$
@@ -91,11 +105,27 @@ Based on this description, we can deduce the time complexity of the algorithm. F
 
 Put together, the steps described above give us an algorithm with asymptotic time complexity of $\mathcal{O}(h*w*\log_2(h*w))$.
 
-\section{Parallelization and optimizations}
-In the original thesis by \citep{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as integer or floating point matrix in another image. This can be done to for example find a displacement of a certain point of interest between images of one item taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
+\section{Definition based optimizations}
+In the original thesis by \citep{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as integer or floating point matrix in another image. This can be done to, for example, find a displacement of certain point of interest between images taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
 
 This thesis will implement cross-correlation of integer and floating point matrices, which encompasses the usage in previously mentioned works. The implementations will be optimized to take advantage of different forms of cross-correlation input, such as cross-correlation of one matrix with many other matrices, different sizes of input matrices etc. 
-% TODO: Expand
+
+% TODO: Maybe move to analysis
+\subsection{Data parallellism}
+Definition based algorithm for computing cross-correlation is highly data parallel. Not only can every element in the result matrix be computed independently, computation of each element can also be parallelized with a simple reduction of the final results.
+
+When using the definition based algorithm, each element of the resulting matrix corresponds to an overlap of the two cross-correlated matrices. Every two overlapping elements of the two matrices are multiplied and results of these multiplications are then summed together to get the final value for given overlap.
+
+For each overlap, there is $h_o * w_o$ multiplications, where $h_o$ and $w_o$ describe the number of rows and columns which overlap. The following formula describes the total number of multiplications for all overlaps:
+
+\[
+	(h*(h+1)-)*(w*(w+1)-1)
+\].
+
+All these multiplications can be done independently in parallel. Afterwards, each overlap has to compute a sum of the $h_o * w_o$ results to produce the final result.
+
+% TODO: Grouping, data reuse
+
 
 \subsection{Forms of cross-correlation}
 
@@ -104,10 +134,10 @@ The two basic forms are:
 
 \begin{enumerate}
 	\item n left inputs, each with m different right inputs (n to mn) \citet{misko} \citet{zhang2015} \citet{Kapinchev2015}, 
-	\item x left inputs, each with all y right different inputs (n to m) \citet{Clark2011}.
+	\item x left inputs, each with all y right inputs (n to m) \citet{Clark2011}.
 \end{enumerate} 
 
-There are several subtypes which can also be optimized for. For \textit{n} left inputs with disjoint sets of \textit{m} right inputs for each of the left inputs, we have the following subtypes:
+There are several subtypes which can also be optimized for. For \textit{n} disjoint sets of \textit{m} right inputs, one set for each of the \textit{n} left inputs, we have the following subtypes:
 
 \begin{enumerate}
 	\item one to one,
@@ -132,7 +162,7 @@ Any implementation of the \textit{one to many} subtype can also be used to imple
 %\end{itemize}
 
 
-\subsection{Post-processing}
+\section{Post-processing}
 
 In most use cases, cross-correlation itself is not a final output but the results are used further in further processing.
 
@@ -144,7 +174,7 @@ In the field of Seismology, cross-correlation is used for picking, ambient noise
  
 In optical coherence tomography, the whole result of cross-correlation summed to compute the intensity of each pixel \citep{Kapinchev2015}. 
 
-Any post-processing is outside of the scope of this thesis. Result of cross-correlation will be taken as-is and validated against preexisting cross-correlation implementations.
+Any post-processing is outside the scope of this thesis. Result of cross-correlation will be taken as-is and validated against preexisting cross-correlation implementations.
 % TODO: Go through the examples and see what they do with the results
 
 % TODO: Post processing, what is the usual output etc.
