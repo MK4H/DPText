@@ -6,7 +6,7 @@ The field of Signal processing is present everywhere in the today's world. From 
 \section*{Motivation}
 
 Cross-correlation is one of the key operations in both analog and digital signal processing.
-It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography, and many other fields \citep{Kapinchev2015}. For many of these applications, the computational complexity of cross-corellation is often the limiting factor in the data processing pipeline. The amount of input data combined with the computational complexity make simple sequential CPU-based implementations and even more advanced parallel CPU-based implementation inadequate.
+It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography, and many other fields \citep{Kapinchev2015}. For many of these applications, the computation time of cross-corellation is often the limiting factor in the data processing pipeline. The amount of input data combined with the computational complexity make simple sequential CPU-based implementations and even more advanced parallel CPU-based implementation inadequate.
 
 Algorithms based on the definition of cross-correlation or on Fast Fourier transform (FFT) can take advantage of the inherent high degree of data parallelism in the definition of cross-correlation or FFT respectively to utilize the high throughput and massive amounts of computational power provided by massively parallel systems in the form of Graphical processing units (GPU).
 
