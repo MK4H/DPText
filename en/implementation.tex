@@ -1,0 +1,291 @@
+\chapter{Implementation}
+
+In this chapter, we first give a high level overview of the possibilities for parallelization and data reuse in the implementation of definition-based cross-correlation algorithm, introduced in section \ref{sec:cross_corr_def}. Next we describe several such implementations.
+
+
+The definition-based algorithm has several properties which allow for parallelization, optimization through data reuse and distribution of work.
+
+Figure \ref{fig:cross_corr_shifts} depicts the output matrix with corresponding relative shift of the two input matrices for each element. As described in Section \ref{sec:cross_corr_opt}, each of these elements can be computed independently in parallel.
+
+Each overlap defines a unique set of element pairs which are to be multiplied. Each pair of overlapping elements is uniquely assigned to a single shift of the two matrices. 
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-Shifts.pdf_tex}
+	\caption{Result matrix with corresponding relative shifts.}
+	\label{fig:cross_corr_shifts}
+\end{figure}
+
+
+\section{Parallelization}
+In this section, we first reformulate the definition-based cross-correlation algorithm into the language of independent parallel tasks, then we define the types of workers which can be derived from CUDA Thread hierarchy, described in Section \ref{sec:thread_hierarchy}. Next we introduce the possible distributions of tasks between different types workers, with options for data reuse and load balancing.
+
+\subsection{Two matrices}
+When we focus on the computation of cross-correlation between two matrices, called one-to-one in the rest of the thesis, we can reformulate the definition-based algorithm as a problem with two levels of independent parallel tasks, as can be seen in Figure \ref{fig:cross_corr_one_to_one_tasks}. First level are the different relative shifts of the two input matrices, each represented by a single element in the output matrix. Each of these tasks has a set of independent subtasks corresponding to overlapping pairs of elements of the two input matrices. Each subtask is depicted as a yellow square in Figure \ref{fig:cross_corr_one_to_one_tasks}. Each of these subtasks belongs to exactly one set. The results of all subtasks in a set have to be summed into the result of the parent task. The set of subtasks defines a continuous submatrix in both input matrices.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-Tasks.pdf_tex}
+	\caption{Tasks hierarchy in definition-based one-to-one cross-correlation.}
+	\label{fig:cross_corr_one_to_one_tasks}
+\end{figure}
+
+The goal is to distribute the subtasks between workers in such a way that we maximize parallelism, maximize data reuse and minimize the need for communication and synchronization between workers.
+
+\subsection{Many matrices}
+
+With more than two matrices, we can add additional levels to the task hierarchy shown in \ref{fig:cross_corr_one_to_one_tasks}. As described in Section \ref{sec:cross_corr_forms}, there are several forms of cross-correlation between multiple matrices can be computed. These are:
+\begin{enumerate}
+	\item \textit{one-to-many},
+	\item \textit{n-to-mn},
+	\item \textit{n-to-m}.
+\end{enumerate}
+
+As we can see, the \textit{one-to-one} type, described in the previous section, together with the \textit{one-to-many} type, are subtypes of the more general \textit{n-to-mn} type. We separate the \textit{one-to-one} and \textit{one-to-many} types as they offer a great possibility for caching the single matrix for use in all computations.
+
+All of the described types can be partitioned into many \textit{one-to-one} cross-correlations, as can be seen in Figure \ref{fig:cross_corr_many_tasks}. For both \textit{n-to-mn} and \textit{n-to-m} types, the number of green top level tasks, corresponding to the number of result matrices, is equal to $n*m$. To reiterate, the difference between these two types is that in the \textit{n-to-mn} type, each of the \textit{n} left matrices is cross-correlated with a different set of \textit{m} right matrices.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{0.8\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-ManyTasks.pdf_tex}
+	\caption{Task hierarchy of types with many matrices.}
+	\label{fig:cross_corr_many_tasks}
+\end{figure}
+
+As in the case of \textit{one-to-one} type, the meaning of the boxes is as follows:
+
+\begin{itemize}
+	\item Each green box represents a pair of input matrices, or equivalently a single output matrix;
+	\item Each orange box represents an element in the result matrix, or equivalently a relative shift of the two input matrices;
+	\item Each yellow box represents a pair of overlapping elements from the two input matrices.
+\end{itemize}
+
+All boxes on a given level can be processed completely independently. Results of the children of an orange box have to be summed together. Results of the children of a green box have to be written into a single matrix in memory, each into a different element without any collisions.
+
+% TODO: Segway to data reuse
+
+\subsection{CUDA workers}
+
+Section \ref{sec:thread_hierarchy} described how CUDA threads are hierarchically grouped from smallest to largest as follows:
+
+\begin{enumerate}
+	\item thread,
+	\item warp,
+	\item thread block,
+	\item grid.
+\end{enumerate}
+
+This thesis provides several implementations of the definition-based cross-correlation algorithm described in following sections, each mapping different level of task hierarchy shown in Figure \ref{fig:cross_corr_many_tasks} to different size of CUDA thread group.
+
+Based on the choice of the CUDA thread group size, we can use smaller groups to compute the subtree of the assigned task, and primitives provided by larger groups to synchronize, communicate and combine results of the tasks between different workers.
+
+\section{Warp shuffle algorithm}
+
+This section describes the implementation of definition-based cross-correlation built on Warp Shuffle instructions. We first introduce a simple version of the implementation, later improving it step by step until we arrive at the algorithm actually implemented in the code accompanying this thesis.
+
+Warp shuffle instruction are utilized to shift data loaded from the left matrix and broadcast data loaded from the right matrix between threads in a warp. CUDA threads are used as workers, with tasks representing a single relative shift of the two matrices (which is equivalent to a single element in the output matrix), as can be seen in Figure \ref{fig:warp_shuffle_simple_tasks}.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{0.8\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-WarpShuffleSimpleTasks.pdf_tex}
+	\caption{Tasks in simple warp shuffle algorithm.}
+	\label{fig:warp_shuffle_simple_tasks}
+\end{figure}
+
+The main idea behind this algorithm is illustrated in Figure \ref{fig:warp_shuffle_shuffle}. Threads of a single warp process 32 consecutive shifts in the \textit{x} axis all with the same \textit{y} axis value, as can be seen in Figure \ref{fig:warp_shuffle_simple_dist}. Figure \ref{fig:warp_shuffle_shuffle} shows how two neighboring threads process elements of the two input matrices. The numbers represent iterations of a \textit{for loop} in the code. 
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{0.8\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-WarpShuffleShuffle.pdf_tex}
+	\caption{Work done by two neighboring threads.}
+	\label{fig:warp_shuffle_shuffle}
+\end{figure}
+
+As can be seen, the element from the left matrix processed by thread \textit{t} in iteration \textit{k} is required by thread \textit{t - 1} in iteration \textit{k + 1}. This holds for all threads of a warp and maps exactly onto the Warp Shuffle Down function, described in Section \ref{sec:thread_cooperation}. 
+
+
+In any given iteration, all threads of a warp require the exact same element
+from the right matrix. This broadcast can be implemented using the general Warp Shuffle function with direct source lane indexing.
+
+The problem of iteration \textit{3}, in which the lower thread does not have any value to compute, can be solved in several ways. If we were programming for a CPU, we would give the two for loops implementing the two worker threads different bounds so that the second worker stops earlier. More GPU friendly implementation needs to prevent thread divergence of a warp by executing the range check for each thread only once when loading the data from the left matrix into a register of the thread. If the thread is loading value outside the matrix, it loads 0 instead. This makes the result of the multiplication 0 which is then added to the sum, making it a \textit{noop} and preventing thread divergence.
+
+% TODO: Distribution of shifts between threads and blocks, block dimensions etc.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{0.8\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-WarpShuffleWarps.pdf_tex}
+	\caption{Distribution of shifts between CUDA threads, warps and blocks.}
+	\label{fig:warp_shuffle_simple_dist}
+\end{figure}
+
+% TODO: Top and bottom parts of the left buffer
+
+The final algorithm can be described by the following pseudocode:
+
+\begin{lstlisting}[
+style=cuda
+]
+
+float sum = 0;
+for (
+	size_t warp_y_right = warp_right_start.y; 
+	warp_y_right < warp_right_end.y;
+	++warp_y_right 
+) {
+	size_t warp_y_left = warp_y_right + warp_min_shift.y;
+	
+	
+}
+\end{lstlisting}
+
+
+
+\subsection{Work distribution}
+
+In the simplified algorithm described above, there are massive differences in work done by different threads. As we can see in Figure \ref{fig:warp_shuffle_work_difference}, the thread processing the left overlap has much less work than the thread processing the right overlap. This will lead to problems with occupancy once the threads with small amount of work are completed. 
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{0.6\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-WarpShuffleWorkDifference.pdf_tex}
+	\caption{Task size difference in the simplified algorithm.}
+	\label{fig:warp_shuffle_work_difference}
+\end{figure}
+
+To distribute the work more evenly, we need to change what is considered a task processed by a worker. Compared to the simplified implementation, , task represents several full continuous rows of overlapping pairs of elements (yellow boxes), as can be seen in figure \ref{fig:warp_shuffle_work_dist_tasks}. With this change, multiple workers may write to the same element in the output matrix. Each worker must add the final sum of the assigned tasks to sums of all other workers processing tasks of the same shift. As each worker needs to add the sum just once, utilizing the \textit{atomicAdd} operation on the output matrix in global memory is sufficient. The maximum number of rows in a task is provided as an argument to the algorithm, and influences the number of workers created.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{0.8\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-WarpShuffleWorkDistTasks.pdf_tex}
+	\caption{Tasks in warp shuffle algorithm with load balancing.}
+	\label{fig:warp_shuffle_work_dist_tasks}
+\end{figure}
+
+
+We provide several algorithms to derive the number of workers started and the distribution of tasks between workers from the provided argument and the size of the input. The provided algorithms are:
+
+\begin{itemize}
+	\item None,
+	\item Rectangle,
+	\item Triangle.
+\end{itemize}
+
+
+The algorithms are illustrated in Figures \ref{fig:work_dist_max_1} and \ref{fig:work_dist_max_2}. In these, the purple boxes represent number of tasks for each shift in the given row of the output matrix. As we can see in Figure \ref{fig:worker_id_assignment}, the worker ID is shared by all threads with the same rank in the \textit{x} axis. This means that worker ID is assigned based on the \textit{y} axis rank of each thread and is shared by all threads of a warp. 
+
+The \textit{None} distribution is provided mainly to measure the overhead of the code changes required to implement work distribution. This distribution behaves identically as the simplified algorithm with no distribution.
+
+The \textit{Rectangle} distribution computes the maximum number of tasks required for any shift, and starts this maximum number of workers for all shifts, creating a rectangle of workers as can be seen in Figure \ref{fig:work_dist_max_1}. The worker API is designed to stop workers which are not required, stopping the redundant workers immediately after work assignment. The tasks are assigned using simple modulo operati
+
+
+The \textit{Triangle} distribution starts exactly one worker for each task. The disadvantage of this distribution is the complex computation required to assign worker to task. This computation includes many multiplications, divisions and most importantly a low throughput square root instruction. For small inputs where the size of tasks is small, the overhead of triangle distribution may be greater than any gains provided by work distribution. 
+% TODO: Image why is it called triangle
+
+The total number of workers started for given number of tasks can be seen in Figures \ref{fig:work_dist_max_1} and \ref{fig:work_dist_max_2}. The first figure shows maximum work distribution, with each worker processing exactly one row of input. The second figure shows the same inputs, but with each worker processing at most 2 rows.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-DistMax1Row.pdf_tex}
+	\caption{Work distribution of 4x4 input with 1 row per task.}
+	\label{fig:work_dist_max_1}
+\end{figure}
+
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/overlap-DistMax2Rows.pdf_tex}
+	\caption{Work distribution of 4x4 input with maximum of 2 rows per task.}
+	\label{fig:work_dist_max_2}
+\end{figure}
+
+This algorithm modifies the number of blocks started for each kernel. In the simplified algorithm, block size is configurable, but is pretty much static. The \textit{x} axis size of a block is used to simplify grouping threads into warp, and as such has a hardcoded size of 32. The \textit{y} axis size of a block is used to configure number of warps per block, and is provided as an argument to the algorithm. The number of blocks is then chosen to cover the output matrix in both \textit{x} and \textit{y} axes with one thread per output matrix element, with some possible overallocation due to the difference between size of the output matrix and the preset size of the block.
+
+
+This algorithm retains the same size of a block and use of the \textit{x} axis of grid size. As all threads with the same value of \textit{x} axis always process the same rows, we only need to multiply the number of workers by using the \textit{y} axis of the grid size to start the number of workers required by given work distribution algorithm. 
+
+Again, all threads with the same \textit{x} axis thread rank (combination of the \textit{x} axis of the thread block and the \textit{x} axis of the thread itself) have the same \texttt{worker\_id}, and us such all either run the same rows or end if the worker they represent is redundant. This can be seen in Figure \ref{fig:worker_id_assignment}.
+
+
+
+\subsection{Improving ratio of arithmetic instructions}
+\label{sec:arith_ratio}
+
+% TODO: Describe that the multiplication and addition are computed as fused multiply-add operation
+Another problem of the simplified implementation, shared with the work distributing implementation, is the ratio of warp shuffle instructions to arithmetic instructions. For each multiplication of the pair of input values, represented by a single yellow box, and addition of this result to the total sum, we must execute three warp shuffle instructions. This makes warp shuffle instructions the bottleneck in these implementations, as can be seen in Figure \ref{fig:warp_shuffle_shuffle_profiling}. We can also see that the multiplication and addition are implemented as fused multiply-add (FMA) instruction. 
+
+There are several ways to improve the ratio of warp shuffle instructions to arithmetic instructions. The simplest one is to utilize the \textit{one-to-many} type of computation, and let single worker compute cross-correlation between one left matrix and many right matrices at once. This first allows data reuse, as the data from the left matrix is loaded only once to be used to compute multiple results. The second advantage is that we only need a single additional warp shuffle for each additional right matrix, which also adds a single multiplication and addition. The ratio of warp shuffles to fused multiply-add operations can then be expressed as $2 + r : r$, which is much improved from the $3:1$ ratio of the simplified warp shuffle algorithm.
+
+% TODO: Profiling
+The effects of this optimization can be seen when we compare Figure \ref{fig:warp_shuffle_profiling_original} with Figure \ref{fig:warp_shuffle_profiling_multiple_right}. %TODO: Describe
+
+% Why is it important that the arrays are in registers
+This optimization heavily relies on
+
+
+More complex version of this optimization is to process multiple rows from the same right matrix, which can be used to improve the ration even for \textit{one-to-one} type of computation. There are several caveats when implementing this optimization. The main difference is that a single thread now computes multiple different shifts instead of the same shift in multiple matrices. These shifts differ in the \textit{y} axis, and represent consecutive elements in a column of the output matrix. Each of these shifts represents different overlap of the two input matrices, requiring different bounds in the \textit{y} axis. % TODO: Image
+
+Due to these different bounds for the shifts computed by each thread, we have to add explicit initialization and finalization code which handles the case where only some of the rows of the right matrix overlap with given row from the left matrix. % TODO: Image
+
+
+The complexity of the code forces us to share the results of different function calls, such as the initialization, main body and finalization, through shared memory. We allocate a shared memory array to with maximum number of shifts per thread times the number of threads per block, which is used to accumulate the final result of the computation of all shifts for all threads of the thread block. % TODO: Image of the shared memory array distribution
+
+After the initialization phase is finished, the main loop is conceptually very similar with the multiple right matrices case described previously. The only major differences are the accumulation of the final result through shared memory instead of through registers and the reversal of the results for given row group   % TODO: Why is it reversed, IMAGE
+
+
+
+% https://forums.developer.nvidia.com/t/loop-through-register-array-without-using-local-memory/29458/3
+\subsection{Problems with local memory}
+
+The optimizations described in the previous section \ref{sec:arith_ratio} hint at further possibilities, such as using multiple left matrices and multiple rows from the left matrix in combination with the previous optimizations. The problem we encountered is that these additional changes lead to much more complex indexing which the \textit{nvcc} compiler cannot expand into static compile time indexing, even though logically we can see it is. % TODO: Code samples
+
+This leads to compiler pulling the \texttt{thread\_right}, \texttt{thread\_left\_top}, \texttt{thread\_left\_bottom} and \texttt{sum} to be allocated from local memory instead of from register file. The change from local memory results in a substantial overhead, which can be seen in Figure \ref{fig:local_memory_impact}. 
+
+
+
+\section{Occupancy improvement}
+
+For small inputs, processing a single shift or even just several rows per thread may not start enough threads and lead to low occupancy.  
+% TODO: Shift per warp
+% TODO: Why not block per warp
+
+
+

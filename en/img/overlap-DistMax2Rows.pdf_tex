@@ -1,0 +1,149 @@
+%% Creator: Inkscape 1.1.2 (08b2f3d93c, 2022-04-05), www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'overlap-DistMax2Rows.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{532.5bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.85985915)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{overlap-DistMax2Rows.pdf}}%
+    \put(0.6084507,0.73521127){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{overlap-DistMax2Rows.pdf}}%
+    \put(0.6084507,0.66478873){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{overlap-DistMax2Rows.pdf}}%
+    \put(0.6084507,0.5943662){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{overlap-DistMax2Rows.pdf}}%
+    \put(0.67887324,0.5943662){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}9\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{overlap-DistMax2Rows.pdf}}%
+    \put(0.6084507,0.52394366){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{overlap-DistMax2Rows.pdf}}%
+    \put(0.67887324,0.52394366){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}10\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{overlap-DistMax2Rows.pdf}}%
+    \put(0.67887324,0.45352113){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}11\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{overlap-DistMax2Rows.pdf}}%
+    \put(0.6084507,0.45352113){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}4\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{overlap-DistMax2Rows.pdf}}%
+    \put(0.6084507,0.38309859){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}5\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{overlap-DistMax2Rows.pdf}}%
+    \put(0.6084507,0.31267606){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}6\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.73521127){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}[x,-3]\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.66478873){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}[x,-2]\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.5943662){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}[x,-1]\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.52394366){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}[x,0]\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.45352113){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}[x,1]\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.38309859){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}[x,2]\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.31267606){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}[x,3]\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{overlap-DistMax2Rows.pdf}}%
+    \put(0.8056338,0.73521127){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{overlap-DistMax2Rows.pdf}}%
+    \put(0.8056338,0.66478873){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}4\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{overlap-DistMax2Rows.pdf}}%
+    \put(0.8056338,0.5943662){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}5\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{overlap-DistMax2Rows.pdf}}%
+    \put(0.87605634,0.5943662){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=22]{overlap-DistMax2Rows.pdf}}%
+    \put(0.8056338,0.52394366){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}6\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=23]{overlap-DistMax2Rows.pdf}}%
+    \put(0.87605634,0.52394366){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=24]{overlap-DistMax2Rows.pdf}}%
+    \put(0.87605634,0.45352113){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=25]{overlap-DistMax2Rows.pdf}}%
+    \put(0.8056338,0.45352113){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}7\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=26]{overlap-DistMax2Rows.pdf}}%
+    \put(0.8056338,0.38309859){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}8\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=27]{overlap-DistMax2Rows.pdf}}%
+    \put(0.8056338,0.31267606){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}9\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=28]{overlap-DistMax2Rows.pdf}}%
+    \put(0.67887324,0.66478873){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}8\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=29]{overlap-DistMax2Rows.pdf}}%
+    \put(0.67887324,0.73521127){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}7\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=30]{overlap-DistMax2Rows.pdf}}%
+    \put(0.67887324,0.38309859){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}12\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=31]{overlap-DistMax2Rows.pdf}}%
+    \put(0.67887324,0.31267606){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}13\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=32]{overlap-DistMax2Rows.pdf}}%
+    \put(0.48169014,0.73521127){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=33]{overlap-DistMax2Rows.pdf}}%
+    \put(0.48169014,0.66478873){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=34]{overlap-DistMax2Rows.pdf}}%
+    \put(0.48169014,0.5943662){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=35]{overlap-DistMax2Rows.pdf}}%
+    \put(0.48169014,0.52394366){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=36]{overlap-DistMax2Rows.pdf}}%
+    \put(0.48169014,0.45352113){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}4\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=37]{overlap-DistMax2Rows.pdf}}%
+    \put(0.48169014,0.38309859){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}5\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=38]{overlap-DistMax2Rows.pdf}}%
+    \put(0.48169014,0.31267606){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}6\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=39]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.83380282){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Rows of the output matrix\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=40]{overlap-DistMax2Rows.pdf}}%
+    \put(0.48169014,0.83380282){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}None\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=41]{overlap-DistMax2Rows.pdf}}%
+    \put(0.84084507,0.83380282){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Triangle\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=42]{overlap-DistMax2Rows.pdf}}%
+    \put(0.15774648,0.12957746){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}i\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=43]{overlap-DistMax2Rows.pdf}}%
+    \put(0.21690141,0.12957746){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Worker i\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=44]{overlap-DistMax2Rows.pdf}}%
+    \put(0.21690141,0.03098592){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Redundant worker\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=45]{overlap-DistMax2Rows.pdf}}%
+    \put(0.3197183,0.20704225){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Number of tasks for each item of row\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=46]{overlap-DistMax2Rows.pdf}}%
+    \put(0.64366197,0.20704225){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Rectangle\end{tabular}}}}%
+  \end{picture}%
+\endgroup%

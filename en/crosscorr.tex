@@ -106,12 +106,14 @@ Based on this description, we can deduce the time complexity of the algorithm. F
 Put together, the steps described above give us an algorithm with asymptotic time complexity of $\mathcal{O}(h*w*\log_2(h*w))$.
 
 \section{Definition based optimizations}
+\label{sec:cross_corr_opt}
 In the original thesis by \citep{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as integer or floating point matrix in another image, also represented as such matrix. This can be done to, for example, find a displacement of certain point of interest between images taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
 
 This thesis will implement cross-correlation of integer and floating point matrices, which encompasses the usage in previously mentioned works. The implementations will be optimized to take advantage of different forms of cross-correlation input, such as cross-correlation of one matrix with many other matrices, different sizes of input matrices etc. 
 
 % TODO: Maybe move to analysis
 \subsection{Data parallellism}
+\label{sec:cross_corr_para}
 Definition based algorithm for computing cross-correlation is highly data parallel. Not only can every element in the result matrix be computed independently, computation of each element can also be parallelized with a simple reduction of the final results.
 
 When using the definition based algorithm, each element of the resulting matrix corresponds to an overlap of the two cross-correlated matrices. Every two overlapping elements of the two matrices are multiplied and results of these multiplications are then summed together to get the final value for given overlap.
@@ -128,6 +130,7 @@ All these multiplications can be done independently in parallel. Afterwards, eac
 
 
 \subsection{Forms of cross-correlation}
+\label{sec:cross_corr_forms}
 
 In works using cross-correlation, there are several forms of computation which can be used for optimization such as data caching and reuse, batching, precomputing etc. The forms differ in the number of inputs and in the way cross-correlation is computed between different inputs. 
 The two basic forms are:

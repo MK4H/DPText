@@ -55,6 +55,7 @@ On the surface, the device code is very similar to the host code written for the
 On the other side of the spectrum, the SIMT execution model can be compared to the Single instruction, multiple data (SIMD) execution model, where the number of elements processed by a single instruction is directly exposed in the user code, compared to the SIMT model, where the user code itself describes a behavior of a single thread and the grouping of threads is abstracted by the platform. 
 
 \subsection{Thread hierarchy}
+\label{sec:thread_hierarchy}
 
 Apart from being grouped into warps, threads on the device are also grouped into Cooperative Thread Arrays (CTA), also known as thread blocks. Thread blocks can be one-dimensional, two-dimensional or three-dimensional, which provides an easy way to distribute work when processing arrays, matrices or volumes. Thread blocks are further organized into one-dimensional, two-dimensional or three-dimensional grid, as can be seen in Figure \ref{fig:thread_hierarchy}. When launching a kernel, we specify thread block size and grid size, which combined together give us the number of threads executing the given kernel.
 
@@ -231,6 +232,7 @@ Compute Capabilities are backwards compatible, so code created for older generat
 
 \section{Code optimizations}
 
+
 This section introduces basic principles for producing performant CUDA code.
 The observations and recommendations provided in this section are based on the principles and properties described in the previous section \ref{sec:programming_model}.
 
@@ -260,6 +262,7 @@ Number of registers used by all warps of all blocks which reside on the given SM
 The total amount of shared memory required by all blocks residing on an SM must be smaller than or equal to the size of shared memory provided by the SM. 
 
 \subsection{Pipeline saturation}
+\label{sec:cuda_pipelines}
 
 Other than occupancy, there are other possible reasons why no warp may be eligible in a given cycle. Pipeline saturation is one of such reasons. GPU hardware has several pipelines, each implementing a different part of the instruction set. As an example, for the RTX 2060 card, these include:
 \begin{itemize}
