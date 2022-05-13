@@ -94,6 +94,9 @@
 
 \graphicspath{ {./img/} }
 
+% Disable warning abount multiple page groups in PDF files
+\pdfsuppresswarningpagegroup=1
+
 %%% Basic information on the thesis
 
 % Thesis title in English (exactly as in the formal assignment)
@@ -130,11 +133,13 @@ Dedication.
 }
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
+% TODO: Write to the thesis.xmpdata too
 \def\Abstract{%
 Abstract.
 }
 
 % 3 to 5 keywords (recommended), each enclosed in curly braces
+% TODO: Write to the thesis.xmpdata too
 \def\Keywords{%
 {key} {words}
 }
@@ -144,13 +149,10 @@ Abstract.
 %% Most settings are pre-set by the pdfx package.
 \hypersetup{unicode}
 \hypersetup{breaklinks=true}
-% PDF metadata
-% https://tex.stackexchange.com/questions/26529/how-can-i-generate-pdf-metadata-from-latex
-\hypersetup{
-	pdftitle={\ThesisTitle},
-	pdfauthor={\ThesisAuthor},
-	pdfkeywords={\Keywords},
-}
+% PDF metadata cannot be set using hyperref package
+% pdfx reads them from .xmpdata file
+% https://tex.stackexchange.com/questions/510436/pdfx-hyperref-prevents-setting-pdf-metadata-incompatible-packages
+
 % Definitions of macros (see description inside)
 \include{macros}
 

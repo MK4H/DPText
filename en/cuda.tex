@@ -41,7 +41,7 @@ The device code, written in CUDA C++ as a part of \textit{global} or \textit{dev
 In the Single instruction, multiple threads(SIMT) execution model, threads on the device are split into groups of 32, called \textit{warps}. Each warp of threads is scheduled together, starting at the same program address and executing in lockstep.\footnote{Since Compute Capability 7.0 Volta, threads of a warp can be scheduled more independently and do not execute strictly in lockstep \citep{paper:volta}.}
 If branching occurs, as can be seen in Figure \ref{fig:thread_divergence_old}, any branch that is taken by at least a single thread of a warp is executed by the whole warp, masking out any threads that did not take given branch. When masked, thread does not execute any reads or writes, but still has to continue execution with other threads in the warp. This is most apparent in loops, where a single thread of a warp executing the loop thousand times will result in the whole warp executing the loop thousand times, even if other threads are masked and do nothing for most of the loops. This cuts the theoretical throughput by a factor of 32, as only one of the 32 threads does useful work.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{cuda_thread_divergence_old.png}
 	\caption{Branching in device \citep{site:cuda}.}
@@ -59,7 +59,7 @@ On the other side of the spectrum, the SIMT execution model can be compared to t
 
 Apart from being grouped into warps, threads on the device are also grouped into Cooperative Thread Arrays (CTA), also known as thread blocks. Thread blocks can be one-dimensional, two-dimensional or three-dimensional, which provides an easy way to distribute work when processing arrays, matrices or volumes. Thread blocks are further organized into one-dimensional, two-dimensional or three-dimensional grid, as can be seen in Figure \ref{fig:thread_hierarchy}. When launching a kernel, we specify thread block size and grid size, which combined together give us the number of threads executing the given kernel.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{grid_of_thread_blocks.png}
 	\caption{Thread grouping hierarchy \citep{site:cuda}.}
@@ -183,7 +183,7 @@ From the point of view of a CUDA thread, there are several types of memory avail
 	\item registers.
 \end{itemize}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{memory-spaces-on-cuda-device.png}
 	\caption{Memory types on a CUDA device \citep{site:cuda}.}
@@ -209,7 +209,7 @@ Each thread block is assigned to a single SM exclusively, and each SM can run mu
 
 % TODO: More
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{volta_sm.png}
 	\caption{Streaming multiprocessor \citep{paper:volta}.}
@@ -237,6 +237,7 @@ This section introduces basic principles for producing performant CUDA code.
 The observations and recommendations provided in this section are based on the principles and properties described in the previous section \ref{sec:programming_model}.
 
 \subsection{Occupancy}
+\label{sec:occupancy}
 
 The GPU design prioritizes high instruction throughput of many concurrent threads over single thread performance at the cost of high latency of each instruction. To hide the high latency between dependent instructions, each scheduler keeps a pool of warps between which it switches, possibly on each instruction. Warps in a pool of a scheduler are called \textit{active} warps.
 Each cycle, there may be multiple warps which have instructions ready to be executed. Such warps are called \textit{eligible} warps.
@@ -288,7 +289,7 @@ As we can see in Figure \ref{fig:global_memory_access}, the access to read-only 
 When accessing data larger than 32 bits, the access is split into 2 half-warp transactions for 64 bit or 4 quarter warp transactions for 128 bit values, which are then processed independently, again reading any 128~B chunk any of the accesses. 
 
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{global-memory-access.png}
 	\caption{Global memory access \citep{site:cuda}.}
@@ -298,7 +299,7 @@ When accessing data larger than 32 bits, the access is split into 2 half-warp tr
 \subsection{Shared memory access}
 To achieve high bandwidth, shared memory is divided into 32 banks. The optimal access pattern the shared memory is designed for is for each thread of a warp to access a different bank. To enable this access pattern, successive 32bit words are mapped to successive shared memory banks. The simplest pattern is that the 32 threads of a warp access 32 consecutive 32bit items from an array in shared memory, as can be see in the left column of Figure \ref{fig:shared_memory_access}. If multiple threads access different addresses mapping to the same bank, as can be seen in the middle column of the figure, their accesses are serialized, the throughput of shared memory being divided by the maximum number of different addresses accessed in any of the banks. This is called a \textit{bank conflict}. Access to the same address by multiple threads does not lead to a bank conflict, instead leading to a broadcast of the value between the threads.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{shared-memory-access.png}
 	\caption{Shared memory access patterns \citep{site:cuda}.}
