@@ -1,4 +1,4 @@
-%% Creator: Inkscape 1.1.2 (76b9e6a115, 2022-02-25), www.inkscape.org
+%% Creator: Inkscape 1.2 (dc2aedaf03, 2022-05-15), www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'overlap-WarpShuffleShuffle.pdf' (pdf, eps, ps)
 %%
@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{285.75bp}%
+    \setlength{\unitlength}{345.56103516bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,37 +50,95 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.73753281)%
+  \begin{picture}(1,0.60987779)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.49343832,0.62992126){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.58111597,0.52089206){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.55905512,0.62992126){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.63537556,0.52089206){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.62467192,0.62992126){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.68963515,0.52089206){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.42782152,0.62992126){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.52685638,0.52089206){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=5]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.76902887,0.62992126){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.58111597,0.46663247){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}5\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.83464567,0.62992126){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.63537556,0.46663247){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}6\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=7]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.90026247,0.62992126){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.68963515,0.46663247){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}7\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=8]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.96587927,0.62992126){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.52685638,0.46663247){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}4\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=9]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.49343832,0.22309711){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.58111597,0.41237288){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}9\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=10]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.55905512,0.22309711){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.63537556,0.41237288){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}10\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=11]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.62467192,0.22309711){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.68963515,0.41237288){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}11\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=12]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.76902887,0.22309711){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.52685638,0.41237288){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}8\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=13]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.83464567,0.22309711){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.80900624,0.52089206){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=14]{overlap-WarpShuffleShuffle.pdf}}%
-    \put(0.90026247,0.22309711){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.86326583,0.52089206){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=15]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.91752542,0.52089206){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.97178501,0.52089206){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.80900624,0.46663247){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}4\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.86326583,0.46663247){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}5\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.91752542,0.46663247){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}6\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.97178501,0.46663247){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}7\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.80900624,0.41237288){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}8\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=22]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.86326583,0.41237288){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}9\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=23]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.91752542,0.41237288){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}10\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=24]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.97178501,0.41237288){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}11\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=25]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.58111597,0.18448261){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=26]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.63537556,0.18448261){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=27]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.68963515,0.18448261){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=28]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.58111597,0.13022302){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}4\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=29]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.63537556,0.13022302){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}5\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=30]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.68963515,0.13022302){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}6\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=31]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.58111597,0.07596343){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}8\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=32]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.63537556,0.07596343){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}9\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=33]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.68963515,0.07596343){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}10\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=34]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.80900624,0.18448261){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=35]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.86326583,0.18448261){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=36]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.91752542,0.18448261){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=37]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.80900624,0.13022302){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}4\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=38]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.86326583,0.13022302){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}5\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=39]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.91752542,0.13022302){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}6\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=40]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.80900624,0.07596343){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}8\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=41]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.86326583,0.07596343){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}9\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=42]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.91752542,0.07596343){\color[rgb]{1,1,1}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}10\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=43]{overlap-WarpShuffleShuffle.pdf}}%
+    \put(0.10363158,0.46663247){\color[rgb]{0,0,0}\makebox(0,0)[rt]{\lineheight{1.25}\smash{\begin{tabular}[t]{r}Thread 0\end{tabular}}}}%
+    \put(0.10363158,0.13022302){\color[rgb]{0,0,0}\makebox(0,0)[rt]{\lineheight{1.25}\smash{\begin{tabular}[t]{r}Thread 1\end{tabular}}}}%
   \end{picture}%
 \endgroup%

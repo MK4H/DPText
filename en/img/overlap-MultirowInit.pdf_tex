@@ -1,4 +1,4 @@
-%% Creator: Inkscape 1.1.2 (08b2f3d93c, 2022-04-05), www.inkscape.org
+%% Creator: Inkscape 1.2 (dc2aedaf03, 2022-05-15), www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'overlap-MultirowInit.pdf' (pdf, eps, ps)
 %%
@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{220.07993916bp}%
+    \setlength{\unitlength}{428.25bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,15 +50,14 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,1.04243486)%
+  \begin{picture}(1,0.20303812)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{overlap-MultirowInit.pdf}}%
-    \put(0.10223558,1.01213223){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Shifts\end{tabular}}}}%
-    \put(0.54525642,1.01213223){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Computation\end{tabular}}}}%
-    \put(0.79062181,0.79062181){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Init 1\end{tabular}}}}%
-    \put(0.79062181,0.55207213){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Init 2\end{tabular}}}}%
-    \put(0.79062181,0.31352244){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Main loop 0\end{tabular}}}}%
-    \put(0.79062181,0.07497276){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Main loop 1\end{tabular}}}}%
+    \put(0.10507881,0.00417647){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Init 1\end{tabular}}}}%
+    \put(0.36777583,0.00417647){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Init 2\end{tabular}}}}%
+    \put(0.62872154,0.00417647){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Main loop 0\end{tabular}}}}%
+    \put(0.89316988,0.00417647){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Main loop 1\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{overlap-MultirowInit.pdf}}%
   \end{picture}%
 \endgroup%

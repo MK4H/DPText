@@ -1,4 +1,4 @@
-%% Creator: Inkscape 1.1.2 (08b2f3d93c, 2022-04-05), www.inkscape.org
+%% Creator: Inkscape 1.2 (dc2aedaf03, 2022-05-15), www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'overlap-MultirowInversion.pdf' (pdf, eps, ps)
 %%
@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{323.02195647bp}%
+    \setlength{\unitlength}{322.83398438bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,36 +50,36 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.60599596)%
+  \begin{picture}(1,0.6063488)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{overlap-MultirowInversion.pdf}}%
-    \put(0.37845725,0.2948716){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}R\end{tabular}}}}%
+    \put(0.3786776,0.29504329){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}R\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{overlap-MultirowInversion.pdf}}%
-    \put(0.43650284,0.2948716){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}o\end{tabular}}}}%
+    \put(0.43675699,0.29504329){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}o\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{overlap-MultirowInversion.pdf}}%
-    \put(0.49454843,0.2948716){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}w\end{tabular}}}}%
+    \put(0.49483638,0.29504329){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}w\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{overlap-MultirowInversion.pdf}}%
-    \put(0.55259402,0.2948716){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.55291577,0.29504329){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=5]{overlap-MultirowInversion.pdf}}%
-    \put(0.37845725,0.23682601){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}R\end{tabular}}}}%
+    \put(0.3786776,0.2369639){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}R\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{overlap-MultirowInversion.pdf}}%
-    \put(0.43650284,0.23682601){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}o\end{tabular}}}}%
+    \put(0.43675699,0.2369639){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}o\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=7]{overlap-MultirowInversion.pdf}}%
-    \put(0.49454843,0.23682601){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}w\end{tabular}}}}%
+    \put(0.49483638,0.2369639){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}w\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=8]{overlap-MultirowInversion.pdf}}%
-    \put(0.55259402,0.23682601){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.55291577,0.2369639){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=9]{overlap-MultirowInversion.pdf}}%
-    \put(0.37845725,0.17878042){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}R\end{tabular}}}}%
+    \put(0.3786776,0.17888451){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}R\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=10]{overlap-MultirowInversion.pdf}}%
-    \put(0.43650284,0.17878042){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}o\end{tabular}}}}%
+    \put(0.43675699,0.17888451){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}o\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=11]{overlap-MultirowInversion.pdf}}%
-    \put(0.49454843,0.17878042){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}w\end{tabular}}}}%
+    \put(0.49483638,0.17888451){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}w\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=12]{overlap-MultirowInversion.pdf}}%
-    \put(0.55259402,0.17878042){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.55291577,0.17888451){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=13]{overlap-MultirowInversion.pdf}}%
-    \put(0.92176397,0.50383572){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shift 0\end{tabular}}}}%
-    \put(0.92176397,0.27165336){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shift 1\end{tabular}}}}%
-    \put(0.92176397,0.06268924){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shift 2\end{tabular}}}}%
+    \put(0.92230067,0.50412908){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shift 0\end{tabular}}}}%
+    \put(0.92230067,0.27181153){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shift 1\end{tabular}}}}%
+    \put(0.92230067,0.06272574){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shift 2\end{tabular}}}}%
   \end{picture}%
 \endgroup%

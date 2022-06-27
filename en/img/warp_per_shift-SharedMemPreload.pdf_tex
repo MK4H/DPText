@@ -1,4 +1,4 @@
-%% Creator: Inkscape 1.1.2 (08b2f3d93c, 2022-04-05), www.inkscape.org
+%% Creator: Inkscape 1.2 (dc2aedaf03, 2022-05-15), www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'warp_per_shift-SharedMemPreload.pdf' (pdf, eps, ps)
 %%
@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{292.50290991bp}%
+    \setlength{\unitlength}{292.79516602bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,25 +50,25 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.94088808)%
+  \begin{picture}(1,0.93962423)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{warp_per_shift-SharedMemPreload.pdf}}%
-    \put(0.17948539,0.92024213){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Without preload offset\end{tabular}}}}%
-    \put(0.61537849,0.92024213){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}With preload offset\end{tabular}}}}%
+    \put(0.17930624,0.91911082){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Without preload offset\end{tabular}}}}%
+    \put(0.61476425,0.91911082){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}With preload offset\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{warp_per_shift-SharedMemPreload.pdf}}%
-    \put(0.06923008,0.10871174){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Overwritten part of ring buffer\end{tabular}}}}%
-    \put(0.06923008,0.0574302){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Bottom part of ring buffer\end{tabular}}}}%
+    \put(0.06916098,0.10839047){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Overwritten part of ring buffer\end{tabular}}}}%
+    \put(0.06916098,0.05716012){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Bottom part of ring buffer\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{warp_per_shift-SharedMemPreload.pdf}}%
-    \put(0.60768626,0.10871174){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Input data\end{tabular}}}}%
+    \put(0.60707969,0.10839047){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Input data\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{warp_per_shift-SharedMemPreload.pdf}}%
-    \put(0.60768626,0.0574302){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Zero\end{tabular}}}}%
+    \put(0.60707969,0.05716012){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Zero\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=5]{warp_per_shift-SharedMemPreload.pdf}}%
-    \put(0.87691435,0.63819365){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Iteration 0\end{tabular}}}}%
+    \put(0.87603905,0.63734388){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Iteration 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{warp_per_shift-SharedMemPreload.pdf}}%
-    \put(0.87691435,0.45870826){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Iteration 1\end{tabular}}}}%
+    \put(0.87603905,0.45803764){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Iteration 1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=7]{warp_per_shift-SharedMemPreload.pdf}}%
-    \put(0.06923008,0.00614866){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Top part of ring buffer\end{tabular}}}}%
+    \put(0.06916098,0.00592976){\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Top part of ring buffer\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=8]{warp_per_shift-SharedMemPreload.pdf}}%
   \end{picture}%
 \endgroup%

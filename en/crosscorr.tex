@@ -107,16 +107,16 @@ Put together, the steps described above give us an algorithm with asymptotic tim
 
 \section{Definition based optimizations}
 \label{sec:cross_corr_opt}
-In the original thesis by \citep{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as integer or floating point matrix in another image, also represented as such matrix. This can be done to, for example, find a displacement of certain point of interest between images taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
+In the original thesis by \citep{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as an integer or floating point matrix in another image, also represented as such matrix. This can be done to, for example, find a displacement of certain point of interest between images taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
 
 This thesis will implement cross-correlation of integer and floating point matrices, which encompasses the usage in previously mentioned works. The implementations will be optimized to take advantage of different forms of cross-correlation input, such as cross-correlation of one matrix with many other matrices, different sizes of input matrices etc. 
 
 % TODO: Maybe move to analysis
-\subsection{Data parallellism}
+\subsection{Data parallelism}
 \label{sec:cross_corr_para}
 Definition based algorithm for computing cross-correlation is highly data parallel. Not only can every element in the result matrix be computed independently, computation of each element can also be parallelized with a simple reduction of the final results.
 
-When using the definition based algorithm, each element of the resulting matrix corresponds to an overlap of the two cross-correlated matrices. Every two overlapping elements of the two matrices are multiplied and results of these multiplications are then summed together to get the final value for given overlap.
+When using the definition based algorithm, each element of the resulting matrix corresponds to an overlap of the two cross-correlated matrices. Every two overlapping elements of the two input matrices are multiplied and results of these multiplications are then summed together to get the final value for given overlap.
 
 For each overlap, there is $h_o * w_o$ multiplications, where $h_o$ and $w_o$ describe the number of rows and columns which overlap. The following formula describes the total number of multiplications for all overlaps:
 
@@ -132,27 +132,72 @@ All these multiplications can be done independently in parallel. Afterwards, eac
 \subsection{Forms of cross-correlation}
 \label{sec:cross_corr_forms}
 
-In works using cross-correlation, there are several forms of computation which can be used for optimization such as data caching and reuse, batching, precomputing etc. The forms differ in the number of inputs and in the way cross-correlation is computed between different inputs. 
-The two basic forms are:
+In works using cross-correlation, there are several forms of computation which can be used for optimization such as data caching and reuse, batching, precomputing etc. The forms differ in the number of inputs and in the way cross-correlation is computed between the inputs. 
+The four basic forms are, as shown in Figure \ref{fig:cross_corr_forms}:
 
 \begin{enumerate}
-	\item n left inputs, each with m different right inputs (n to mn) \citet{misko} \citet{zhang2015} \citet{Kapinchev2015}, 
-	\item x left inputs, each with all y right inputs (n to m) \citet{Clark2011}.
+	\item one left input with one right input, in the rest of the thesis referred to as \textit{one-to-one} and depicted in Figure \ref{fig:cross_corr_one_to_one};
+	\item one left input with many right inputs, referred to as \textit{one-to-many} and depicted in Figure \ref{fig:cross_corr_one_to_many};
+	\item n left inputs, each cross-correlated with m \textbf{different} right inputs, referred to as \textit{n-to-mn} and depicted in Figure \ref{fig:cross_corr_n_to_mn} (used by \citet{misko} \citet{zhang2015} \citet{Kapinchev2015});
+	\item n left inputs, each cross-correlated with all m right inputs, referred to as \textit{n-to-m} and depicted in Figure \ref{fig:cross_corr_n_to_m} (used by \citet{Clark2011}).
 \end{enumerate} 
 
-There are several subtypes which can also be optimized for. For \textit{n} disjoint sets of \textit{m} right inputs, one set for each of the \textit{n} left inputs, we have the following subtypes:
+While each pair of input matrices can always be computed independently, the \textit{one-to-many}, \textit{n-to-mn} and \textit{n-to-m} types allow for the reuse of left input matrix data for computation with multiple right input matrices.
+Additionally, the \textit{n-to-m} allows for reuse of data from the right matrix for computation with multiple left input matrices. 
 
-\begin{enumerate}
-	\item one to one,
-	\item one to many,
-	\item large number of pairs.
-\end{enumerate}
+For the same size of input data, i.e. $x$ left input matrices and $y$ right input matrices, the \textit{n-to-m} type results in $x*y$ pairs of matrices to be computed, compared to the \textit{n-to-mn} type which results in only $y$ pairs. The increased level of parallelism and increased arithmetic intensity allows for additional optimizations of the \textit{n-to-m} computation type compared to the \textit{n-to-mn} type. The \textit{one-to-one} and \textit{one-to-many} types are described separately as their implementations can more aggressively cache and reuse the left input matrix compared to the general \textit{n-to-mn} or \textit{n-to-m} implementation. 
 
-With these subtypes, we can more aggressively cache and reuse the left input. Any implementation capable of processing the general input form can also be used to implement all of these subtypes.
-% We use this with the warp shuffle and warp shift implementations
-Inversely, optimized implementation of any of the above subtypes can be used to implement the general n to mn input type and transitively any of the other subtypes.
+Implementations of the two simpler types \textit{one-to-one} and \textit{one-to-many} can be used for implementation of either \textit{n-to-m} or \textit{n-to-mn} by running the simpler type implementation multiple times, possibly in parallel. Inversely, any implementation of either \textit{n-to-m} or \textit{n-to-mn} can be used to implement the two simpler types. Another possible subtype is the computation of large number of pairs, which can be implemented by \textit{n-to-mn} with \textit{m} equal to one. The large number of pairs type is not discussed further as it does not provide any additional opportunity for optimization compared to parallel run of many \textit{one-to-one} implementations.
 
-Any implementation of the \textit{one to many} subtype can also be used to implement the other major type, the \textit{x to y} type, by running the \textit{one to many} \textit{x} times, possibly in parallel.
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\def\svgwidth{0.5\textwidth}
+		% Must be relative to current directory
+		% as input ignores graphicspath, which is
+		% only for includegraphics{}
+		\input{./img/overlap-OneToOne.pdf_tex}
+		\caption{One to one.}
+		\label{fig:cross_corr_one_to_one}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\def\svgwidth{0.5\textwidth}
+		% Must be relative to current directory
+		% as input ignores graphicspath, which is
+		% only for includegraphics{}
+		\input{./img/overlap-OneToMany.pdf_tex}
+		\caption{One to many.}
+		\label{fig:cross_corr_one_to_many}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\def\svgwidth{0.7\textwidth}
+		% Must be relative to current directory
+		% as input ignores graphicspath, which is
+		% only for includegraphics{}
+		\input{./img/overlap-NtoMN.pdf_tex}
+		\caption{N to MN.}
+		\label{fig:cross_corr_n_to_mn}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\def\svgwidth{0.7\textwidth}
+		% Must be relative to current directory
+		% as input ignores graphicspath, which is
+		% only for includegraphics{}
+		\input{./img/overlap-NToM.pdf_tex}
+		\caption{N to M.}
+		\label{fig:cross_corr_n_to_m}
+	\end{subfigure}
+	
+	\caption{Forms of cross-correlation.}
+	\label{fig:cross_corr_forms}
+\end{figure}
 
 
 %The following are examples of cross-correlation usage:
@@ -167,9 +212,7 @@ Any implementation of the \textit{one to many} subtype can also be used to imple
 
 \section{Post-processing}
 
-In most use cases, cross-correlation itself is not a final output but the results are used further in further processing.
-
-It is often used to find position of a smaller signal in larger signal, for example in the field of Digital image processing for template matching, image alignment etc. In these use cases, the only information of interest is the maximum value in the result matrix. 
+In most use cases, cross-correlation itself is not a final output but the results are used further in further processing. It is often used to find position of a smaller signal in larger signal, for example in the field of Digital image processing for template matching, image alignment etc. In these use cases, the only information of interest is the maximum value in the result matrix. 
 
 In Digital Image correlation, we are also interested in finding the maximum, but this time with a subpixel precision. This requires us to find the maximum value and use the results in an area around it to interpolate a function \citep{zhang2015} \citep{misko}.
 
@@ -177,7 +220,7 @@ In the field of Seismology, cross-correlation is used for picking, ambient noise
  
 In optical coherence tomography, the whole result of cross-correlation is summed to compute the intensity of each pixel \citep{Kapinchev2015}. 
 
-Any post-processing is outside the scope of this thesis. Result of cross-correlation will be taken as-is and validated against preexisting cross-correlation implementations.
+Although post-processing is often also a good candidate for optimization and parallelization, it is outside the scope of this thesis. Result of cross-correlation will be taken as-is and validated against preexisting cross-correlation implementations.
 % TODO: Go through the examples and see what they do with the results
 
 % TODO: Post processing, what is the usual output etc.

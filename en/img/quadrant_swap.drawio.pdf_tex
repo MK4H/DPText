@@ -1,4 +1,4 @@
-%% Creator: Inkscape 1.1.2 (76b9e6a115, 2022-02-25), www.inkscape.org
+%% Creator: Inkscape 1.2 (dc2aedaf03, 2022-05-15), www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'quadrant_swap.drawio.pdf' (pdf, eps, ps)
 %%
@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{423.75bp}%
+    \setlength{\unitlength}{422.325bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,20 +50,20 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.42654867)%
+  \begin{picture}(1,0.42709998)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{quadrant_swap.drawio.pdf}}%
-    \put(0.19115044,0.40176991){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}N\end{tabular}}}}%
+    \put(0.19108506,0.40312555){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}N\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{quadrant_swap.drawio.pdf}}%
-    \put(0.05132743,0.26017699){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}N\end{tabular}}}}%
+    \put(0.05079027,0.26105487){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}N\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{quadrant_swap.drawio.pdf}}%
-    \put(0.03539823,0.07433628){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}N - 1\end{tabular}}}}%
+    \put(0.03480732,0.07458711){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}N - 1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{quadrant_swap.drawio.pdf}}%
-    \put(0.37699115,0.40176991){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}N - 1\end{tabular}}}}%
+    \put(0.37755283,0.40312555){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}N - 1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=5]{quadrant_swap.drawio.pdf}}%
-    \put(0.70442478,0.40176991){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2N - 1\end{tabular}}}}%
+    \put(0.70609128,0.40312555){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2N - 1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{quadrant_swap.drawio.pdf}}%
-    \put(0.95221239,0.18053097){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2N - 1\end{tabular}}}}%
+    \put(0.95471497,0.18114012){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2N - 1\end{tabular}}}}%
   \end{picture}%
 \endgroup%

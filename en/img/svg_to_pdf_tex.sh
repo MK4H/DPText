@@ -6,11 +6,13 @@ if [[ $# -gt 0 ]]
 then
     for FILE in "$@"
     do
-        inkscape $ARGS "${FILE}"
+	FULL_PATH="$(realpath "${FILE}")"
+        inkscape $ARGS "${FULL_PATH}"
     done
 else
     for FILE in *.svg
     do
-        inkscape $ARGS "${FILE}"
+	FULL_PATH="$(realpath "${FILE}")"
+        inkscape $ARGS "${FULL_PATH}"
     done
 fi

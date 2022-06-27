@@ -281,13 +281,12 @@ High LSU utilization reflects that the program may be memory bound, waiting for 
 
 \subsection{Global memory access}
 
-Global memory access utilizes two levels of caching. L1 cache, with cache line size of 128~B, is local to each SM and shares hardware with shared memory, described in the following section. L1 cache is, by default, used for read-only data, such as the two input matrices in cross-correlation. 
-L2 cache, with cache line size of 32~B, is still on-chip but is shared by all SMs. This cache is used by all accesses to global memory.
-
-As we can see in Figure \ref{fig:global_memory_access}, the access to read-only data in global memory is grouped into 128~B naturally aligned chunks, where any chunk accessed by any of the threads of a warp has to be transferred from global memory. The maximum performance is achieved when access to memory is aligned and coalesced, i.e. all threads of a warp access elements in the same 128~B chunk which is aligned to 128~B. Any other form of access introduces overhead in a form of unnecessary data being transferred from global memory. 
+As shown in Figure \ref{fig:global_memory_access}, each access to global memory is grouped into 128~B naturally aligned chunks, where any chunk accessed by any of the threads of a warp has to be transferred from global memory. The maximum performance is achieved when access to memory is aligned and coalesced, i.e. all threads of a warp access elements in the same 128~B chunk which is aligned to 128~B. Any other form of access introduces overhead in a form of unnecessary data being transferred from global memory. 
 
 When accessing data larger than 32 bits, the access is split into 2 half-warp transactions for 64 bit or 4 quarter warp transactions for 128 bit values, which are then processed independently, again reading any 128~B chunk any of the accesses. 
 
+Access to global memory goes through at least one level of cache. On older architectures, global memory accesses are by default only cached in L2 cache, with L1 cache utilized only for local memory access to speed up register spills. % TODO: referece https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capability-3-0
+Special instructions can be used to cache data in L1 explicitly. For Compute Capabilities newer than 5.0, compiler can generate an instruction to load read-only data, such as the two input matrices in cross-correlation, and cache it in L1 cache. L1 cache, with cache line size of 128~B, is local to each SM and shares hardware with shared memory, described in the following section. L2 cache, with cache line size of 32~B, is still on-chip but is shared by all SMs. Each 128~B memory transfer is either served by a single L1 cache access or split into 4 32~B L2 cache accesses.
 
 \begin{figure}[ht]
 	\centering
