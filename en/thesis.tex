@@ -66,23 +66,36 @@
 \definecolor{black}{rgb}{0,0,0}
 \definecolor{blueattributes}{rgb}{0.37,0.52,0.62}
 \definecolor{interfaceyellow}{rgb}{0.60,0.66,0.11}
+\definecolor{directivepink}{rgb}{0.9,0.6,0.95}
 
 \lstdefinestyle{cuda} {
 	language=C++,
 	commentstyle=\color{greencomments},
-	stringstyle=\color{redstrings}\ttfamily, 
+	stringstyle=\color{redstrings}\ttfamily,
 	keywordstyle=\color{bluekeywords},
-%	morekeywords={  },
-	emphstyle=[1]{\color{classgreen}},
-	emphstyle=[2]{\color{interfaceyellow}}
+	morekeywords={size\_t, size2\_t, \_\_device\_\_, },
+	emphstyle={[1]\color{classgreen}},
+	emph={[1]T, NUM\_RIGHTS, NUM\_LEFTS, LENGTH},
+	emphstyle={[2]\color{interfaceyellow}},
+	emph={[2]shfl, shfl\_down, thread\_rank, size, load\_with\_bounds\_check, some\_function},
+	directivestyle=\color{directivepink}
 }
 
-\lstset{	
+\lstdefinestyle{sass} {
+	commentstyle=\color{greencomments},
+	stringstyle=\color{redstrings}\ttfamily,
+	keywordstyle=\color{bluekeywords},
+	morekeywords={LDL, SHFL, IDX, DOWN, STL, SEL, PT, P4},
+	emphstyle={[1]\color{redstrings}},
+	emph={[1]0x1f, 0x1}
+}
+
+\lstset{
 	captionpos=b,
 	%numbers=left,
 	%numberstyle=\tiny,
 	columns=flexible,
-	frame=single, 
+	frame=single,
 	showspaces=false,
 	showtabs=false,
 	breaklines=true,

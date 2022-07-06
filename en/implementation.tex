@@ -294,6 +294,7 @@ Algorithms with multiple job sizes are provided in multiple implementations, eac
 % TODO: Maybe expand what the choice for each algorithm means
 
 \section{Basic algorithm}
+\label{sec:basic_alg}
 
 A basic implementation of definition based cross-correlation of two input matrices, in our naming scheme corresponding to the \textit{one-to-one} type, utilizes two dimensional grid of two dimensional thread blocks to start one thread for each element of the output matrix. The overlap to be computed by given thread is derived from the position of the output matrix element, as shown in Figure \ref{fig:basic_algorithm_overlaps}. The thread then iterates over the overlapping parts of the two input matrices, multiplying the overlapped elements and accumulating the result which is then written to the assigned output matrix element.
 
@@ -347,7 +348,7 @@ Slight modification of this algorithm to allow for an \textit{n-to-mn} computati
 \section{Warp shuffle algorithm}
 \label{sec:warp_shuffle_alg}
 
-This section describes the implementation of definition-based cross-correlation utilizing Warp Shuffle instructions, which tries to fix the problems of the Basic algorithms described in the previous section. We first introduce a simple version of the implementation, later improving it step by step with optimizations evaluated in Section \ref{sec:warp_shuffle_results}.
+This section describes the implementation of definition-based cross-correlation utilizing Warp Shuffle instructions, which tries to fix the problems of the Basic algorithms described in the previous section. We first introduce a simple version of the implementation, later improving it step by step with optimizations evaluated in Section \ref{sec:results_warp_shuffle}.
 
 In the simplified implementation, Warp Shuffle instructions are utilized to shuffle data loaded from the left matrix and broadcast data loaded from the right matrix between threads in a warp. As shown in Section \ref{sec:algorithm_list}, each CUDA thread is assigned an overlap to compute the same way as in the Basic algorithm.
 
@@ -379,10 +380,7 @@ The problem of iteration 3, 7 and 11 in Figure \ref{fig:warp_shuffle_shuffle}, i
 
 The following description assumes \textit{warp size} to be 32, as is the case for all currently existing Nvidia GPUs. To utilize coalesced loading from global memory, the buffer that is shuffled between threads of a warp, containing data from the left input matrix, is split into two parts of 32 items each, which together function as a single 64 item ring buffer. We call the parts \textit{top} and \textit{bottom}, where new data is always loaded to the top part and then shuffled towards the bottom part, as shown in Figure \ref{fig:shuffle_buffer}. As described above, any out of bounds loads are range checked and load value 0 instead using the following code:
 \begin{lstlisting}[
-style=cuda,
-morekeywords={size\_t, \_\_device\_\_},
-emph={[1]T},
-emph={[2]load\_with\_bounds\_check}
+style=cuda
 ]
 
 template<typename T>
@@ -394,9 +392,7 @@ __device__ T load_with_bounds_check(const T* source, int idx, size_t size) {
 
 When loading a buffer, bound checked load shown above is used to load 32 consecutive values (or load the value 0 if out of bounds), storing one item per thread into a register. This is implemented by the following code:
 \begin{lstlisting}[
-style=cuda,
-emph={[1]T},
-emph={[2]load\_with\_bounds\_check, thread\_rank}
+style=cuda
 ]
 T thread_left_bottom = load_with_bounds_check(
 	left_row,
@@ -424,10 +420,7 @@ For the data loaded from the right matrix, which we use for broadcasting, we req
 The outer loops of the algorithm are illustrated by the following code:
 
 \begin{lstlisting}[
-style=cuda,
-morekeywords={size\_t, size2\_t},
-emph={[1]T},
-emph={[2]load\_with\_bounds\_check, thread\_rank, size}
+style=cuda
 ]
 // Compute bounds of the overlaps processed by warp
 // Comput thread output position
@@ -480,9 +473,7 @@ The two loops in the code above then iterate over this submatrix of the right in
 The innermost loop, which we call the \textit{main loop} in the code above, then does 32 (warp size) iterations illustrated by the following code:
 
 \begin{lstlisting}[
-style=cuda,
-morekeywords={size\_t},
-emph={[2]size, shfl, thread\_rank, shfl\_down}
+style=cuda
 ]
 for (size_t i = 0; i < warp.size(); ++i) {
 	// Broadcast right buffer
@@ -644,12 +635,12 @@ style=cuda
 ]
 template<size_t LENGTH>
 __device__ void foo(...) {
-...
-float bar[LENGTH];
-for (size_t i = 0; i < LENGTH; ++i) {
-bar[i] = some_function(...);
-}
-...
+	...
+	float bar[LENGTH];
+	for (size_t i = 0; i < LENGTH; ++i) {
+		bar[i] = some_function(...);
+	}
+	...
 }
 \end{lstlisting}
 
@@ -659,7 +650,7 @@ If an array is small and only accessed using static indexing, where all indices 
 \subsection{Utilizing multiple right matrices}
 \label{sec:multimat_right}
 
-Another problem of the simplified implementation not solved by work distribution described in Section \ref{sec:warp_shuffle_work_dist}, is the ratio of warp shuffle instructions to arithmetic instructions. In the simplified algorithm, for each multiplication and addition represented by a single yellow box, we must execute three warp shuffle instructions. This makes warp shuffle instructions the bottleneck in the simplified implementation, as shown in Figure \ref{fig:executed_instructions_multimat_right}. The warp shuffle instructions (SHFL) dominate the executed instruction mix, which results in 97\% utilization of the \textit{LSU} pipeline implementing the shuffle instructions, as shown in Figures \ref{fig:pipeline_utilization_multimat_right}. Compare this to the fused multiply-add instructions (FFMA) implementing the multiplication and addition, which are executed by the \textit{FMA} pipeline with less than 10\% utilization for the simplified algorithm.
+Another problem of the simplified implementation not solved by work distribution described in Section \ref{sec:warp_shuffle_work_dist}, is the ratio of warp shuffle instructions to arithmetic instructions. In the simplified algorithm, for each multiplication and addition represented by a single yellow box, we must execute three warp shuffle instructions. This makes warp shuffle instructions the bottleneck in the simplified implementation, as shown in Figure \ref{fig:executed_instructions_multimat_right}. The warp shuffle instructions (SHFL) dominate the executed instruction mix, which results in 97\% utilization of the \textit{LSU} pipeline implementing the shuffle instructions, as shown in Figure \ref{fig:pipeline_utilization_multimat_right}. Compare this to the fused multiply-add instructions (FFMA) implementing the multiplication and addition, which are executed by the \textit{FMA} pipeline with less than 10\% utilization for the simplified algorithm.
 
 
 \begin{figure}[ht]
@@ -667,12 +658,14 @@ Another problem of the simplified implementation not solved by work distribution
 	\begin{subfigure}{\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{executed_instructions_multimat_right.png}
+		\caption{Executed instruction mix.}
 		\label{fig:executed_instructions_multimat_right}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{\textwidth}
 		\centering
 		\includegraphics[width=\textwidth]{pipeline_utilization_multimat_right.png}
+		\caption{Pipeline utilization.}
 		\label{fig:pipeline_utilization_multimat_right}
 	\end{subfigure}
 	
@@ -680,7 +673,7 @@ Another problem of the simplified implementation not solved by work distribution
 	\label{fig:multimat_right_profiling}
 \end{figure}
 
-There are several ways to improve the ratio of SHFL instructions to FFMA instructions. The one with simplest changes to the code of the simplified implementation is to utilize the \textit{one-to-many} type of computation, and let each worker compute cross-correlation between one left matrix and many right matrices at once, as described in section \ref{sec:data_reuse_overlap} under the name \textit{multimat}. We call this exact implementation usable for \textit{one-to-many} and \textit{m-to-mn} types the \textit{multimat\_right} optimization, as each job contains multiple overlaps of a single left matrix with multiple right matrices. The obvious advantage is data reuse, as the data from the left matrix is used to compute multiple results. The main advantage is that each additional right matrix only adds a single SHFL instruction, while also adding one FFMA instruction. The ratio of SHFL to FFMA instructions can then be expressed as $2 + r : r$, where $r$ is the number of overlaps (from $r$ right matrices) computed by each worker, which for any value greater than $1$ is much improved from the $3:1$ ratio of the simplified warp shuffle algorithm.
+There are several ways to improve the ratio of SHFL instructions to FFMA instructions. The one with simplest changes to the code of the simplified implementation is to utilize the \textit{one-to-many} type of computation, and let each worker compute cross-correlation between one left matrix and many right matrices at once, as described in section \ref{sec:data_reuse_overlap} under the name \textit{multimat}. We call this exact implementation usable for \textit{one-to-many} and \textit{n-to-mn} types the \textit{multimat\_right} optimization, as each job contains multiple overlaps of a single left matrix with multiple right matrices. The obvious advantage is data reuse, as the data from the left matrix is used to compute multiple results. The main advantage is that each additional right matrix only adds a single SHFL instruction, while also adding one FFMA instruction. The ratio of SHFL to FFMA instructions can then be expressed as $2 + r : r$, where $r$ is the number of overlaps (from $r$ right matrices) computed by each worker, which for any value greater than $1$ is much improved from the $3:1$ ratio of the simplified warp shuffle algorithm.
 
 
 The code changes required to implement this are very straight forward. As each job contains the same overlap between one left matrix and multiple right matrices, the three for loops and their bounds described in Section \ref{sec:simplified_warp_shuffle_steps} are left unchanged. The main difference is that the \textit{sum} and the \textit{thread\_right} variables in each thread are changed into arrays, utilizing the CUDA local array optimization described in Section \ref{sec:local_array_optimization}, as shown in the following snippet:
@@ -709,7 +702,7 @@ __device__ void warp_shuffle_multimat_right_impl(...) {
 }
 \end{lstlisting}
 
-We introduce the term \textit{matrix group}, describing the right input matrices from which overlaps are grouped into a single job. As the size of the matrix group must be known at compile time to utilize the CUDA local array optimization, we need to replicate the \textit{device} function implementing the algorithm for each supported matrix group size. This introduces a trade-off between compilation time and generated code size on one hand and possible gains during run-time on the other. The actual matrix group size used during run-time is specified as run-time argument for the algorithm, which then chooses the correct implementation. If the number of matrices is not divisible by the matrix group size, the last few matrices will form a smaller matrix group which will choose the implementation based on its size. The maximum supported matrix group size is configurable during compile-time.
+We introduce the term \textit{matrix group}, describing the right input matrices from which overlaps are grouped into a single job. As the size of the matrix group must be known at compile time to utilize the CUDA local array optimization, we need to replicate the \textit{device} function implementing the algorithm for each supported matrix group size. This introduces a trade-off between compilation time, generated code size and the number of required registers on one hand and possible gains during run-time on the other. The actual matrix group size used during run-time is specified as run-time argument for the algorithm, which then chooses the correct implementation. If the number of matrices is not divisible by the matrix group size, the last few matrices will form a smaller matrix group which will choose the implementation based on its size. The maximum supported matrix group size is configurable during compile-time.
 
 
 As with the simplified algorithm, thread block size is fixed to warp size in the \textit{x} axis and configurable by a run-time argument in the \textit{y} axis. The grid is then extended, this time in the \textit{x} axis (to allow simple combination with work distribution) to cover one output matrix from each matrix group. For each of these output matrices, there might be redundant workers due to the fixed size of thread block. These workers are handled the same way as in the simplified algorithm, by not writing to any output matrix or being stopped immediately if whole warp is redundant.
@@ -802,7 +795,7 @@ When profiling this optimization, as shown in Figure \ref{fig:multirow_right_pro
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{\textwidth}
-	\centering
+		\centering
 		\includegraphics[width=\textwidth]{pipeline_utilization_multirow_right.png}
 		\label{fig:pipeline_utilization_multirow_right}
 	\end{subfigure}
@@ -816,14 +809,22 @@ When profiling this optimization, as shown in Figure \ref{fig:multirow_right_pro
 % https://forums.developer.nvidia.com/t/loop-through-register-array-without-using-local-memory/29458/3
 \section{Advanced warp shuffle optimizations}
 
-The optimizations of the warp shuffle algorithm described up to this point hint at further possibilities, such as using multiple left matrices and multiple rows from the left matrix in combination with the already described optimizations. This section first introduces the Local array optimization done by the \textit{nvcc} compiler, on which our implementations heavily rely. Next we describe the problem with the \textit{nvcc} compiler not performing the Local array optimization with our solution to this problem. We then utilize this solution to implement two further optimizations, which extend and are combined with the basic optimizations described in Section \ref{sec:warp_shuffle_alg}. Lastly we illustrate the effects of the Local array optimization on the implemented solutions.
+The optimizations of the warp shuffle algorithm described up to this point hint at further possibilities, such as:
+\begin{itemize}
+	\item extending \textit{multimat\_right} optimization to also use multiple left matrices, creating \textit{multimat\_both} optimization;
+	\item extending \textit{multirow\_right} to also use multiple rows from the left matrix, creating \textit{multirow\_both},
+	\item combining several optimizations.
+\end{itemize}
+
+This section first illustrates problems we encountered with the Local array optimization, introduced in Section \ref{sec:local_array_optimization}, when implementing the \textit{multimat\_both} and \textit{multirow\_both} optimizations.
+We then describe our solution to this problem, demonstrating the effects of this solution on the performance of the two advanced optimizations. We then present the details of \textit{multimat\_both} and \textit{multirow\_both} implementation, which extend the basic optimizations described in Section \ref{sec:warp_shuffle_alg}. Lastly we combine all the basic and advanced optimizations together, creating the final implementation of the warp shuffle algorithm. 
 
 \subsection{Advanced optimizations and local arrays}
 \label{sec:local_array_optimization_code_changes}
 
-When implementing the \textit{multimat\_both} and \textit{multirow\_both} optimizations, described in Sections \ref{sec:multimat_both} and \ref{sec:multirow_both} respectively, we encountered a problem with the \textit{nvcc} compiler not optimizing the local arrays into registers. 
+When implementing the \textit{multimat\_both} and \textit{multirow\_both} optimizations, described in detail in the following sections \ref{sec:multimat_both} and \ref{sec:multirow_both} respectively, we encountered a problem with the \textit{nvcc} compiler not optimizing the local arrays into registers. 
 
-Using profiling and by examining the SASS, we isolated the problem to the \textit{thread\_left\_bottom} and \textit{thread\_left\_top} arrays. We further isolated it to the following part of the code, which in its original form shared by the simplified, \textit{multimat\_right} and \textit{multirow\_right} implementations looks like this:
+Using profiling and examining the SASS, we isolated the problem to the \textit{thread\_left\_bottom} and \textit{thread\_left\_top} arrays. We further isolated it to the following part of the code, which in its original form shared by the simplified, \textit{multimat\_right} and \textit{multirow\_right} implementations looks like this:
 
 \begin{lstlisting}[
 style=cuda
@@ -835,13 +836,13 @@ thread_left_bottom = warp.shfl(
 thread_left_top = warp.shfl_down(thread_left_top, 1);
 \end{lstlisting}
 
-To process multiple values from a single or multiple left matrices, the code needs to be changed into the following:
+To process multiple values from left input matrices, which is the basis of both \textit{multimat\_both} and \textit{multirow\_both} optimizations, the code needs to be changed into the following:
 
 \begin{lstlisting}[
 style=cuda
 ]
 #pragma unroll
-for (dsize_t l = 0; l < NUM_LEFTS; ++l) {
+for (size_t l = 0; l < NUM_LEFTS; ++l) {
 	thread_left_bottom[l] = warp.shfl(
 		warp.thread_rank() != 0 ? thread_left_bottom[l] : thread_left_top[l],
 		warp.thread_rank() + 1
@@ -850,15 +851,21 @@ for (dsize_t l = 0; l < NUM_LEFTS; ++l) {
 }
 \end{lstlisting}
 
-The \textit{nvcc} compiler should be able to unroll this loop, and thanks to static indexing, the \textit{thread\_left\_bottom} and \textit{thread\_left\_top} local arrays should be optimized into registers. Unfortunately, as we can see in Figure \ref{fig:local_memory_load_sass}, the compiler behaves as if dynamic indexing was used and pulls the arrays into local memory. 
-Due to the closed source nature of the \textit{nvcc} compiler, we can only speculate on the reasons why this version worked while the other versions did not. One possibility, based on the generated SASS instructions seen in Figure \ref{fig:local_memory_load_sass}, is that the ternary operator is optimized into dynamic array indexing, which then prevents the local array optimization. As there is no visible branching in the unrolled loop, the base address of either the \textit{thread\_left\_bottom} or the \textit{thread\_left\_top} is loaded into register R65, which is then reused in all loads, resulting in dynamic indexing. 
+The \textit{nvcc} compiler should be able to unroll this loop, and thanks to static indexing, the \textit{thread\_left\_bottom} and \textit{thread\_left\_top} local arrays should be optimized into registers. Unfortunately, as we can see in Listing \ref{lst:sass_local_mem}, the compiler behaves as if dynamic indexing was used and pushes the arrays into local memory. 
+Due to the closed source nature of the \textit{nvcc} compiler, we can only speculate on the reasons why the loop unrolling does not result in static indexing. One possibility, based on the generated SASS instructions seen in Listing \ref{lst:sass_local_mem}, is that the ternary operator is optimized into dynamic array indexing, which then prevents the local array optimization. As there is no visible branching in the unrolled loop, the base address of either the \textit{thread\_left\_bottom} or the \textit{thread\_left\_top} is loaded into register R63, which is then reused in all loads, resulting in dynamic indexing. 
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.7\textwidth]{local_memory_load_sass.png}
-	\caption{The loop body SASS instructions with local memory access.}
-	\label{fig:local_memory_load_sass}
-\end{figure}
+% TODO: Add coloring
+\begin{lstlisting}[
+style=sass,
+caption={SASS instructions without local array optimization},
+label=lst:sass_local_mem
+]
+LDL R0, [R63+0x4]
+SHFL.IDX PT, R8, R0, R57, 0x1f
+SHFL.DOWN PT, R0, R32, 0x1, 0x1f
+STL [R62], R8
+STL [R61], R0
+\end{lstlisting}
 
 We experimented with several solutions, with the following version compiling into static indexing:
 
@@ -866,7 +873,7 @@ We experimented with several solutions, with the following version compiling int
 style=cuda
 ]
 #pragma unroll
-for (dsize_t l = 0; l < NUM_LEFTS; ++l) {
+for (size_t l = 0; l < NUM_LEFTS; ++l) {
 	T bottom_shift_val;
 	if (warp.thread_rank() != 0) {
 		bottom_shift_val = thread_left_bottom[l];
@@ -879,88 +886,136 @@ for (dsize_t l = 0; l < NUM_LEFTS; ++l) {
 }
 \end{lstlisting}
 
+% TODO: Add coloring
+\begin{lstlisting}[
+style=sass,
+caption={SASS instructions with local array optimization},
+label=lst:sass_no_local_memory
+]
+SEL R42, R52, R20, !P4
+SHFL.IDX PT, R53, R48, R53, 0x1f
+SHFL.DOWN PT, R52, R52, 0x1, 0x1f
+\end{lstlisting}
+
+The only change is the expansion of the ternary operator into an equivalent if statement. As shown in Listing \ref{lst:sass_no_local_memory}, the body of the updated loop results in a single \textit{SEL} instruction which selects the top or the bottom part of the buffer. This version of the loop is used by the advanced warp shuffle optimizations described in the following sections.
+
+The difference is also visible in Figure \ref{fig:instruction_mix_local_mem}, which shows the additional local memory store (STL) and load (LDL) instructions in both the \textit{multimat\_both} and \textit{multirow\_both} without local array optimization. Apart from these additional instructions, the number of remaining instructions is generally the same, with some additional integer multiply-add instructions (IMAD) in Figure \ref{fig:shuffle_multirow_both_instruction_mix} due to local memory address computations.
 
 \begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.7\textwidth]{sass_no_local_mem.png}
-	\caption{The updated loop body SASS instructions with no local memory access.}
-	\label{fig:sass_no_local_memory}
+	\centering	
+	\begin{subfigure}{\textwidth}
+		\centering
+		\includegraphics[width=0.7\textwidth]{executed_instructions_shuffle_multimat_both.png}
+		\caption{The \textit{multimat\_both} optimization.}
+		\label{fig:shuffle_multimat_both_instruction_mix}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{\textwidth}
+		\centering
+		\includegraphics[width=0.7\textwidth]{executed_instructions_shuffle_multirow_both.png}
+		\caption{The \textit{multirow\_both} optimization.}
+		\label{fig:shuffle_multirow_both_instruction_mix}
+	\end{subfigure}
+	
+	\caption{Comparison of the instruction mix between a version with arrays in local memory and a version with arrays in registers.}
+	\label{fig:instruction_mix_local_mem}
 \end{figure}
 
-As we can see in Figure \ref{fig:sass_no_local_memory}, the body of the updated loop results in a single \textit{SEL} instruction which selects the top or the bottom part of the buffer. This version of the loop is used by the advanced warp shuffle optimizations described in the following sections.
+Based on this observation, the measured speedup in Figure \ref{fig:speedup_local_mem} is caused solely by the application of the local array optimization. The speedup for smaller inputs is limited due to low occupancy, but is still present. As an example, Figure \ref{fig:multimat_both_speedup} shows that for input matrices of size 64 by 64, the solution without local memory access is already 2 times faster. Figure \ref{fig:multirow_both_speedup} shows that there is slightly smaller improvement in the \textit{multirow\_both} optimization compared to the \textit{multimat\_both}. This is most likely caused by higher general overhead due to the greater overall complexity of the optimization.
+
+
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		% Must be relative to current directory
+		% as input ignores graphicspath, which is
+		% only for includegraphics{}
+		\input{./img/multimat_speedup.pdf_tex}
+		\caption{The \textit{multimat\_both} optimization.}
+		\label{fig:multimat_both_speedup}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		% Must be relative to current directory
+		% as input ignores graphicspath, which is
+		% only for includegraphics{}
+		\input{./img/multirow_speedup.pdf_tex}
+		\caption{The \textit{multirow\_both} optimization.}
+		\label{fig:multirow_both_speedup}
+	\end{subfigure}
+	
+	\caption{Improvement of the two optimizations without local memory access.}
+	\label{fig:speedup_local_mem}
+\end{figure}
+
 
 \subsection{Multiple left matrices}
 \label{sec:multimat_both}
 
-A natural step following the use of multiple right matrices is to also utilize multiple left matrices. This can only be used in the \textit{n-to-m} computation type, as the \textit{n-to-mn} type and its subtypes correlate each left matrix with a different set of right matrices.
+A natural step following the use of the same overlap of multiple right matrices is to also group the same overlaps between multiple left matrices and multiple right matrices into a single job, as described in Section \ref{sec:data_reuse_overlap}. This optimization is only usable for the \textit{n-to-m} computation type, as the \textit{n-to-mn} type correlates each left matrix with a different set of right matrices.
 
-The changes to the code of the \textit{multimat\_right} optimization are straight forward. We add additional template parameter \textit{NUM\_LEFTS} to the implementing function and change both \textit{thread\_left\_bottom} and \textit{thread\_left\_top} from simple variables into local arrays, as was done for the \textit{thread\_right} variable by the \textit{multimat\_right} optimization. The number of shifts computed by each thread is also changed to $NUM_LEFTS * NUM_RIGHTS$ from only $NUM_RIGHTS$. 
+To implement this optimization, we start with the the code of the \textit{multimat\_right} optimization. We add additional template parameter \textit{NUM\_LEFTS} to the implementing function and change both \textit{thread\_left\_bottom} and \textit{thread\_left\_top} from simple variables into local arrays, as was done for the \textit{thread\_right} variable by the \textit{multimat\_right} optimization. The number of overlaps computed by each thread is also changed to $NUM_LEFTS * NUM_RIGHTS$ from only $NUM_RIGHTS$. The changes are illustrated by the following snipped: 
+
+\begin{lstlisting}[
+style=cuda
+]
+template<size_t NUM_RIGHTS, size_t NUM_LEFTS, typename T>
+__device__ void warp_shuffle_multimat_both_impl(...) {
+	...
+	T sum[NUM_RIGHTS * NUM_LEFTS];
+	for (size_t s = 0; s < NUM_RIGHTS; ++s) {
+		sum[s] = 0;
+	}
+	...
+	T thread_left_bottom[NUM_LEFTS];
+	for (size_t l = 0; l < NUM_LEFTS; ++l) {
+		thread_left_bottom[l] = load_with_bounds_check(...);
+	}
+	...
+	T thread_left_top[NUM_LEFTS];
+	for (size_t l = 0; l < NUM_LEFTS; ++l) {
+		thread_left_top[l] = load_with_bounds_check(...);
+	}
+	...
+	for (size_t r = 0; r < NUM_RIGHTS; ++r) {
+		auto right_val = warp.shfl(thread_right[r], i);
+		
+		for (size_t l = 0; l < NUM_LEFTS; ++l) {
+			sum[l * NUM_RIGHTS + r] += thread_left_bottom[l] * right_val;
+		}
+	}
+	...
+}
+\end{lstlisting}
+
+Similarly to the \textit{multimat\_right} optimization, we group input matrices into matrix groups, this time separately grouping left matrices into \textit{left\_matrix\_groups} and right matrices into \textit{right\_matrix\_groups}, where \textit{right\_matrix\_groups} are equivalent to the original matrix groups from the \textit{multimat\_right} optimization. The number of matrices in a left matrix group is configured independently of the number of matrices in a right matrix groups. As shown in the code snippet above, maximum size of left matrix group and right matrix group has to be known at compile time so that we can generate the \textit{warp\_shuffle\_multimat\_both\_impl} for all combinations of these values from 0 to the configured maximum. At run-time, the implementation chooses the correct method. The last matrix groups from both left and right input matrices may be smaller as the number of left or right matrices may not be divisible by the value of the run-time argument. The implementation then chooses the function with the correct matrix group size.
+
+As with the simplified algorithm, the block size is set to warp size in the \textit{x} axis and configurable by run-time argument in the \textit{y} axis. 
+When extending the grid, we require expansion in four axes. Two to cover a single output matrix, one for left matrix groups and one for right matrix groups. 
+These four axes need to be compressed into a three dimensional grid. To achieve this, we use the \textit{x} axis to both cover columns of a single output matrix while also utilizing it to expand the grid across left matrix groups. The \textit{y} axis is used to expand grid over the right matrix groups. The last axis, \textit{z}, is used to cover the rows of the single output matrix . We choose to do this using the last grid axis to behave similar to the \textit{multimat\_right} and prepare the \textit{multimat\_both} optimization for combination with the work distribution optimization. 
 
 
-This optimization improves the ratio of warp shuffle to fused multiply-add instructions to $ 2 * l + r : l * r$, where $l$ is the number of left matrices and $r$ the number of right matrices utilized by each worker. This improvement is clearly visible in the executed instruction mix shown in Figure \ref{fig:shuffle_multimat_both_instruction_mix}. 
+% TODO: Redundant workers
+% TODO: Separate covering of an output matrix from each group
+
+This optimization improves the ratio of warp shuffle to fused multiply-add instructions to $ 2 * l + r : l * r$, where $l$ is the number of left matrices and $r$ the number of right matrices utilized by each worker. This results in a noticeable improvement in the executed instruction mix shown in Figure \ref{fig:shuffle_multimat_both_instruction_mix}. 
+
 
 \subsection{Multiple rows from both matrices}
 \label{sec:multirow_both}
 
-When improving \textit{one-to-one} computation using the \textit{multirow\_right} optimization described in Section \ref{sec:multirow_right}, which processes multiple rows from the same right matrix, we described a further improvement using multiple rows from the left matrix. This not only further improves the ratio of warp shuffle to fused multiply-add instructions, but also reduces the number of times every row from the right matrix is reread. 
+When improving the \textit{one-to-one} computation using the \textit{multirow\_right} optimization described in Section \ref{sec:multirow_right}, which processes multiple overlaps from consecutive rows of a single column of the output matrix, we hinted at a further improvement using multiple rows from the left matrix in the main loop. This not only improves the ratio of warp shuffle to fused multiply-add instructions, but also reduces the number of times every row from the right input matrix is read. 
 
-The initialization and finalization parts are left unchanged. The main difference is that the main loop now advances not by a single left row, but by the number of left rows given by the algorithm argument. We also need to add an additional stage between the main loop and finalization, where we utilize the original single step main loop to finish the leftover rows from the left matrix. This step is required when the number of left rows in the overlap is not divisible by the number of left rows processed in each iteration of the new multi-step main loop.
+The main change is that the main loop now advances by multiple left input matrix rows instead of a single row. The exact number of left rows to advance by is configured using run-time argument. An additional stage between the multistep main loop and Finish is also needed to compute the remaining rows from the left input matrix when the total number of left input matrix rows is not divisible by the main loop step. This stage utilizes the original single step main loop. The Init and Finish parts are left unchanged.
 
-The algorithm parameters are changed from just the number of right rows to be processed by each thread to a pair of parameters, the number of left rows to process in each iteration of the main loop and the number of shifts to be processed by each thread. In the \textit{multirow\_right} algorithm, the number of shifts per thread was equal to the number of right rows to be processed by each thread. For clarity, we now invert this relationship, explicitly providing number of shifts and deriving the number of right rows to be loaded from the number of shifts and the number of left rows. 
+The algorithm parameters are changed from just the number of right rows processed in each main loop iteration (which corresponds to the number of overlaps assigned to a single thread) to a pair of parameters, the number of left rows to process in each iteration of the main loop and the number of overlaps, also called shifts in the code, to be processed by each thread. The number of right rows to be loaded is now derived from the number of overlaps and the number of left rows. In each iteration of the main loop, the left row 0 is processed with right rows $[0, NUM\_SHIFTS - 1]$, left row 1 with right rows $[1, NUM\_SHIFTS]$ and left row \textit{l} with right rows $[l, NUM\_SHIFTS - 1 + l]$. This gives us the number of right rows to load, which is $NUM\_SHIFTS + NUM_LEFT_ROWS - 1$ so that we can process all the left rows simultaneously. 
 
-In each iteration of the main loop, the left row 0 is processed with right rows $[0, NUM\_SHIFTS - 1]$, left row 1 with right rows $[1, NUM\_SHIFTS]$ and left row \textit{l} with right rows $[l, NUM\_SHIFTS - 1 + l]$. As such, we load $NUM\_SHIFTS + NUM_LEFT_ROWS - 1$ right rows, so that we can process all the left rows simultaneously. 
-
-The ratio of warp shuffles to fused multiply-adds for this optimization is $l + (s - 1 + l) : l * s$ in the main loop, where $l$ is the number of left rows processed by each iteration of the main loop and $s$ is the number of shifts processed by each thread.  
-The initialization, single step main loop and finalization share the original ratio of the \textit{multirow\_right} implementation. This ratio is also apparent in Figure \ref{fig:shuffle_multirow_both_instruction_mix}.
-
-
-\subsection{Effects of local array optimization}
-
-In this section, we compare the \textit{multimat\_both} and \textit{multirow\_both} algorithms with and without the local array optimization, described in Section \ref{sec:local_array_optimization}. The only difference between the versions is described in Section \ref{sec:local_array_optimization_code_changes}, with a change to the loop shuffling the buffers containing data from the left matrices.
-
-We can clearly see the additional local memory store (STL) and load (LDL) instructions in the instruction mix in Figures \ref{fig:shuffle_multimat_both_instruction_mix} and \ref{fig:shuffle_multirow_both_instruction_mix}. Apart from these, we can see that the number of remaining instructions is the same.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.7\textwidth]{executed_instructions_shuffle_multimat_both.png}
-	\caption{Instruction mix of the \textit{multimat\_both} optimization with local memory.}
-	\label{fig:shuffle_multimat_both_instruction_mix}
-\end{figure}
-
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.7\textwidth]{executed_instructions_shuffle_multirow_both.png}
-	\caption{Instruction mix of the \textit{multirow\_both} optimization with local memory.}
-	\label{fig:shuffle_multirow_both_instruction_mix}
-\end{figure}
-
-
-
-When comparing the runtime of each implementation, the difference is even more noticeable. As we can see in both Figure \ref{fig:multimat_both_speedup} and Figure \ref{fig:multirow_both_speedup}, the speedup for smaller sizes is limited due to low occupancy, but is still present. Figure \ref{fig:multimat_both_speedup} shows that for matrices of size 64 by 64, the solution without local memory access is already 2 times faster. 
-Figure \ref{fig:multirow_both_speedup} shows that there is slightly smaller improvement in the \textit{multirow\_both} optimization compared to the \textit{multimat\_both}. This is most likely caused by the initialization and finalization parts of the implementation, together with greater overall complexity of the optimization.
-% TODO: Rearange the graphs to be next to each other in a single figure
-\begin{figure}[ht]
-	\centering
-	\def\svgwidth{0.5\textwidth}
-	% Must be relative to current directory
-	% as input ignores graphicspath, which is
-	% only for includegraphics{}
-	\input{./img/multimat_speedup.pdf_tex}
-	\caption{Improvement of the \textit{multimat\_both} optimization without Local memory access.}
-	\label{fig:multimat_both_speedup}
-\end{figure}
-
-\begin{figure}[ht]
-	\centering
-	\def\svgwidth{0.5\textwidth}
-	% Must be relative to current directory
-	% as input ignores graphicspath, which is
-	% only for includegraphics{}
-	\input{./img/multirow_speedup.pdf_tex}
-	\caption{Improvement of the \textit{multirow\_both} optimization without Local memory access.}
-	\label{fig:multirow_both_speedup}
-\end{figure}
+The ratio of warp shuffle instructions (SHFL) to fused multiply-add instructions (FFMA) for this optimization is $l + (s - 1 + l) : l * s$ in the main loop, where $l$ is the number of left rows processed by each iteration of the main loop and $s$ is the number of shifts processed by each thread.  
+The Init, single step main loop and Finish parts share the original ratio of the \textit{multirow\_right} implementation. This ratio is also apparent in Figure \ref{fig:shuffle_multirow_both_instruction_mix}.
 
 
 \subsection{Combining the optimizations}
@@ -970,25 +1025,25 @@ We have implemented the following optimizations of the Warp Shuffle algorithm:
 
 \begin{itemize}
 	\item work distribution,
-	\item multiple right matrices per worker (\textit{multimat\_right}),
-	\item multiple rows from each right matrix per worker (\textit{multirow\_right}),
-	\item multiple left matrices per worker (\textit{multimat\_both}),
-	\item multiple rows from each left matrix per main loop iteration per worker (\textit{multirow\_both}).
+	\item \textit{multimat\_right},
+	\item \textit{multirow\_right},
+	\item \textit{multimat\_both},
+	\item \textit{multirow\_both}.
 \end{itemize}
 
-As described in this section, the versions loading data from multiple left matrices or multiple rows of each left matrix are implemented as extensions to the \textit{multimat\_right} and \textit{multirow\_right} optimizations respectively.
+As described in Sections \ref{sec:multimat_both} and \ref{sec:multirow_both}, the  \textit{multimat\_both} and \textit{multirow\_both} optimizations are implemented as extensions to the \textit{multimat\_right} and \textit{multirow\_right} optimizations respectively.
 
 
 All of the optimizations listed above can be combined with the following restrictions:
 
 \begin{enumerate}
 	\item \textit{multirow} optimizations cannot be combined with work distribution,
-	\item \textit{multimat\_left} can only be used to optimize the \textit{n\_to\_m} computation. 
+	\item \textit{multimat\_both} can only be used to optimize the \textit{n\_to\_m} computation. 
 \end{enumerate}
 
-With the \textit{multirow} optimization, each worker computes several different shifts of the input matrices, where each shift corresponds to a differently sized overlap. As our work distribution optimization is based on the size of the overlap, the current implementation cannot be reused. This is not a problem with the \textit{multimat} optimizations, in which each thread computes the same shift from multiple matrices.
+With the \textit{multirow} optimization, each job contains several different overlaps of the two input matrices, where each overlap has different number of rows. As our work distribution optimization is based on the number of rows of the overlap, the current implementation cannot be easily reused. This is not a problem with the \textit{multimat} optimizations, in which each thread computes the same overlap in multiple output matrices.
 
-The \textit{n\_to\_m} computation type is the only type where multiple left matrices share the same right matrix and as such can be reused in the computation.
+The \textit{n\_to\_m} computation type is the only type where multiple left matrices share the same right matrix, which makes it possible to reuse the data from the left matrices.
 
 
 With these restrictions in mind, we have implemented the following versions of the warp shuffle algorithm:
@@ -1005,81 +1060,152 @@ With these restrictions in mind, we have implemented the following versions of t
 	\item multirow\_both\_multimat\_both.
 \end{itemize}
 
+Both \textit{multimat} optimizations were already prepared for combination with work distribution, as hinted at in their respective sections. The core computation code does not change, the only difference is that we split the original warp submatrix the same way we did when implementing work distribution for simplified warp shuffle algorithm, described in Section \ref{sec:warp_shuffle_work_dist}. Each time we utilize the last used grid size axis to multiply the number of workers started. For \textit{multimat\_right}, it is the \textit{y} axis, for \textit{multimat\_both}, it is the \textit{z} axis.
+
+Combination of \textit{multimat} and \textit{multirow} optimizations takes the implementation of \textit{multimat} optimization, separates the middle and inner loop as is done to the simplified implementation in the implementation of \textit{multirow} and splits the outer loop iterations into init, main loop, single step main loop, and finish parts.
+
+These implementations are measured and compared in Section \ref{sec:results_warp_shuffle}.
 
 \section{Occupancy improvement}
+\label{sec:occupancy_improvements}
 
-For small inputs, processing a single shift or even just several rows per thread may not utilize enough threads to saturate the whole GPU, leading to low occupancy. As described in Section \ref{sec:occupancy}, low occupancy prevents the GPU from hiding the high latency of each instruction, resulting in poor performance. To increase the number of threads started for smaller inputs, we increase the size of each worker from a single thread to a whole warp or even a whole thread block. This increase in number of threads in combination with the small size of inputs leads to a need of balancing the overhead of each thread, such as bound computations, scheduling etc., with the reduced workload. For each implementation, there exists an input size for which the overhead results in pure CPU based implementation overtaking the GPU implementation. This bound is specific to each system, as it is based on the relative power of the CPU and GPU, together with the interconnection between GPU and CPU for data transfer. This topic is further explored in Section \ref{sec:warp_per_shift_vs_cpu}.
+For small inputs, processing a single overlap or a row group per thread may not split the computation into enough jobs to saturate the whole GPU, leading to low occupancy. As described in Section \ref{sec:occupancy}, low occupancy prevents the GPU from hiding the high latency of each instruction, resulting in poor performance. To increase the number of threads started for smaller inputs, we increase the size of each worker from a single thread to a whole warp or even a whole thread block. This increase in number of threads in combination with the small input data size leads to a need of balancing the overhead of each thread with the reduced workload. The overhead consists mainly of scheduling, repeated data reads, and computation of array indexes for each access. 
 
-In this section, we first introduce a simplified implementation of an algorithm utilizing whole warps as workers. We then go through several improvements of this algorithm by using shared memory and further improving occupancy by increasing the number of tasks. Lastly we implement an algorithm utilizing whole thread blocks as workers.
+%For each implementation, there exists an input size for which the overhead results in pure CPU based implementation being faster than the GPU implementation. This bound is specific to each system, as it is based on the relative power of the CPU and GPU, together with the interconnection between GPU and CPU for data transfer. This topic is further explored in Section \ref{sec:warp_per_shift_vs_cpu}.
+
+In this section, we first introduce a simplified implementation of the \textit{warp per shift} algorithm utilizing whole warps as workers with each job containing a single overlap, also called shift. We then introduce several improvements of this algorithm, first by using shared memory and then by further increasing the number of jobs using work distribution optimization, adapted from the implementation described in Section \ref{sec:warp_shuffle_work_dist}. Lastly we implement an algorithm utilizing whole thread blocks as workers, again with each job containing a single overlap.
 
 \subsection{Warp per shift}
 
-Basic implementation of the \textit{Warp per shift} algorithm is very simple compared to the warp shuffle-based algorithm described in Section \ref{sec:warp_shuffle_alg}. Using the CUDA Cooperative Groups API, we determine the distribution of threads into warps and utilize whole warps as workers for this algorithm. For the basic version, we again make each element of the output matrix (which corresponds to a single shift of the two input matrices) a task.
+Implementation of the \textit{Warp per shift} algorithm is very simple compared to the warp shuffle-based algorithm described in Section \ref{sec:warp_shuffle_alg}. The basic implementation utilizes whole warps as workers and assigns each worker a job consisting of a single overlap. Each overlap is uniquely identified by the shift of the two input matrices, and the shift is what is stored and propagated throughout the code. This is why we call this the \textit{warp per shift} algorithm.
 
-Each thread individually computes the bounds of the submatrix assigned to its warp. The main loop goes through the pairs of overlapping elements in warp sized steps, as shown in Figure \ref{fig:warp_per_shift_normal_indexing}. As we can see, the main loop is iterated $warp_size$ less times than if the shift was processed by a single thread. We can also see that this type of indexing minimizes thread divergence but may lead to uncoalesced global memory access. Another possible disadvantage of this implementation is a division and modulo instruction in each loop iteration, which is used to determine the position in the overlapping submatrix to be computed by the current thread.
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.55\textwidth}
+		\fontsize{6}{8}\selectfont
+		\centering
+		\def\svgwidth{\textwidth}
+		% Must be relative to current directory
+		% as input ignores graphicspath, which is
+		% only for includegraphics{}
+		\input{./img/overlap-Shifts.pdf_tex}
+		\caption{Output matrix and the corresponding overlaps.}
+		\label{fig:warp_per_shift_overlaps}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.4\textwidth}
+		%\fontsize{6}{8}\selectfont
+		\centering
+		\def\svgwidth{\textwidth}
+		\fontsize{6}{8}\selectfont
+		% Must be relative to current directory
+		% as input ignores graphicspath, which is
+		% only for includegraphics{}
+		\input{./img/overlap-WarpPerShiftWarps.pdf_tex}
+		\caption{Distribution of overlaps in a 3 by 7 output matrix between thread blocks and their warps.}
+		\label{fig:warp_per_shift_warps}
+	\end{subfigure}
+	
+	\caption{Output matrix and its distribution between warps.}
+\end{figure}
 
-The sums computed by each thread of the warp are then combined and the final result written by a single thread to the output matrix. We utilize the \texttt{cooperative\_groups::reduce} function, which may even be hardware accelerated if running on the newest Ampere GPUs, to combine the results of threads in a warp.
+As in the Basic algorithm, introduced in Section \ref{sec:basic_alg}, this implementation uses two dimensional grid of two dimensional thread blocks to cover output matrix. The difference is in how we use each dimension to map threads to overlaps, this time based on which warp and thread block they are part of. All threads of a warp are assigned the same overlap and they cooperate to compute all the tasks (yellow boxes) which belong to this overlap. The mapping from thread blocks and warps to overlaps of the output matrix is illustrated by Figure \ref{fig:warp_per_shift_warps}. The \textit{x} axis of thread block size is again set to warp size to simplify grouping of threads to warps, with the \textit{y} axis again configurable using run-time argument. Warps of each thread block are assigned consecutive overlaps in a row of the output matrix using the \textit{y} component of thread block size, which determines the number of warps in each thread block. This means that each thread block is assigned \textit{y} overlaps in one of the output matrix rows.
+The \textit{x} and \textit{y} components of grid size are then used to cover the matrix using these thread blocks.
+
+
+Each thread of a warp is assigned subset of the multiplication tasks (yellow boxes), as shown in Figure \ref{fig:warp_per_shift_normal_indexing}, which it computes and holds the sum in local variable. This distribution is done using the following code:
+
+\begin{lstlisting}[
+style=cuda
+]
+for (
+	size_t i = warp.thread_rank(); 
+	i < total_items; 
+	i += warp.size()
+) {
+	size_t overlap_row = i / overlap_size.x;
+	size_t overlap_row_offset = i % overlap_size.x;
+
+	size_t right_idx = ...;
+	size_t left_idx = ...;
+
+	sum += left[left_idx] * right[right_idx];
+}
+\end{lstlisting}
 
 \begin{figure}[ht]
 	\centering
-	\def\svgwidth{0.25\textwidth}
+	\def\svgwidth{0.2\textwidth}
+	\fontsize{8}{10}\selectfont
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
 	\input{./img/warp_per_shift-Basic.pdf_tex}
-	\caption{Item assignment with basic indexing (with warp size 4).}
+	\caption{Thread computing given task with basic indexing (example warp size 4).}
 	\label{fig:warp_per_shift_normal_indexing}
 \end{figure}
+
+This distribution of tasks minimizes thread divergence but may lead to uncoalesced global memory access. Another possible disadvantage of this implementation is the division and the modulo instruction in each loop iteration, which is used to determine the position in the overlapping submatrix to be computed by the current thread.
+
+The sums computed by each thread of the warp are then combined using the \texttt{cooperative\_groups::reduce} function, which may even be hardware accelerated if running on the newest Ampere GPUs. The final result is then written by thread with warp rank $0$ to the output matrix. 
 
 
 \subsection{Simplified indexing}
 
-There were two problems highlighted in the previous section, the uncoalesced global memory access and the low throughput division instruction in the main loop. A way to fix these problems is to change the assignment between items and threads. In Figure \ref{fig:warp_per_shift_simplified_indexing}, we can see a comparison of the basic indexing, described in the previous section, and the new \textit{simplified} indexing. Each row is processed independently and fully before continuing with the processing of the next row. This assures coalesced access to the global memory, but leads to thread divergence if the row size of the overlapping submatrix is not a multiple of warp size, as is the case in Figure \ref{fig:warp_per_shift_simplified_indexing}.
+The Simplified indexing is an attempt to solve the problems highlighted in the previous section, namely the uncoalesced global memory access and the low throughput division instruction in the main loop. To fix these problems, we change the distribution of tasks between threads as shown in Figure \ref{fig:warp_per_shift_simplified_indexing}. Compared to basic indexing described in the previous section, each row of the overlap is processed independently and fully before continuing to the next row. This assures coalesced access to the global memory, but leads to thread divergence if the row size of the overlap is not a multiple of warp size, as is the case in Figure \ref{fig:warp_per_shift_simplified_indexing}.
 
 \begin{figure}[ht]
 	\centering
-	\def\svgwidth{0.4\textwidth}
+	\def\svgwidth{0.5\textwidth}
+	\fontsize{8}{10}\selectfont
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
 	\input{./img/warp_per_shift-SimplifiedIndexing.pdf_tex}
-	\caption{Comparison of basic and simplified indexing (with warp size 4).}
+	\caption{Comparison of task assignment with basic and simplified indexing (example warp size 4).}
 	\label{fig:warp_per_shift_simplified_indexing}
 \end{figure}
 
-Thread divergence is the major problem of this implementation. Based on our profiling, the simplified indexing leads to an average of only 15.31 of the 32 threads executing the instruction and not being predicated (masked by a predicate). With basic indexing on the same hardware, this average improves to 26.85, which is almost twice the work done per instruction. The main reason for this difference is shown in Figure \ref{fig:warp_per_shift_thread_divergence}. This figure shows the worst case scenario, where simplified indexing leads to the rows being processed sequentially, whereas basic indexing executes this in a single iteration. Overlaps such as this make up a sizable part of every computation. Because of this, simplified indexing does not improve execution times.
-
+Thread divergence is the major problem of this implementation. Based on our profiling, the simplified indexing leads to an average of only 15.31 of the 32 threads executing each instruction and not being predicated (masked by a predicate). With basic indexing on the same hardware, this average improves to 26.85, which is almost twice the work done per instruction. The main reason for this difference is shown in Figure \ref{fig:warp_per_shift_thread_divergence}. This figure shows the worst case scenario, where simplified indexing leads to the rows being processed sequentially, whereas basic indexing executes this in a single iteration. Overlaps such as this make up a sizable part of every cross-correlation computation. Because of this, simplified indexing does not improve execution times.
 
 \begin{figure}[ht]
 	\centering
-	\def\svgwidth{0.3\textwidth}
+	\def\svgwidth{0.45\textwidth}
+	\fontsize{8}{10}\selectfont
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
 	\input{./img/warp_per_shift-ThreadDivergence.pdf_tex}
-	\caption{Thread divergence with simplified indexing.}
+	\caption{Task assignment with basic and simplified indexing to showcase thread divergence when using simplified indexing.}
 	\label{fig:warp_per_shift_thread_divergence}
 \end{figure}
 
-Even though simplified indexing should theoretically lead to better global memory access coalescing, the opposite seems to be the case as illustrated by Figure \ref{fig:executed_instructions_simplified_indexing}. This may be highly dependent on Compute Capability of the underlying hardware, but on CC 7.5 of RTX 2060, we observe a 47\% increase in the number of global memory requests when using simplified indexing. This corresponds to high \textit{LSU} pipeline usage of 88\% visible in Figure \ref{fig:pipeline_utilization_simplified_indexing}, which becomes a bottleneck. The profiling was done on input matrices of size 64 by 64 containing 32bit floating point numbers. In these matrices, each row is 256B in size. In many shifts, the last item of each row will be less than 128B (L1 cache line size) from the first item in the next row. This leads to coalescing of the global memory read with basic indexing but results in 2 separate accesses with simplified indexing. This explains the 47\% difference in global memory requests.
+Even though simplified indexing should theoretically lead to better coalescing of global memory access, the opposite seems to be the case as illustrated by Figure \ref{fig:executed_instructions_simplified_indexing}. This may be highly dependent on Compute Capability of the underlying hardware, but on CC 7.5 of RTX 2060, we observe a 47\% increase in the number of global memory requests when using simplified indexing. This corresponds to high \textit{LSU} pipeline usage of 88\% visible in Figure \ref{fig:pipeline_utilization_simplified_indexing}, which becomes a bottleneck. The profiling was done on input matrices of size 64 by 64 containing 32bit floating point numbers. In these matrices, each row is 256B in size. In many overlaps, the last item of each row will be less than 128B (global memory transaction size) from the first item in the next row. This leads to coalescing of the global memory read with basic indexing but results in 2 separate accesses with simplified indexing. This may explain the 47\% difference in global memory requests.
 
-Another visible difference in Figure \ref{fig:executed_instructions_simplified_indexing} is the increase in number of instructions across the board, most visible with branching (BRA) and barrier synchronization (BSYNC) instructions. This is caused by the increase in number of loops each warp has to go through to process the same data. Even with the increase in number of instructions, the \textit{ALU} and \textit{FMA} pipelines are less utilized than with basic indexing. This is caused by warps waiting for warp recombination on the barrier synchronization points and loads from global memory.
+Another visible difference in Figure \ref{fig:executed_instructions_simplified_indexing} is the increase in number of instructions across the board, most visible with branching (BRA) and barrier synchronization (BSYNC) instructions. This is caused by the increase in number of iterations each warp executes to process the same data. Even with the increase in number of instructions, the \textit{ALU} and \textit{FMA} pipelines are less utilized than with basic indexing. This is caused by warps waiting for warp recombination on the barrier synchronization points and loads from global memory.
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.8\textwidth]{executed_instructions_simplified_indexing.png}
-	\caption{Comparison of the instruction mix executed by basic and simplified indexing.}
-	\label{fig:executed_instructions_simplified_indexing}
-\end{figure}
 
 \begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.8\textwidth]{pipeline_utilization_simplified_indexing.png}
-	\caption{Comparison of pipeline utilization of the basic and simplified indexing.}
-	\label{fig:pipeline_utilization_simplified_indexing}
+	\centering	
+	\begin{subfigure}{0.8\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{executed_instructions_simplified_indexing.png}
+		\caption{Executed instruction mix.}
+		\label{fig:executed_instructions_simplified_indexing}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.8\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{pipeline_utilization_simplified_indexing.png}
+		\caption{Pipeline utilization.}
+		\label{fig:pipeline_utilization_simplified_indexing}
+	\end{subfigure}
+	
+	%\label{fig:warp_per_shift_indexing_comparison}
+	\caption{Comparison of basic and simplified indexing.}
 \end{figure}
 
-The effects of different pipeline utilization can also be seen in Figure \ref{fig:warp_state_simplified_indexing}. Warps of basic indexing algorithm are mostly stalled due to not being selected, i.e. there are multiple eligible warps and only one of them can be issued. This indicates that there may be too many warps for the size of the GPU. As these benchmarks were run on a RTX 2060 mobile, which is a rather small GPU, this was to be expected. The other main reason of warp stall is \texttt{Stall Math Pipe Throttle}, which is caused by the high utilization of \textit{ALU} and \textit{FMA} pipelines. These pipelines are responsible for computing the indices and the actual results of cross-correlation, which represent the useful work done by the GPU.
+The effects of different pipeline utilization can also be seen in Figure \ref{fig:warp_state_simplified_indexing}. Warps of basic indexing algorithm are mostly stalled due to not being selected, i.e. there are multiple eligible warps and only one of them can be issued. This indicates that there may be too many warps for the size of the GPU. As these benchmarks were run on a RTX 2060 mobile, which is a rather small GPU, this was to be expected. The other main reason of warp stall is \texttt{Stall Math Pipe Throttle}, which is caused by the high utilization of \textit{ALU} and \textit{FMA} pipelines. These pipelines are responsible for computing the indices and the actual results of cross-correlation, which represents the useful work done by the GPU.
 
 Simple indexing warps on the other hand are more often stalled on the \texttt{Stall Wait}, which represents warps waiting for a fixed latency execution dependency, i.e. a data dependency between two instructions or an instruction dependency on predicate computation. We can also see noticeable increase in stalls due to access to global memory (\texttt{Stall Long Scoreboard} and \texttt{Stall LG Throttle}) together with stalls due to branching. This is consistent with the properties of simple indexing described above.
 
@@ -1093,82 +1219,145 @@ Simple indexing warps on the other hand are more often stalled on the \texttt{St
 \subsection{Shared memory}
 \label{sec:warp_per_shift_shared_mem}
 
-This optimalization takes inspiration from the warp shuffle algorithm and its multirow optimalization. Instead of sharing input values by shifting and broadcasting across threads of a warp, we load input values into shared memory and reuse them by all warps of the thread block.
+This optimization takes inspiration from the warp shuffle algorithm and its \textit{multirow} optimization. Instead of sharing input values by shuffling and broadcasting across threads of a warp, we load input values into shared memory and reuse them by all warps of the thread block.
 
-% Warps of a block compute consecutive shifts in Y axis
-Warps of a given thread block compute consecutive shifts in the \textit{y} axis, as shown in Figure \ref{fig:warp_per_shift_shared_mem_shifts}. This allows us to prevent bank conflicts, which are a major problem when using shared memory. Figure \ref{fig:warp_per_shift_shared_mem_overlaps_in_x} illustrates shared memory access if we were to assign shifts along the \textit{x} axis, with warp size 4 and 4 banks of shared memory. As we can see, this leads to strided access, where warps access blocks of consecutive values with a stride between the blocks. This is guaranteed to cause up to 32 way bank conflicts, which would severely limit the shared memory throughput.
-
-\begin{figure}[ht]
-	\centering
-	\def\svgwidth{\textwidth}
-	% Must be relative to current directory
-	% as input ignores graphicspath, which is
-	% only for includegraphics{}
-	\input{./img/warp_per_shift-SharedMemAlongY.pdf_tex}
-	\caption{First two iterations with shifts assigned to warps along the \textit{y} axis.}
-	\label{fig:warp_per_shift_shared_mem_shifts}
-\end{figure}
-
-When assigning shifts along the \textit{y} axis, all warps of a thread block compute the same shift in the \textit{x} axis, which corresponds to the same row size of the overlapping submatrices, as shown in Figure \ref{fig:warp_per_shift_shared_mem_shifts}. The only difference is the number of rows each overlapping submatrix contains. This leads to different starting and ending offsets for each of the warps, but allows us to utilize perfect linear access to shared memory, leading to optimal throughput. Left input matrix is accessed independently from the right input matrix, so sharing banks between the matrices does not lead to bank conflicts.
-
-When loading data to shared memory, all warps of a block cooperate together to load the union of submatrices of all warps into shared memory. The union is divided into column groups of size \texttt{shared\_mem\_row\_size} columns, where \texttt{shared\_mem\_row\_size} is a runtime algorithm argument. These column groups are processed sequentially. The column groups are shown in Figure \ref{fig:shared_mem_preload_offset}. This is also a place for further parallelization similar to work distribution, where each column group can be processed independently and in parallel, which is described in Section \ref{sec:column_group_per_worker}.
-
-As in the warp shuffle algorithm, the data from the left matrix is loaded into two buffers which serve as a ring buffer. We first preload the bottom part of the buffer before the start of the outer loop. We have to limit the range of rows preloaded into the bottom left buffer to those which overlap with the rows loaded into the right buffer in the first iteration. If we were to preload the whole bottom left buffer, as depicted in Figure \ref{fig:shared_mem_preload_offset}, we would encounter a situation where data loaded into the right buffer in the second iteration requires data preloaded into the bottom left buffer which are already overwritten.
+Similarly to the warp shuffle algorithm, we utilize two alternating parts forming a ring buffer for data from the left input matrix and a single buffer for data from the right input matrix. Compared to the warp shuffle algorithm,
+these buffers are placed in the shared memory and are shared by all warps of each thread block. The windows of the input data loaded into buffers are not moved along the rows of the input matrices, but along a group of columns from top to bottom, processing the whole columns group before moving onto the next column group, as shown in Figure \ref{fig:shared_mem_buffer_iterations}. With appropriately sized column groups, this enables us to maximize the throughput when loading data from global memory using coalesced loads. The appropriate size here is multiple of 32, i.e. warp size.  We call this the \textit{shared\_mem\_row\_size}, as it is also the size of each row of the shared memory buffers. The number of rows in each of the three shared memory buffers (two for data from the left matrix and one for data from the right matrix) is a run-time algorithm argument and stored in variable \textit{shared\_mem\_num\_rows}.
+Another reason we choose column groups instead of row groups is because of the way we assign overlaps to warps of a thread block. To prevent bank conflicts when accessing shared memory, we assign consecutive overlaps from a single column of the output matrix to the warps of a single thread block. This is explained in more detail further in this section.
 
 \begin{figure}[ht]
 	\centering
-	\def\svgwidth{\textwidth}
+	\def\svgwidth{0.7\textwidth}
+	\fontsize{8}{10}\selectfont
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
-	\input{./img/warp_per_shift-SharedMemPreload.pdf_tex}
-	\caption{Why shared memory preload without offset does not work.}
-	\label{fig:shared_mem_preload_offset}
+	\input{./img/warp_per_shift-ThreadBlockOverlapCorrect.pdf_tex}
+	\caption{Computation of a single column group showcasing different warp offsets and left bottom buffer preload offset.}
+	\label{fig:shared_mem_buffer_iterations}
 \end{figure}
 
-The size of each buffer is $shared\_mem\_row\_size * shared\_mem\_rows$, where \textit{shared\_mem\_rows} is another runtime algorithm parameter. This parameter has to be greater than or equal to the number of warps (and consequently computed shifts) per block.
 
-The whole algorithm is described by the following pseudocode:
-\begin{lstlisting}[]
 
-FOR each column group
-	preload bottom part of left buffer
+As warp shuffle algorithm had warp submatrix, i.e. submatrix of each of the input matrices containing elements required by any of the threads of the given warp, this algorithm computes thread block submatrix containing elements of the input matrices required by overlaps assigned to any of the warps of the given thread block . This thread block submatrix is what we partition into column groups and what we iterate over and load into the shared memory buffers.
 
-	FOR rows of overlap with step shared_mem_rows
-		load top part of left buffer
-		load right buffer
+The implementation is again made up of three nested for loops. The outer loop iterates over column groups, the middle loop iterates over rows of the column group in \textit{shared\_mem\_num\_rows} sized steps. Threads of the whole thread block go through these two loops synchronously to allow cooperation when loading data to the shared memory buffers. 
 
-		sync thread block
-
-		compute bottom left buffer with right buffer
-		compute top left buffer with right buffer
-
-		swap top and bottom left buffer
-		sync thread block
-	END FOR
-END FOR
-
+\begin{lstlisting}[
+style=cuda
+]
+T thread_sum = 0;
+for (
+	size_t column_group_start_x = block_matrix_start.x;
+	column_group_start_x < block_matrix_end.x;
+	column_group_start_x += shared_mem_row_size
+) {
+	// Bottom part of the left shared memory buffer
+	left_bottom_s.load_submatrix(...);
+	
+	for (
+		size_t right_buffer_start_row = block_matrix_start.y;
+		right_buffer_start_row < block_matrix_end.y;
+		right_buffer_start_row += shared_mem_num_rows
+	) {
+		left_top_s.load_submatrix(...);
+		right_s.load_submatrix(...);
+		
+		__syncthreads();
+		
+		compute_from_shared_mem_buffers(left_bottom_s, right_s, ...);
+		
+		compute_from_shared_mem_buffers(left_top_s, right_s, ...);
+		
+		swap(left_bottom_s, left_top_s);
+		
+		__syncthreads();
+	}
+}
 \end{lstlisting}
 
-Computation of left buffer half with right buffer computes the range of rows loaded into the two buffers which overlap in the shift assigned to the current warp. This gives two continuous ranges of the same size, one in left buffer half and one in the right buffer. Corresponding elements have to be multiplied and the result added to intermediate sum kept by each thread. After we process the whole overlapping submatrix, the intermediate sums in each thread are collected using the \texttt{reduce} function provided by Cooperative Groups API and the output is written to the output matrix by the first thread of the warp.
+
+In each iteration, we compute the parts of the right buffer which are part of the overlap assigned to the current warp and have the corresponding overlapping row from the left matrix in the given part of the left buffer, first the bottom part, then the top part.  % TODO: More detailed description
+
+\begin{lstlisting}[
+style=cuda
+]
+template<typename T>
+__device__ void compute_from_shared_mem_buffers(
+	const shared_mem_buffer<T>& left_buffer,
+	const shared_mem_buffer<T>& right_buffer,
+	T &thread_sum,
+	...
+) {
+	// Offset in shared memory buffer
+	int warp_right_start_offset = ...;
+	int warp_right_end_offset = ...;
+	
+	// Offset between buffers
+	int buffer_offset = ...;
+	for (
+		int right_idx = warp_right_start_offset + warp.thread_rank();
+		right_idx < warp_right_end_offset;
+		right_idx += warp.size()
+	) {
+		l = left_buffer[right_idx + buffer_offset];
+		r = right_buffer[right_idx];
+		thread_sum += l * r; 
+	}
+}
+\end{lstlisting}
+
+% Warps of a block compute consecutive shifts in Y axis
+
+This innermost loop iterates over the rows from the two shared memory buffers which are overlapped in the overlap assigned to the current warp. Shared memory accesses in this loop are without bank conflicts thanks to way we assign overlaps between warps of a thread block. If we were to assign overlaps from a single row of the output matrix to warps of a thread block, as is done by the basic implementation of \textit{warp per shift} algorithm, we would encounter a problem illustrated in Figure \ref{fig:warp_per_shift_shared_mem_overlaps_in_x}. For the purposes of this example, we work with warps of 4 threads, shared memory with 4 banks and assume each input matrix fits into one shared memory buffer. The figure shows the left and right input matrix and how their elements map into banks of shared memory when loaded by the thread block. For simplicity, we have chosen a thread block whose thread block submatrix contains whole input matrices as one of the overlaps computed by the thread block is the overlap with shift $[0, 0]$. When warps of a given thread block are assigned overlaps along a row of the output matrix, the overlaps differ in the number of columns. This leads to an access pattern with different stride in each warp. The strides for warps 1 and 2 result in 2-way bank conflicts, the stride for warp 0 results in 4-way bank conflict. With 32 threads per warp, this type of access would cause up to 32-way bank conflict, which would severely limit the shared memory throughput.
 
 
 \begin{figure}[ht]
 	\centering
-	\def\svgwidth{0.5\textwidth}
+	\def\svgwidth{0.4\textwidth}
+	\fontsize{8}{10}\selectfont
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
 	\input{./img/warp_per_shift-SharedMemAlongX.pdf_tex}
-	\caption{Bank conflicts with shifts assigned to warps along the \textit{x} axis.}
+	\caption{Input matrices with numbers designating their mapping to shared memory banks and how they are accessed by 4 different warps of a single thread block in iteration 1 when assigned along a row of the output matrix.}
 	\label{fig:warp_per_shift_shared_mem_overlaps_in_x}
 \end{figure}
 
+Due to this, we choose to assign overlaps from a single column to warps of a thread block. This assignment leads to access illustrated in Figure \ref{fig:warp_per_shift_shared_mem_shifts}. This figure depicts two iterations of the innermost loop, with the same simplifications as the previous figure.  As the overlaps differ in the number of rows, not columns, the access to shared memory has different starting and ending offset, but between these the access is perfectly linear and coalesced, each thread accessing different bank. Left buffer is accessed independently of the right buffer, so sharing banks between these buffers does not lead to bank conflicts.
+
+
+\begin{figure}[ht]
+	\centering
+	\def\svgwidth{0.7\textwidth}
+	\fontsize{8}{10}\selectfont
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/warp_per_shift-SharedMemAlongY.pdf_tex}
+	\caption{Input matrices with numbers designating their mapping to shared memory banks and how they are accessed by 4 different warps of a single thread block in the first two iterations when assigned along a column of the output matrix.}
+	\label{fig:warp_per_shift_shared_mem_shifts}
+\end{figure}
+
+When loading the bottom part of the left shared memory buffer directly in the outer loop, we need to limit which rows are loaded to the buffer and offset the loaded rows, as shown in Figure \ref{fig:shared_mem_buffer_iterations}. If we were to just load the full buffer as shown in Figure \ref{fig:left_buffer_no_preload}, we would encounter a situation where rows loaded in the second iteration of the middle loop into the right buffer overlap rows which were loaded during the first load of bottom left buffer, which at that point is already overwritten.  
+
+
+\begin{figure}[ht]
+	\centering
+	\def\svgwidth{0.4\textwidth}
+	\fontsize{8}{10}\selectfont
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/warp_per_shift-ThreadBlockOverlapsWrong.pdf_tex}
+	\caption{Cross-iteration dependency when the load of the bottom part of the left buffer is not limited and offset.}
+	\label{fig:left_buffer_no_preload}
+\end{figure}
 
 % 	Its basically very similar to multirow optimization, just with workers of warp size
 % 	And because they are warp size, we can compute bounds for each and stop them whenever
 %	we need without thread divergence
-Even with the throughput of shared memory, the load from shared memory \textit{LDS} instructions become a bottleneck, as is apparent in Figure \ref{fig:warp_state_shared_mem}. The memory input/output stall is caused by the memory input/output queue being full. This queue handles special math instructions, dynamic branches and most importantly for us the shared memory access instructions.
+Even with the throughput of shared memory, the load from shared memory \textit{LDS} instructions become a bottleneck, as shown in Figure \ref{fig:warp_state_shared_mem}. The memory input/output stall is caused by the memory input/output queue being full. This queue handles special math instructions, dynamic branches and most importantly for us the shared memory access instructions.
 
 \begin{figure}[ht]
 	\centering
@@ -1187,7 +1376,8 @@ When loading data to shared memory, we have a choice between two different acces
 
 \begin{figure}[ht]
 	\centering
-	\def\svgwidth{0.6\textwidth}
+	\def\svgwidth{0.4\textwidth}
+	\fontsize{8}{10}\selectfont
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
@@ -1196,40 +1386,51 @@ When loading data to shared memory, we have a choice between two different acces
 	\label{fig:shared_memory_loading_patterns}
 \end{figure}
 
-With strided warps, warp \textit{w} in iteration \textit{i} reads items based on the following formula:
-\[ \left[i * block\_size + w * warp\_size, i * block\_size + (w + 1) * warp\_size\right) \]
+With strided warps, each warp loads chunks of \textit{warp size} items with stride of \textit{thread block size} items. 
+%\[ \left[i * block\_size + w * warp\_size, i * block\_size + (w + 1) * warp\_size\right) \]
 
-With continuous warps, the whole block of data which is to be loaded is divided into equal parts, one for each warp. Each warp then loads the single continuous part of the data. The advantage compared to strided loads is that this access pattern should better utilize caches, as each warp does sequential access. The disadvantage is mainly in the fact that each warp will load some part of the data, even if the data is small and could be loaded by a subset of warps strided loading was used. For our input sizes and data access patterns, strided loading seems to be faster. % TODO: Benchmark results
+With continuous warps, the whole block of data is divided into equal parts, one for each warp. Each warp then loads the single continuous part of the data. The advantage compared to strided loads is that this access pattern should better utilize caches, as each warp does sequential access. The disadvantage is mainly in the fact that each warp will load some part of the data, even if the data is small and could be loaded by a subset of warps with strided loading. % TODO: Benchmark results
 
 \subsection{Shared memory with multiple right matrices}
 
-Similarly to warp shuffle algorithm, we can increase the ratio of arithmetic instructions to shared memory loads by computing the same shift between a single left matrix and multiple right matrices. By reusing the data loaded from left matrix with multiple right matrices, we not only increase the ratio of arithmetic instructions, but also reduce the total number of loads from global memory and shared memory due to the reuse of data from the left matrix for computation of shifts of multiple right matrices. The effects of this optimization are shown in Figures \ref{fig:executed_instructions_shared_mem} and \ref{fig:pipeline_utilization_shared_mem}. The number of shared memory load instructions (LDS) and memory access index computations using the integer multiply-add (IMAD) is significantly reduced. Even with this reduction, the utilization of the \textit{LSU} pipeline is still a bottleneck, most likely due to the reduced throughput of shared memory in the 7.5 Compute Capability we used for profiling. The higher utilization of \textit{FMA} pipeline hints at better performance, which will be shown in Section \ref{sec:results_shared_mem}.
+Similarly to the warp shuffle algorithm, we can increase the ratio of arithmetic instructions to shared memory loads by computing the same shift between a single left matrix and multiple right matrices. This optimization is limited by the size of shared memory, as we need to fit multiple right shared memory buffers described in the previous section into shared memory at once. The code changes are very similar to the warp shuffle changes. We change the \textit{thread\_sum} and \textit{right\_s} variables into arrays and wrap every access into an unrollable for loop. As we are again computing overlaps with the same shift from different output matrices, any loop bounds computed hold for all the overlaps.
+
+% TODO: Maybe code
+
+The effects of this optimization are shown in Figure \ref{fig:shared_memory_multimat_right_profiling}. The number of shared memory load instructions (LDS) and memory access index computations using the integer multiply-add (IMAD) is significantly reduced. Even with this reduction, the utilization of the \textit{LSU} pipeline is still a bottleneck, most likely due to the reduced throughput of shared memory in the Compute Capability 7.5 we use for profiling. The higher utilization of \textit{FMA} pipeline hints at better performance, which will be shown in Section \ref{sec:results_shared_mem}.
+
 
 \begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.8\textwidth]{executed_instructions_shared_mem.png}
-	\caption{The effects of multiple right matrices optimization on executed instructions.}
-	\label{fig:executed_instructions_shared_mem}
-\end{figure}
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.8\textwidth]{pipeline_utilization_shared_mem.png}
-	\caption{The effects of multiple right matrices optimization on pipeline utilization.}
-	\label{fig:pipeline_utilization_shared_mem}
+	\centering	
+	\begin{subfigure}{0.8\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{executed_instructions_shared_mem.png}
+		\caption{Executed instructions.}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.8\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{pipeline_utilization_shared_mem.png}
+		\caption{Pipeline utilization.}
+		%\label{fig:pipeline_utilization_shared_mem}
+	\end{subfigure}
+	
+	\caption{Profiling of the effects of multiple right matrices on shared memory optimization.}
+	\label{fig:shared_memory_multimat_right_profiling}
 \end{figure}
 
 \subsection{Shared memory with single column group per block}
 \label{sec:column_group_per_worker}
-As described in Section \ref{sec:warp_per_shift_shared_mem}, each column group processed by the shared memory optimization can be computed independently. This optimization borrows from the rectangle work distribution from Section \ref{sec:warp_shuffle_work_dist}, first computing the maximum number of column groups per shifts $m$ and then starting $m$ workers for each shift.
+As described in Section \ref{sec:warp_per_shift_shared_mem}, the thread block matrix is split into column groups. Each of these column groups can be processed independently, with the partial result added to the total using \textit{atomicAdd} instruction as is done for work distribution in warp shuffle algorithm, described in Section \ref{sec:warp_shuffle_work_dist}. This optimization borrows from the rectangle work distribution, first computing the maximum number of column groups per shifts $m$ and then starting $m$ workers for each shift.
 
-We utilize the \textit{z} dimension of the grid size to multiply the number of workers by $m$. Based on thread block \textit{z} index, each warp computes its assigned column group of the given shift. Redundant workers are stopped after this computation. The overlap bounds are computed to only include the assigned column group, after which the code from the original implementation with multiple column groups can be reused without any changes.
+We utilize the \textit{z} dimension of the grid size to multiply the number of workers by $m$. Based on thread block \textit{z} index, each warp computes its assigned column group of the given thread block matrix. The loop bounds are computed to only include the assigned column group, after which the code from the original implementation with multiple column groups can be reused without any changes.
 
 \subsection{Work distribution}
 
-As described in Section \ref{sec:warp_shuffle_work_dist} with the warp shuffle algorithm, there are massive differences between work done by different workers in the basic algorithm. The implementation of this optimization is shared with the warp shuffle algorithm, only difference being the size of workers. We can choose from the \texttt{triangle} or \texttt{rectangle} distributions and set the maximum number of rows processed by a worker.
+As described in Section \ref{sec:warp_shuffle_work_dist} with the warp shuffle algorithm, there are massive differences between work done by different workers in the basic algorithm. The implementation shares much of the code with the warp shuffle algorithm, only difference being the size of workers. We can choose from the \texttt{triangle} or \texttt{rectangle} distributions and set the maximum number of rows processed by a worker.
 
-In our benchmarks using RTX 2060 GPU, this optimization was only beneficial for inputs smaller than 32 by 32, as shown in Figure \ref{fig:warp_per_shift_work_dist_local_results}. For larger inputs, the GPU is already saturated and with each warp processing a single shift, the workload per thread is already small enough that the work distribution does not bring much improvement. Additionally, without the use of shared memory described in Section \ref{sec:warp_per_shift_shared_mem}, the added load onto global memory makes this implementation slower for larger inputs.
+In our benchmarks using RTX 2060 GPU, this optimization was only beneficial for inputs smaller than 32 by 32, as shown in Figure \ref{fig:warp_per_shift_work_dist_local_results}. For larger inputs, the GPU is already saturated and with each warp processing a single shift, the workload per thread is already small enough that the work distribution does not bring any noticeable improvement. Additionally, without the use of shared memory described in Section \ref{sec:warp_per_shift_shared_mem}, the added load onto global memory makes this implementation slower for larger inputs.
 
 With larger GPUs, the boundary where the benefits of increased occupancy are diminished by added strain onto global memory is moved onto larger inputs, as is shown in Figure \ref{fig:warp_per_shift_work_dist_gpulab}. % TODO: Benchmark on GPU lab
 
@@ -1237,12 +1438,12 @@ With larger GPUs, the boundary where the benefits of increased occupancy are dim
 % TODO: Maybe switch to kernel runtime from total computation time
 \begin{figure}[ht]
 	\centering
-	\def\svgwidth{0.6\textwidth}
+	\def\svgwidth{0.4\textwidth}
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
 	\input{./img/warp_per_shift_work_dist_local_results.pdf_tex}
-	\caption{Difference between strided and continuous loading patterns.}
+	\caption{Comparison of computation time between simplified warp per shift algorithm, warp per shift with shared memory and warp per shift with work distribution.}
 	\label{fig:warp_per_shift_work_dist_local_results}
 \end{figure}
 
@@ -1250,19 +1451,19 @@ With larger GPUs, the boundary where the benefits of increased occupancy are dim
 
 \subsection{Block per shift}
 
-Another step in increasing occupancy is to switch from warps as workers to whole thread blocks as workers. This can massively increase the number of threads started for given size of input, saturating the GPU even for smaller inputs.
-The implementation is rather simple. The block index directly maps to the position in the output matrix and consequently to the shift computed by given block. We then compute the bounds of the overlapping submatrix corresponding with the shift computed by the current block and iterate over the overlapping elements using block stride loop. We then utilize \texttt{reduce} function provided by Cooperative Groups API to sum results in each warp, which are then stored into shared memory and  reduced again by warp 0. The final result is then stored in to the output matrix.
+Another possible way to further increase occupancy is to switch from warps as workers to whole thread blocks as workers. This can massively increase the number of threads started for given size of input, saturating the GPU even for smaller inputs.
+The implementation is rather simple. The thread block index directly maps to the position in the output matrix and consequently to the overlap computed by given thread block. We then compute the bounds of the overlapping submatrix and iterate over the overlapping elements using block stride loop. We then utilize \texttt{reduce} function provided by Cooperative Groups API to sum results in each warp, which are then stored into shared memory and reduced again by warp 0. The final result is then stored into the output matrix.
 
-Based on our testing with RTX 2060, warps per shift with work distribution was enough to saturate the GPU even for smallest inputs. For inputs of size 32 by 32 or above, even work distribution was not required to saturate the GPU and the simplicity of the simplified algorithm and starts to take over, as shown in Figure \ref{fig:block_per_shift_local_results}. 
+Based on our testing with RTX 2060, the block per shift algorithm does not significantly improve the run time over the simple warp per shift algorithm even for small input matrices, as shown in Figure \ref{fig:block_per_shift_local_results}. This is most likely caused by the simple warp per shift algorithm already saturating the GPU. 
 
 \begin{figure}[ht]
 	\centering
-	\def\svgwidth{0.6\textwidth}
+	\def\svgwidth{0.4\textwidth}
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
 	\input{./img/block_per_shift_local_results.pdf_tex}
-	\caption{Difference between strided and continuous loading patterns.}
+	\caption{Comparison of the simple warp per shift algorithm and block per shift algorithm.}
 	\label{fig:block_per_shift_local_results}
 \end{figure}
 

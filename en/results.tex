@@ -1,3 +1,314 @@
 \chapter{Results}
 
-\section{FFT-based algorithm}
+In this chapter, we first describe our setup for measurement and validation of the implementations described in the previous chapter. We then compare the definition-based cross-correlation implementations against each other before comparing them with an FFT-based CUDA implementation and existing real world implementations in Python SciPy library and in Matlab.
+
+\section{Experiments}
+As the main aim of th thesis is to compare implementations of an algorithm, the code is heavily instrumented to enable measurements and comparisons of different parts of the implementation. This instrumentation is designed to limit its impact and to allow measurements which minimize background noise and imprecision of the time measurement tools provided by the CUDA C++ language.
+
+% TODO: Maybe dont mention this
+As part of this thesis, we have also developed a benchmarking tool which allows the use of declarative description of the set of benchmarks to be executed. This tool is used both for measurements and for validation of the implementation.
+
+
+% TODO: Move this somewhere
+To simplify the implementation, we have placed several restrictions on the input matrices and the computation:
+\begin{itemize}
+	\item both input matrices are of the same size,
+	\item whole output matrix is computed.
+	% TODO: If I do not manage to finish it in time, this should be fixed and expanded
+\end{itemize}
+
+Both restrictions are used to simplify the implementation and reduce the number of variables when measuring.
+
+\subsection{Code instrumentation}
+
+All implementations, including definition-based, FFT-based and CPU-based, are split into the following steps:
+
+\begin{itemize}
+	\item \textit{Load} loads the input matrices into host memory,
+	\item \textit{Prepare} allocates device memory and precomputes things derived from the input data size,
+	\item \textit{Transfer} moves data from host to device memory,
+	\item \textit{Run} executes the computation,
+	\item \textit{Finalize} moves data from device to host memory,
+	\item \textit{Free} releases resources allocated in the \textit{Prepare} step,
+	\item \textit{Store} stores results from host memory.
+\end{itemize}
+
+Each of these steps can be individually measured and compared. The main focus of this thesis is the \textit{Run} step, but to properly compare the behavior of the FFT-based implementations with definition-based implementations, we will have to compare other steps as well.
+
+We also provide simple CPU based single threaded definition-based implementation, for which most of these steps are empty. This implementation is provided for basic validation of results and the benchmarking infrastructure. 
+
+
+We can compare the algorithms on three separate levels:
+\begin{itemize}
+	\item \textit{Compute} measuring the duration of the Prepare, Transfer, Run, Finalize and Free together;
+	\item \textit{CommonSteps} measuring every implementation step separately;
+	\item \textit{Algorithm} measuring algorithm-specific parts such as individual kernels or library calls.
+\end{itemize}
+
+For parts which can be executed repeatedly such as computations and data transfers, we utilize measurement with an adaptive iteration count. The number of iterations is automatically increased until the measured duration is longer than a configured minimum, most often a second. This type of measurement should mitigate jitter, for example due to scheduling, and get around problems with minimum clock resolution for quick running steps. It is used for the \textit{Compute} measurement, for measuring the \textit{Run} step and for measuring kernel and function call duration in each algorithm.
+
+
+\subsection{Benchmarking tool}
+
+To compare the implementations, we have developed a benchmarking tool which executes bechmarks based on a declarative description which includes input sizes, sets of implementations to measure, sets of arguments for each implementation, and other parameters. The suite then generates the input data, optionally utilizing known good implementation of cross-correlation such as Python SciPy or Matlab to generate results for validation. It then runs the specified benchmarks, providing measurement and validation results.
+
+\subsection{Experiment setup}
+
+Experiments were run on two systems:
+\begin{itemize}
+	\item Intel Xeon Silver 4110 with 256GB of RAM and NVIDIA Tesla V100 PCIe 16 GB,
+	\item AMD Ryzen 5 4600H with 16GB of RAM and NVIDIA GeForce RTX 2060.
+\end{itemize}
+
+Most showcased results are collected using the adaptive iteration count. The resulting value shown is the total measured time divided by the number of iterations. To further remove noise, all measurements are repeated 20 times and mean of these measurements is taken as the final result, as there are no significant outliers which would skew the mean.
+
+\subsection{Result validation}
+
+
+When validating results of a computation, we compare them to a valid results computed using SciPy, Matlab or our simple CPU definition-based implementation. The output matrix is compared element by element with the valid result, computing a matrix of differences between these elements using formula \ref{eq:result_comparison}.
+
+% See https://en.wikipedia.org/wiki/Relative_change_and_difference
+% and https://c-faq.com/fp/fpequal.html
+% TODO: Quote
+\begin{equation}
+\label{eq:result_comparison}
+\mathrm{Relative\_difference }(a, b) = \frac{\abs{a - b}}{\max(\abs{a}, \abs{b})}
+\end{equation}
+
+We then take the maximum element in the matrix of differences as the error of the result.
+
+\section{Measurements}
+
+In this section, we first compare the basic definition-based implementation with simple warp shuffle implementation. We then compare optimizations of the warp shuffle implementation against each other. Next we measure the occupancy improving optimizations introduced in Section \ref{sec:occupancy_improvements}. Lastly we compare the best optimizations of the definition-based implementation with the FFT-based implementation and the existing SciPy and Matlab implementations.
+
+
+Each of the \textit{one-to-one}, \textit{one-to-many}, \textit{n-to-mn}, and \textit{n-to-m} input types is compared separately, as it allows for different optimizations and may benefit certain implementations better than others. We show only the measurement with the best combination of arguments for each implementation. We choose the arguments which are fastest when averaged across all input sizes. % TODO: Say this better
+
+\subsection{Basic implementation}
+
+We first compare the basic algorithm with simple warp shuffle implementation...
+
+\subsection{Warp shuffle optimizations}
+\label{sec:results_warp_shuffle}
+
+Implementations utilizing warp shuffle instructions are usable across a range of input sizes. We measure their behavior on the following input matrix sizes: 16x16, 32x32, 64x64, 128x128, 256x256, 512x512. These sizes were chosen as larger input sizes are faster computed using the FFT-based implementation, and as such the speed of the optimizations of the definition-based implementation is irrelevant for these sizes. Based on the input type, we also measure with different number of left and right input matrices to gauge the behavior when changing these input properties.
+
+\subsubsection{one-to-one}
+For this input type, we have the following four implementations with these arguments:
+
+\begin{center}
+	\begin{tabular}{|l|l|c|} 
+		\hline
+		Implementation&Argument&Value\\ [0.5ex] 
+		\hline\hline
+		Simple & Warps per thread block & 8 \\
+		\hline
+ 		\multirow{3}*{Simple with work distribution} & Warps per thread block & 8\\
+ 		\cline{2-3}
+ 		& Rows per thread & 1 \\
+ 		\cline{2-3}
+ 		& Distribution type & triangle \\
+ 		\hline
+ 		\multirow{2}*{Multirow right} & Warps per thread block & 8\\
+ 		\cline{2-3}
+ 		& Right rows per thread & 4\\
+ 		\hline
+ 		\multirow{3}*{Multirow both} & Warps per thread block & 8\\
+ 		\cline{2-3}
+ 		& Shifts per thread & 4\\
+ 		\cline{2-3}
+ 		& Left rows per iteration & 4\\
+		\hline
+	\end{tabular}
+\end{center}
+
+The results displayed in Figure \ref{fig:warp_shuffle_one_to_one_results} show us the relative speed between the Simple warp shuffle implementation and each optimization. For smaller inputs, the \textit{multirow} optimizations are slower, up to 20\% slower for the \textit{multirow\_both} and up to 80\% slower for the \textit{multirow\_right}. This is caused by the reduction in number of threads and correspondingly reduced occupancy of the GPU. This is combined with each thread reading each row of the right input matrix multiple times, adding global memory access latency which the GPU is unable to hide due to the low occupancy. One of the reasons we added \textit{multirow\_both} was to reduce the number of times we need to read each row in the right matrix, which is reflected here in better performance for all input sizes when compared with the \textit{multirow\_right} optimization. For larger input sizes the better ratio of warp shuffle to fused multiply-add instructions of these two optimizations allows them to overtake the Simple implementation. This is above 128x128 for \textit{multirow\_both} and above 256x256 for \textit{multirow\_right}.
+
+The behavior of work distribution optimization tells us that the GPU is not fully saturated by the Simple implementation up until the 512x512 input matrix size. This is an expected problem with the \textit{one-to-one} input type. For inputs smaller than 512x512, the large number of additional threads allows us to fully utilize the GPU, making the work distribution optimization up to 80\% faster. As we increase the input size, the benefit of additional threads diminishes, completely disappearing at 512x512 input size. where the overhead introduced by the additional threads negates the increased GPU saturation. 
+
+
+\begin{figure}[ht]
+	\centering
+	\def\svgwidth{0.5\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/warp_shuffle_one_to_one_results.pdf_tex}
+	\caption{Relative speed of warp shuffle optimizations.}
+	\label{fig:warp_shuffle_one_to_one_results}
+\end{figure}
+
+% Make just one diagram showing the four implementations and their behavior across the input sizes
+% Mention the optimal arguments used
+
+
+\subsubsection{one-to-many}
+This input type has six implementations with ran with the following arguments:
+
+\begin{center}
+	\begin{tabular}{|l|l|c|} 
+		\hline
+		Implementation&Argument&Value\\ [0.5ex] 
+		\hline\hline
+		simple & & \\
+		\hline
+		simple with work distribution & & \\
+		\hline
+		multimat\_right & & \\
+		\hline
+		multimat\_right with work distribution & & \\
+		\hline
+		multirow\_right multimat\_right & & \\
+		\hline
+		multirow\_both multimat\_right & & \\
+		\hline
+	\end{tabular}
+\end{center}
+
+From the results in Figure \ref{fig:warp_shuffle_one_to_many_results}, we see that ....
+
+
+
+\subsubsection{n-to-mn}
+This input type shares implementations with the \textit{one-to-many} type, as it does not provide any additional possibilities for data reuse, because each left input matrix is cross-correlated with a different set of $m$ right input matrices. This means that each implementation of \textit{n-to-mn} type just executes the \textit{one-to-many} implementation kernel $n$ times in parallel, once for each left input matrix. Due to this, the main factor here is how many of the \textit{one-to-many} kernels can we run in parallel, or more precisely how many thread blocks from these kernels can fit on a single SM.
+
+The arguments differ slightly due to the higher GPU utilization:
+
+\begin{center}
+	\begin{tabular}{|l|l|c|} 
+		\hline
+		Implementation&Argument&Value\\ [0.5ex] 
+		\hline\hline
+		simple & & \\
+		\hline
+		simple with work distribution & & \\
+		\hline
+		multimat\_right & & \\
+		\hline
+		multimat\_right with work distribution & & \\
+		\hline
+		multirow\_right multimat\_right & & \\
+		\hline
+		multirow\_both multimat\_right & & \\
+		\hline
+	\end{tabular}
+\end{center}
+
+
+\subsubsection{n-to-m}
+The final input type has a group of implementations specifically optimized for this type, the \textit{multimat\_both} optimization and its combinations with other optimizations. We also reuse some \textit{one-to-many} implementations, running them $n$ times in parallel, once for each left input matrix, this time all with the same set of right input matrices.
+
+\begin{center}
+	\begin{tabular}{|l|l|c|} 
+		\hline
+		Implementation&Argument&Value\\ [0.5ex] 
+		\hline\hline
+		simple & &  \\
+		\hline
+		simple with work distribution & &  \\
+		\hline
+		multimat\_right & & \\
+		\hline
+		multimat\_right with work distribution & & \\
+		\hline
+		multirow\_right multimat\_right & & \\
+		\hline
+		multirow\_both multimat\_right & & \\
+		\hline
+	\end{tabular}
+\end{center}
+
+\subsection{Occupancy improving optimizations}
+\label{sec:results_occupancy_improvements}
+
+Occupancy is mainly a concern when working with the \textit{one-to-one} input type and small input matrices. Because of this, we implement these optimizations mostly for the \textit{one-to-one} input type and will compare them only on this input type. There are some exceptions which also work with more input matrices which will be compared on other input types with other implementations in the following section \ref{sec:results_definition_based}.
+
+Table \ref{tab:occupancy_improving_optimizations} lists the occupancy improving optimizations with the arguments used for their measurement.
+
+\begin{center}
+	\begin{tabular}{|l|l|c|} 
+		\hline
+		Implementation&Argument&Value\\ [0.5ex] 
+		\hline\hline
+		Warp per shift & Shifts per thread block & 16 \\
+		\hline
+		\multirow{3}*{Warp per shift with work distribution} & Shifts per thread block & 8\\
+		\cline{2-3}
+		& Rows per warp & 10 \\
+		\cline{2-3}
+		& Distribution type & triangle \\
+		\hline
+		\multirow{4}*{Warp per shift with shared memory} & Shifts per thread block & 16\\
+		\cline{2-3}
+		& Shared memory row size & 128\\
+		\cline{2-3}
+		& Load with stride & True\\
+		\cline{2-3}
+		& Column group per block & True\\
+		\hline
+		Block per shift & Block size & 256\\
+		\hline
+	\end{tabular}
+\end{center}
+
+From the results in Figure \ref{fig:warp_per_shift_results}, we see that the Warp per shift optimization is enough to saturate the GPU, so the Block per shift and Work distribution optimizations do not improve the run time. The increasing speed of work distribution is most likely caused by the increasing size of each job and correspondingly decreasing proportion of the overhead caused by distributing the jobs and collecting the results.
+
+The shared memory optimization is not beneficial for inputs smaller than 64x64, as it adds synchronization overhead between the threads of a thread block when loading the data into shared memory. For larger input data sizes, the reduced number of global memory accesses gives this optimization an advantage over pure Warp per shift implementation.
+
+\begin{figure}[ht]
+	\centering
+	\def\svgwidth{0.5\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/warp_per_shift_one_to_one_results.pdf_tex}
+	\caption{Relative speed of warp per shift optimizations.}
+	\label{fig:warp_per_shift_results}
+\end{figure}
+
+\subsection{Best definition-based implementations}
+\label{sec:results_definition_based}
+
+Now that we have compared the optimizations of each implementation between each other, we now choose the best of these optimizations and compare the speedup we have gained against the basic definition-based implementation described in Section \ref{sec:basic_alg}.
+
+\subsection{FFT-based implementation}
+
+The FFT-based implementation used in this thesis is adapted from the one used by \citet{misko}. It uses the cuFFT library for the Fast Fourier Transform and custom kernel for Hadamard multiplication. 
+
+Before comparing this FFT-based implementation with the definition-based implementations, we first show a few properties of this implementation caused by the use the Fast Fourier transform in general and of the cuFFT library in particular. First is the dependency between the precise size of the input and computation time illustrated in Figure \ref{fig:fft_input_size_slowdown}. As described in the cuFFT library documentation, cuFFT provides "Algorithms highly optimized for input sizes that can be written in the form $2^{a}*3^{b}*5^{c}*7^{d}$. In general the smaller the prime factor, the better the performance, i.e., powers of two are fastest." \citep{site:cufft}. From our measurements, we see up to 30\% % TODO: Measure this precisely 
+slowdown between power of two input size and input size one smaller. 
+
+
+
+Another feature is illustrated in Figure \ref{fig:fft_double_faster_compute_time}, where we show computation time for inputs smaller than 128x128. From these measurements we see that the cuFFT library computes inputs up to 90x90
+faster in double precision than in single precision, even though the  double precision version works with twice the amount of data and uses operations with lower throughput. The cause is shown in Figure \ref{fig:fft_double_faster_steps}, which shows the algorithm steps measured separately. The \textit{Prepare} step, which allocates device memory and in this implementation runs the \textit{cufftPlan*} functions, is slower for single than for double. The Free step then deallocates these plans. Due to the closed source of the cuFFT library we can only speculate on the cause, but it is most likely due to some additional precomputation done for the single version. We also see the dependency on the precise size of the input. Measurement of each step separately adds some overhead, which is why the sum of individual steps is larger than the total computation time in Figure \ref{fig:fft_double_faster_compute_time}.
+
+\begin{figure}[ht]
+	\centering
+	\def\svgwidth{0.5\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/fft_small_compute_time.pdf_tex}
+	\caption{Comparison of FFT-based computation in single and double precision for small inputs.}
+	\label{fig:fft_double_faster_compute_time}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\def\svgwidth{\textwidth}
+	% Must be relative to current directory
+	% as input ignores graphicspath, which is
+	% only for includegraphics{}
+	\input{./img/fft_small_step_time.pdf_tex}
+	\caption{Individual steps of the FFT-based algorithm for small inputs.}
+	\label{fig:fft_double_faster_steps}
+\end{figure}
+
+
+When compared to the definition-based implementations ...
+
+\subsection{Real world implementations}
+
+We now compare the best of our definition-based implementations with cross-correlation implementation from existing libraries and toolkits. We have chosen the Python SciPy library as a generally used CPU implementation of 2D cross-correlation and Matlab with Parallel Computing Toolbox for GPU accelerated 2D cross-correlation. Due to licensing limitations, Matlab will only be compared on the RTX 2060 system.
+

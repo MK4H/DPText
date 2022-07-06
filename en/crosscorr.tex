@@ -107,7 +107,7 @@ Put together, the steps described above give us an algorithm with asymptotic tim
 
 \section{Definition based optimizations}
 \label{sec:cross_corr_opt}
-In the original thesis by \citep{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as an integer or floating point matrix in another image, also represented as such matrix. This can be done to, for example, find a displacement of certain point of interest between images taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
+In the original thesis by \citet{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as an integer or floating point matrix in another image, also represented as such matrix. This can be done to, for example, find a displacement of certain point of interest between images taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
 
 This thesis will implement cross-correlation of integer and floating point matrices, which encompasses the usage in previously mentioned works. The implementations will be optimized to take advantage of different forms of cross-correlation input, such as cross-correlation of one matrix with many other matrices, different sizes of input matrices etc. 
 
@@ -138,7 +138,7 @@ The four basic forms are, as shown in Figure \ref{fig:cross_corr_forms}:
 \begin{enumerate}
 	\item one left input with one right input, in the rest of the thesis referred to as \textit{one-to-one} and depicted in Figure \ref{fig:cross_corr_one_to_one};
 	\item one left input with many right inputs, referred to as \textit{one-to-many} and depicted in Figure \ref{fig:cross_corr_one_to_many};
-	\item n left inputs, each cross-correlated with m \textbf{different} right inputs, referred to as \textit{n-to-mn} and depicted in Figure \ref{fig:cross_corr_n_to_mn} (used by \citet{misko} \citet{zhang2015} \citet{Kapinchev2015});
+	\item n left inputs, each cross-correlated with m \textbf{different} right inputs, referred to as \textit{n-to-mn} and depicted in Figure \ref{fig:cross_corr_n_to_mn} (used by \citet{misko}, \citet{zhang2015}, \citet{Kapinchev2015});
 	\item n left inputs, each cross-correlated with all m right inputs, referred to as \textit{n-to-m} and depicted in Figure \ref{fig:cross_corr_n_to_m} (used by \citet{Clark2011}).
 \end{enumerate} 
 
@@ -216,7 +216,7 @@ In most use cases, cross-correlation itself is not a final output but the result
 
 In Digital Image correlation, we are also interested in finding the maximum, but this time with a subpixel precision. This requires us to find the maximum value and use the results in an area around it to interpolate a function \citep{zhang2015} \citep{misko}.
 
-In the field of Seismology, cross-correlation is used for picking, ambient noise monitoring, waveform comparison and signal, event and pattern detection. \citep{Ventosa2019}
+In the field of Seismology, cross-correlation is used for picking, ambient noise monitoring, waveform comparison and signal, event and pattern detection \citep{Ventosa2019}.
  
 In optical coherence tomography, the whole result of cross-correlation is summed to compute the intensity of each pixel \citep{Kapinchev2015}. 
 

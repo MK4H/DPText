@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{132bp}%
+    \setlength{\unitlength}{297bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,28 +50,28 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,1.57954545)%
+  \begin{picture}(1,0.33270202)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,0.48011364){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.77777778,0.21527778){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,0.33806818){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.77777778,0.15214646){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,0.19602273){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.77777778,0.08901515){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,0.05397727){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.77777778,0.02588384){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=5]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,1.32102273){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.22222222,0.21780303){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,1.17897727){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.22222222,0.15467172){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=7]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,1.03693182){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.22222222,0.0915404){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=8]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,0.89488636){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.22222222,0.02840909){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=9]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,1.50284091){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Basic indexing\end{tabular}}}}%
+    \put(0.22222222,0.29861111){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Basic indexing\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=10]{warp_per_shift-ThreadDivergence.pdf}}%
-    \put(0.5,0.65056818){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Simplified indexing\end{tabular}}}}%
+    \put(0.77777778,0.29861111){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Simplified indexing\end{tabular}}}}%
   \end{picture}%
 \endgroup%

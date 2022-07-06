@@ -54,17 +54,17 @@
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{warp_per_shift-SharedMemLoading.pdf}}%
-    \put(0.06403013,0.11864407){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Warp 1\end{tabular}}}}%
+    \put(0.06403013,0.11864407){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Warp 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{warp_per_shift-SharedMemLoading.pdf}}%
-    \put(0.32768362,0.11864407){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Warp 2\end{tabular}}}}%
+    \put(0.32768362,0.11864407){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Warp 1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{warp_per_shift-SharedMemLoading.pdf}}%
-    \put(0.57250471,0.11864407){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Warp 3\end{tabular}}}}%
+    \put(0.57250471,0.11864407){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Warp 2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{warp_per_shift-SharedMemLoading.pdf}}%
-    \put(0.8173258,0.11864407){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Warp 4\end{tabular}}}}%
+    \put(0.8173258,0.11864407){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Warp 3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=5]{warp_per_shift-SharedMemLoading.pdf}}%
-    \put(0.06403013,0.02448211){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Iteration 1\end{tabular}}}}%
+    \put(0.06403013,0.02448211){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Iteration 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{warp_per_shift-SharedMemLoading.pdf}}%
-    \put(0.57250471,0.02448211){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Iteration 2\end{tabular}}}}%
+    \put(0.57250471,0.02448211){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Iteration 1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=7]{warp_per_shift-SharedMemLoading.pdf}}%
     \put(0.4519774,0.57062147){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Strided\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=8]{warp_per_shift-SharedMemLoading.pdf}}%
