@@ -1,23 +1,23 @@
 \chapter{Results}
 
-In this chapter, we first describe our setup for measurement and validation of the implementations described in the previous chapter. We then compare the definition-based cross-correlation implementations against each other before comparing them with an FFT-based CUDA implementation and existing real world implementations in Python SciPy library and in Matlab.
+In this chapter, we first describe our setup for measurement and validation of the implementations described in the previous chapter. We then compare the definition-based cross-correlation implementations against each other before comparing them with an FFT-based CUDA implementation. Finally we compare the definition-based implementations with existing real world cross-correlation implementations in Python SciPy library and in Matlab.
 
 \section{Experiments}
-As the main aim of th thesis is to compare implementations of an algorithm, the code is heavily instrumented to enable measurements and comparisons of different parts of the implementation. This instrumentation is designed to limit its impact and to allow measurements which minimize background noise and imprecision of the time measurement tools provided by the CUDA C++ language.
+As the main aim of this thesis is to compare implementations of an algorithm, the code is heavily instrumented to enable measurements and comparisons of different parts of the implementation. This instrumentation is designed to limit its impact and to allow measurements which minimize background noise and imprecision of the time measurement tools provided by the CUDA C++ language.
 
 % TODO: Maybe dont mention this
 As part of this thesis, we have also developed a benchmarking tool which allows the use of declarative description of the set of benchmarks to be executed. This tool is used both for measurements and for validation of the implementation.
 
 
 % TODO: Move this somewhere
-To simplify the implementation, we have placed several restrictions on the input matrices and the computation:
+To simplify the implementation of the definition-based algorithm optimizations, we have placed several restrictions on the input matrices and the computation:
 \begin{itemize}
 	\item both input matrices are of the same size,
 	\item whole output matrix is computed.
 	% TODO: If I do not manage to finish it in time, this should be fixed and expanded
 \end{itemize}
 
-Both restrictions are used to simplify the implementation and reduce the number of variables when measuring.
+Both restrictions are used to simplify the implementation and reduce the number of variables when measuring. Both restrictions could be removed in production-grade implementation, but would unnecessarily make the optimizations harder to implement. 
 
 \subsection{Code instrumentation}
 
@@ -38,14 +38,14 @@ Each of these steps can be individually measured and compared. The main focus of
 We also provide simple CPU based single threaded definition-based implementation, for which most of these steps are empty. This implementation is provided for basic validation of results and the benchmarking infrastructure. 
 
 
-We can compare the algorithms on three separate levels:
+The code instrumentation allows us to measure the algorithms with three different levels of granularity:
 \begin{itemize}
 	\item \textit{Compute} measuring the duration of the Prepare, Transfer, Run, Finalize and Free together;
 	\item \textit{CommonSteps} measuring every implementation step separately;
 	\item \textit{Algorithm} measuring algorithm-specific parts such as individual kernels or library calls.
 \end{itemize}
 
-For parts which can be executed repeatedly such as computations and data transfers, we utilize measurement with an adaptive iteration count. The number of iterations is automatically increased until the measured duration is longer than a configured minimum, most often a second. This type of measurement should mitigate jitter, for example due to scheduling, and get around problems with minimum clock resolution for quick running steps. It is used for the \textit{Compute} measurement, for measuring the \textit{Run} step and for measuring kernel and function call duration in each algorithm.
+For parts which can be executed repeatedly such as computations and data transfers, we utilize measurement with an adaptive iteration count. The number of iterations is automatically increased until the measured duration is longer than a configured minimum, most often a second. This type of measurement should mitigate background noise, and get around problems with minimum clock resolution for quick running steps. It is used for the \textit{Compute} measurement, for measuring the \textit{Run} step and for measuring kernel and function call durations in each algorithm.
 
 
 \subsection{Benchmarking tool}
@@ -56,8 +56,8 @@ To compare the implementations, we have developed a benchmarking tool which exec
 
 Experiments were run on two systems:
 \begin{itemize}
-	\item Intel Xeon Silver 4110 with 256GB of RAM and NVIDIA Tesla V100 PCIe 16 GB,
-	\item AMD Ryzen 5 4600H with 16GB of RAM and NVIDIA GeForce RTX 2060.
+	\item Intel Xeon Silver 4110 with 256GB of RAM and NVIDIA Tesla V100 PCIe 16 GB (gpulab),
+	\item AMD Ryzen 5 4600H with 16GB of RAM and NVIDIA GeForce RTX 2060 (laptop).
 \end{itemize}
 
 Most showcased results are collected using the adaptive iteration count. The resulting value shown is the total measured time divided by the number of iterations. To further remove noise, all measurements are repeated 20 times and mean of these measurements is taken as the final result, as there are no significant outliers which would skew the mean.
@@ -65,7 +65,7 @@ Most showcased results are collected using the adaptive iteration count. The res
 \subsection{Result validation}
 
 
-When validating results of a computation, we compare them to a valid results computed using SciPy, Matlab or our simple CPU definition-based implementation. The output matrix is compared element by element with the valid result, computing a matrix of differences between these elements using formula \ref{eq:result_comparison}.
+When validating results of a computation, we compare them to a valid results computed using SciPy, Matlab or our simple CPU definition-based implementation. The output matrix is compared element by element with the valid result, computing a matrix of differences using formula \ref{eq:result_comparison}.
 
 % See https://en.wikipedia.org/wiki/Relative_change_and_difference
 % and https://c-faq.com/fp/fpequal.html
@@ -75,23 +75,22 @@ When validating results of a computation, we compare them to a valid results com
 \mathrm{Relative\_difference }(a, b) = \frac{\abs{a - b}}{\max(\abs{a}, \abs{b})}
 \end{equation}
 
-We then take the maximum element in the matrix of differences as the error of the result.
+The maximum element in the matrix of differences is then taken as the error of the output matrix.
 
 \section{Measurements}
 
-In this section, we first compare the basic definition-based implementation with simple warp shuffle implementation. We then compare optimizations of the warp shuffle implementation against each other. Next we measure the occupancy improving optimizations introduced in Section \ref{sec:occupancy_improvements}. Lastly we compare the best optimizations of the definition-based implementation with the FFT-based implementation and the existing SciPy and Matlab implementations.
+In this section, we first compare the basic definition-based implementation with simple warp shuffle implementation. We then compare Warp shuffle optimizations described in Section \ref{sec:warp_shuffle_alg} against each other. Next we measure the occupancy improving optimizations introduced in Section \ref{sec:occupancy_improvements}. Lastly we compare the best optimizations of the definition-based implementation with the FFT-based implementation and the existing SciPy and Matlab implementations.
 
 
 Each of the \textit{one-to-one}, \textit{one-to-many}, \textit{n-to-mn}, and \textit{n-to-m} input types is compared separately, as it allows for different optimizations and may benefit certain implementations better than others. We show only the measurement with the best combination of arguments for each implementation. We choose the arguments which are fastest when averaged across all input sizes. % TODO: Say this better
 
-\subsection{Basic implementation}
-
-We first compare the basic algorithm with simple warp shuffle implementation...
 
 \subsection{Warp shuffle optimizations}
 \label{sec:results_warp_shuffle}
 
-Implementations utilizing warp shuffle instructions are usable across a range of input sizes. We measure their behavior on the following input matrix sizes: 16x16, 32x32, 64x64, 128x128, 256x256, 512x512. These sizes were chosen as larger input sizes are faster computed using the FFT-based implementation, and as such the speed of the optimizations of the definition-based implementation is irrelevant for these sizes. Based on the input type, we also measure with different number of left and right input matrices to gauge the behavior when changing these input properties.
+Implementations utilizing warp shuffle instructions are usable across a range of input sizes. We measure their behavior on the following input matrix sizes: 16x16, 32x32, 64x64, 128x128, 256x256, 512x512. These sizes were chosen as larger input sizes are faster computed using the FFT-based implementation, and as such the speed of the optimizations of the definition-based implementation is irrelevant for the larger sizes. Based on the input type, we also measure with different number of left and right input matrices to gauge the changes in behavior of the implementations.
+
+When comparing the warp shuffle optimizations, we measure only the \textit{Run} step, as implementation of this step is the only difference between the optimizations. As such, the speedup reported in this section represents only the change in execution time of the \textit{Run} step, i.e. the computation itself, not including allocations, loading from disk, transfers to GPU etc.
 
 \subsubsection{one-to-one}
 For this input type, we have the following four implementations with these arguments:
@@ -101,7 +100,7 @@ For this input type, we have the following four implementations with these argum
 		\hline
 		Implementation&Argument&Value\\ [0.5ex] 
 		\hline\hline
-		Simple & Warps per thread block & 8 \\
+		Simple & Warps per thread block & 4 \\
 		\hline
  		\multirow{3}*{Simple with work distribution} & Warps per thread block & 8\\
  		\cline{2-3}
@@ -109,23 +108,18 @@ For this input type, we have the following four implementations with these argum
  		\cline{2-3}
  		& Distribution type & triangle \\
  		\hline
- 		\multirow{2}*{Multirow right} & Warps per thread block & 8\\
+ 		\multirow{2}*{Multirow right} & Warps per thread block & 4\\
  		\cline{2-3}
- 		& Right rows per thread & 4\\
+ 		& Right rows per thread & 8\\
  		\hline
- 		\multirow{3}*{Multirow both} & Warps per thread block & 8\\
+ 		\multirow{3}*{Multirow both} & Warps per thread block & 4\\
  		\cline{2-3}
- 		& Shifts per thread & 4\\
+ 		& Shifts per thread & 8\\
  		\cline{2-3}
  		& Left rows per iteration & 4\\
 		\hline
 	\end{tabular}
 \end{center}
-
-The results displayed in Figure \ref{fig:warp_shuffle_one_to_one_results} show us the relative speed between the Simple warp shuffle implementation and each optimization. For smaller inputs, the \textit{multirow} optimizations are slower, up to 20\% slower for the \textit{multirow\_both} and up to 80\% slower for the \textit{multirow\_right}. This is caused by the reduction in number of threads and correspondingly reduced occupancy of the GPU. This is combined with each thread reading each row of the right input matrix multiple times, adding global memory access latency which the GPU is unable to hide due to the low occupancy. One of the reasons we added \textit{multirow\_both} was to reduce the number of times we need to read each row in the right matrix, which is reflected here in better performance for all input sizes when compared with the \textit{multirow\_right} optimization. For larger input sizes the better ratio of warp shuffle to fused multiply-add instructions of these two optimizations allows them to overtake the Simple implementation. This is above 128x128 for \textit{multirow\_both} and above 256x256 for \textit{multirow\_right}.
-
-The behavior of work distribution optimization tells us that the GPU is not fully saturated by the Simple implementation up until the 512x512 input matrix size. This is an expected problem with the \textit{one-to-one} input type. For inputs smaller than 512x512, the large number of additional threads allows us to fully utilize the GPU, making the work distribution optimization up to 80\% faster. As we increase the input size, the benefit of additional threads diminishes, completely disappearing at 512x512 input size. where the overhead introduced by the additional threads negates the increased GPU saturation. 
-
 
 \begin{figure}[ht]
 	\centering
@@ -134,39 +128,97 @@ The behavior of work distribution optimization tells us that the GPU is not full
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
 	\input{./img/warp_shuffle_one_to_one_results.pdf_tex}
-	\caption{Relative speed of warp shuffle optimizations.}
+	\caption{Speedup of \textit{one-to-one} warp shuffle optimizations on gpulab.}
 	\label{fig:warp_shuffle_one_to_one_results}
 \end{figure}
+
+The results displayed in Figure \ref{fig:warp_shuffle_one_to_one_results} show the speedup of each optimization compared to the Simple warp shuffle implementation. For smaller inputs, the \textit{multirow} optimizations are slower, up to 31\% slower for the \textit{multirow\_both} and up to 68\% slower for the \textit{multirow\_right} than the Simple implementation. This is caused by the reduction in number of threads and correspondingly reduced occupancy of the GPU. For \textit{multirow\_right}, this is combined with each thread reading each row of the right input matrix multiple times, adding global memory access latency which the GPU is unable to hide due to the low occupancy. This problem is mitigated in \textit{multirow\_both}, which is reflected here in better performance for all input sizes when compared with the \textit{multirow\_right} optimization. For larger input sizes the better ratio of warp shuffle to fused multiply-add instructions of these two optimizations allows them to overtake the Simple implementation. This is above 128x128 for \textit{multirow\_both} and above 320x320 for \textit{multirow\_right}.
+
+The behavior of work distribution optimization tells us that the GPU is not fully saturated by the Simple implementation up until the 512x512 input matrix size. This is an expected problem with the \textit{one-to-one} input type. For inputs smaller than 512x512, the large number of additional threads allows us to fully utilize the GPU, making the work distribution optimization more than 4 times faster than the Simple implementation without work distribution for certain input matrix sizes. As we increase the input size, the benefit of additional threads diminishes, completely disappearing at 512x512 input size. where the overhead introduced by the additional threads negates the increased GPU saturation. 
+
 
 % Make just one diagram showing the four implementations and their behavior across the input sizes
 % Mention the optimal arguments used
 
 
 \subsubsection{one-to-many}
-This input type has six implementations with ran with the following arguments:
+This input type has six implementations with the following arguments:
 
 \begin{center}
 	\begin{tabular}{|l|l|c|} 
 		\hline
 		Implementation&Argument&Value\\ [0.5ex] 
 		\hline\hline
-		simple & & \\
+		Simple & Warps per thread block & 4 \\
 		\hline
-		simple with work distribution & & \\
+		\multirow{2}*{Multimat right} & Warps per thread block & 4 \\
+ 		\cline{2-3}
+ 		& Right matrices per thread & 8 \\
 		\hline
-		multimat\_right & & \\
+		\multirow{4}*{Multimat right with work distribution} & Warps per thread block & 8 \\
+		\cline{2-3}
+		& Right matrices per thread & 8 \\
+		\cline{2-3}
+		& Rows per thread & 1 \\
+		\cline{2-3}
+		& Distribution type & triangle \\
 		\hline
-		multimat\_right with work distribution & & \\
+		\multirow{3}*{Multirow right multimat right} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Right rows per thread & 2 \\
+		\cline{2-3}
+		& Right matrices per thread & 4 \\
 		\hline
-		multirow\_right multimat\_right & & \\
-		\hline
-		multirow\_both multimat\_right & & \\
+		\multirow{4}*{Multirow both multimat right} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Shifts per right matrix & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 4 \\
+		\cline{2-3}
+		& Left rows per iteration & 4 \\
 		\hline
 	\end{tabular}
 \end{center}
 
-From the results in Figure \ref{fig:warp_shuffle_one_to_many_results}, we see that ....
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_one_to_many_2_matrices_results.pdf_tex}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_one_to_many_8_matrices_results.pdf_tex}
+		%\label{fig:pipeline_utilization_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_one_to_many_16_matrices_results.pdf_tex}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_one_to_many_1024_matrices_results.pdf_tex}
+		%\label{fig:pipeline_utilization_shared_mem}
+	\end{subfigure}
+	
+	\caption{Speedup of \textit{one-to-many} warp shuffle optimizations on gpulab.}
+	\label{fig:warp_shuffle_one_to_many_results}
+\end{figure}
 
+From the results in Figure \ref{fig:warp_shuffle_one_to_many_results}, we see that most optimizations are more than 50\% slower than the Simple implementation for small input sizes and small numbers of matrices. This is caused by lower occupancy of the GPU, as both \textit{multimat} and \textit{multirow} group multiple overlaps into each job, reducing the total number of jobs and correspondingly decreasing the total number of workers. The exception is \textit{Multimat right with work distribution}, where the \textit{work distribution} optimization is specifically designed to solve the problem of low occupancy by splitting each overlap into several jobs. This results in the 4 times speedup we see for the input 32x32 with two right input matrices. With increasing total input size, be it size of each matrix or total number of matrices, the need to increase occupancy diminishes and the speedup provided by \textit{work distribution} is lower.
+
+For larger input sizes, the improved ratio of warp shuffle instructions to fused multiply-add instructions balances out the decreased occupancy. The combination of \textit{multimat right} and \textit{multirow right} is slightly better than the \textit{multimat right} optimization alone, but is hampered by the increased number of reads from global memory as each row from the right input matrix is reread 2 times by each worker. This is also the reason why the argument \textit{right rows per thread} is best when set to 2, as increasing value of this argument increases the number of times each row is read by given worker. This is the reason why for larger inputs \textit{multimat right} and its combination with \textit{multirow right} provide similar speedup, as any improvement of the instruction ratio is balanced by the increased number of reads.
+
+The best improvement for the input sizes we are interested in is the combination of \textit{multimat right} with \textit{multirow both}. This combination removes the disadvantage of multiple reads of the \textit{multirow right}, leaving just the improved instruction ratio.
 
 
 \subsubsection{n-to-mn}
@@ -179,20 +231,83 @@ The arguments differ slightly due to the higher GPU utilization:
 		\hline
 		Implementation&Argument&Value\\ [0.5ex] 
 		\hline\hline
-		simple & & \\
+		Simple & Warps per thread block & 4 \\
 		\hline
-		simple with work distribution & & \\
+		\multirow{3}*{Simple with work distribution} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Rows per thread & 1 \\
+		\cline{2-3}
+		& Distribution type & triangle \\
 		\hline
-		multimat\_right & & \\
+		\multirow{2}*{Multimat right} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 8 \\
 		\hline
-		multimat\_right with work distribution & & \\
+		\multirow{4}*{Multimat right with work distribution} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 8 \\
+		\cline{2-3}
+		& Rows per thread & 1 \\
+		\cline{2-3}
+		& Distribution type & triangle \\
 		\hline
-		multirow\_right multimat\_right & & \\
+		\multirow{4}*{Multirow right multimat right} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Right rows per thread & 2 \\
+		\cline{2-3}
+		& Right matrices per thread & 4 \\
+		\cline{2-3}
+		& Number of CUDA streams & 16 \\
 		\hline
-		multirow\_both multimat\_right & & \\
+		\multirow{5}*{Multirow both multimat right} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Shifts per right matrix & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 4 \\
+		\cline{2-3}
+		& Left rows per iteration & 4 \\
+		\cline{2-3}
+		& Number of CUDA streams & 16 \\
 		\hline
 	\end{tabular}
 \end{center}
+
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_mn_2_4_results.pdf_tex}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_mn_4_16_results.pdf_tex}
+		%\label{fig:pipeline_utilization_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_mn_100_1000_results.pdf_tex}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	
+	\caption{Speedup of \textit{n-to-mn} warp shuffle optimizations on gpulab.}
+	\label{fig:warp_shuffle_n_to_mn_results}
+\end{figure}
+
+These measurements are very similar to the measurements for the \textit{one-to-many} type. The differences in measurements between the same implementation used in these two input types reflects the total resources required by the kernel, i.e. how many kernels can run in parallel.
+
+
+The results in Figure \ref{fig:warp_shuffle_n_to_mn_results} show that for small number of small input matrices, the \textit{work distribution} optimization is still necessary to balance out the occupancy reduced by other optimizations. The arguments of the implementations using \textit{work distribution} are optimized for smallest input sizes. To run with the same arguments for input matrices of size 512x512 would require the CUDA grid size of 65536 in the \textit{y} axis, which is just above the 65535 maximum limit. The same implementations did run for the 512x512 input size in \textit{one-to-many} as they were run with 8 warps per thread block, which reduces the required grid size and for \textit{one-to-many} was faster than 4 warps per thread block. In the measurements for \textit{n-to-mn} type, the version with 4 warps per thread block came out faster. 
+% TODO: Reword this
+Here we choose 4 warps per thread even if it cannot run the whole range of inputs as work distribution is faster only for the smaller input sizes.
+
+The explanation of the performance of the \textit{multimat right}, the \textit{multirow right multimat right} and the \textit{multirow both multimat right} optimizations is the same as for the \textit{one-to-many} type. % The slightly improved performance of the \textit{multirow both multimat right} optimization combination can most likely be attributed to 
+
 
 
 \subsubsection{n-to-m}
@@ -203,27 +318,90 @@ The final input type has a group of implementations specifically optimized for t
 		\hline
 		Implementation&Argument&Value\\ [0.5ex] 
 		\hline\hline
-		simple & &  \\
+		\multirow{2}*{Simple} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Number of CUDA streams & 8 \\
 		\hline
-		simple with work distribution & &  \\
+		\multirow{3}*{Multimat right} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 8 \\
+		\cline{2-3}
+		& Number of CUDA streams & 8 \\
 		\hline
-		multimat\_right & & \\
+		\multirow{5}*{Multimat right with work distribution} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 8 \\
+		\cline{2-3}
+		& Rows per thread & 1 \\
+		\cline{2-3}
+		& Distribution type & triangle \\
+		\cline{2-3}
+		& Number of CUDA streams & 8 \\
 		\hline
-		multimat\_right with work distribution & & \\
+		\multirow{3}*{Multimat both} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Left matrices per thread & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 4 \\
 		\hline
-		multirow\_right multimat\_right & & \\
+		\multirow{5}*{Multimat both with work distribution} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Left matrices per thread & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 4 \\		
+		\cline{2-3}
+		& Rows per thread & 1 \\
+		\cline{2-3}
+		& Distribution type & triangle \\
 		\hline
-		multirow\_both multimat\_right & & \\
+		\multirow{5}*{Multirow both multimat both} & Warps per thread block & 4 \\
+		\cline{2-3}
+		& Left matrices per thread & 4 \\
+		\cline{2-3}
+		& Right matrices per thread & 4 \\		
+		\cline{2-3}
+		& Shifts per right matrix & 4 \\
+		\cline{2-3}
+		& Left rows per iteration & 4 \\
 		\hline
 	\end{tabular}
 \end{center}
 
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_m_2_4_results.pdf_tex}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_m_4_16_results.pdf_tex}
+		%\label{fig:pipeline_utilization_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_m_50_50_results.pdf_tex}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	
+	\caption{Speedup of \textit{n-to-m} warp shuffle optimizations on gpulab.}
+	\label{fig:warp_shuffle_n_to_m_results}
+\end{figure}
+
+Again, Figure \ref{fig:warp_shuffle_n_to_m_results} shows that \textit{work distribution} is advantageous for smaller inputs, but is not required for larger inputs. As expected, the \textit{multimat both} optimization specifically designed for this input type gives the best performance. For smaller inputs, it is best when combined with \textit{work distribution}, for medium and large inputs it is best when combined with \textit{multirow both} optimization. As \textit{multimat right} improvement does not reuse data from the left input matrices, it falls behind the \textit{multimat both}.
+
 \subsection{Occupancy improving optimizations}
 \label{sec:results_occupancy_improvements}
 
-Occupancy is mainly a concern when working with the \textit{one-to-one} input type and small input matrices. Because of this, we implement these optimizations mostly for the \textit{one-to-one} input type and will compare them only on this input type. There are some exceptions which also work with more input matrices which will be compared on other input types with other implementations in the following section \ref{sec:results_definition_based}.
+Occupancy is mainly a concern when working with the \textit{one-to-one} input type and small input matrices. Because of this, we implement these optimizations mostly for the \textit{one-to-one} input type and will compare them only for this input type. 
 
-Table \ref{tab:occupancy_improving_optimizations} lists the occupancy improving optimizations with the arguments used for their measurement.
+The following table lists the occupancy improving optimizations with the arguments used for their measurement:
 
 \begin{center}
 	\begin{tabular}{|l|l|c|} 
@@ -251,9 +429,9 @@ Table \ref{tab:occupancy_improving_optimizations} lists the occupancy improving 
 	\end{tabular}
 \end{center}
 
-From the results in Figure \ref{fig:warp_per_shift_results}, we see that the Warp per shift optimization is enough to saturate the GPU, so the Block per shift and Work distribution optimizations do not improve the run time. The increasing speed of work distribution is most likely caused by the increasing size of each job and correspondingly decreasing proportion of the overhead caused by distributing the jobs and collecting the results.
+From the results in Figure \ref{fig:warp_per_shift_results}, we see that the Warp per shift optimization is enough to saturate the GPU. Due to this, the Block per shift and Work distribution optimizations do not improve the run time. While still slower than pure \textit{Warp per shift}, the increasing speed of work distribution with increasing input size is most likely caused by the increasing size of each job and correspondingly decreasing proportion of the overhead caused by distributing the jobs and collecting the results.
 
-The shared memory optimization is not beneficial for inputs smaller than 64x64, as it adds synchronization overhead between the threads of a thread block when loading the data into shared memory. For larger input data sizes, the reduced number of global memory accesses gives this optimization an advantage over pure Warp per shift implementation.
+The shared memory optimization is not beneficial for inputs smaller than 64x64, as it adds synchronization overhead between warps of a thread block when loading data into shared memory. For larger input data sizes, the reduced number of global memory accesses gives this optimization an advantage over pure Warp per shift implementation.
 
 \begin{figure}[ht]
 	\centering
@@ -269,19 +447,64 @@ The shared memory optimization is not beneficial for inputs smaller than 64x64, 
 \subsection{Best definition-based implementations}
 \label{sec:results_definition_based}
 
-Now that we have compared the optimizations of each implementation between each other, we now choose the best of these optimizations and compare the speedup we have gained against the basic definition-based implementation described in Section \ref{sec:basic_alg}.
+Now that we have compared the optimizations of each implementation, we now compare the best of these optimizations against the basic definition-based implementation described in Section \ref{sec:basic_alg}. As the implementations still differ only in the GPU kernel, we again compare only the time taken by the Run step.
+
+
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/definition_based_speedup_one_to_one.pdf_tex}
+		\caption{One to one.}
+		\label{fig:definition_based_speedup_one_to_one}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/definition_based_speedup_one_to_many.pdf_tex}
+		\caption{One to many.}
+		\label{fig:definition_based_speedup_one_to_many}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/definition_based_speedup_n_to_mn.pdf_tex}
+		\caption{N to MN.}
+		\label{fig:definition_based_speedup_n_to_mn}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/definition_based_speedup_n_to_m.pdf_tex}
+		\caption{N to M.}
+		\label{fig:definition_based_speedup_n_to_m}
+	\end{subfigure}
+	\caption{Speedup of the best optimized implementation compared to Basic implementation.}
+	\label{fig:definition_based_speedup}
+\end{figure}
+
+Figure \ref{fig:definition_based_speedup} shows the achieved speedup for each of the four input types by the best optimization when compared to the Basic implementation. We see inputs for which our implementations are up to 80 times faster. For large inputs, the speedup is around 5 times, i.e. the computation requires one fifth of the time required by Basic implementation.
+
+For the \textit{one-to-one} input type shown in Figure \ref{fig:definition_based_speedup_one_to_one}, we separate the Warp shuffle and Warp per shift based optimizations. As Warp per shift optimizations are designed to improve occupancy, they are generally only relevant for the \textit{one-to-one} input type, as the total size of input data is not enough  to saturate the GPU using Basic implementation and simple Warp shuffle implementation. But as we see in the results, Warp shuffle combined with the \textit{work distribution} optimization is almost as fast as Warp per shift. For inputs larger than 200x200, we see that the occupancy is not a limiting factor and the data reuse provided by Warp shuffle optimizations becomes more relevant. For all following input types, we use only Warp shuffle implementations as they are always better than Warp per shift implementations.
+
+The \textit{one-to-many} input type shown in Figure \ref{fig:definition_based_speedup_one_to_many} achieves the highest speedup, up to 80 times faster when computing one left matrix against 1024 right matrices of size 32x32. For smaller matrix sizes, increasing number of right matrices improves speed, which indicates that the GPU is not fully utilized. For larger matrix sizes, the difference between speedups for different number of matrices becomes negligible, with all converging around speedup of 5. This seems to be the speedup of our best implementations when GPU is fully saturated.
+
+The \textit{n-to-mn} input type shown in Figure \ref{fig:definition_based_speedup_n_to_mn} shows different behavior to the \textit{one-to-many} type. The speedup spike for smaller matrix sizes caused by \textit{work distribution} is also present, but now with increasing number of matrices we get smaller speedup. Above matrix size of 200x200, optimizations with improved data reuse become prominent, causing the improving speedup for larger matrix sizes.
+
+The \textit{n-to-m} input type shown in Figure \ref{fig:definition_based_speedup_n_to_m} shows similar characteristics to the \textit{n-to-mn} type. We again see the \textit{work distribution} spike for small matrix sizes, transitioning to optimizations providing better data reuse.
 
 \subsection{FFT-based implementation}
 
 The FFT-based implementation used in this thesis is adapted from the one used by \citet{misko}. It uses the cuFFT library for the Fast Fourier Transform and custom kernel for Hadamard multiplication. 
 
-Before comparing this FFT-based implementation with the definition-based implementations, we first show a few properties of this implementation caused by the use the Fast Fourier transform in general and of the cuFFT library in particular. First is the dependency between the precise size of the input and computation time illustrated in Figure \ref{fig:fft_input_size_slowdown}. As described in the cuFFT library documentation, cuFFT provides "Algorithms highly optimized for input sizes that can be written in the form $2^{a}*3^{b}*5^{c}*7^{d}$. In general the smaller the prime factor, the better the performance, i.e., powers of two are fastest." \citep{site:cufft}. From our measurements, we see up to 30\% % TODO: Measure this precisely 
+Before comparing this FFT-based implementation with the definition-based implementations, we first show a few properties of this implementation caused by the use of the Fast Fourier transform in general and of the cuFFT library in particular. First is the dependency between the precise size of the input matrix and computation time illustrated in Figure \ref{fig:fft_input_size_slowdown}. As described in the cuFFT library documentation, cuFFT provides "Algorithms highly optimized for input sizes that can be written in the form $2^{a}*3^{b}*5^{c}*7^{d}$. In general the smaller the prime factor, the better the performance, i.e., powers of two are fastest." \citep{site:cufft}. From our measurements, we see up to 30\% % TODO: Measure this precisely 
 slowdown between power of two input size and input size one smaller. 
 
-
-
-Another feature is illustrated in Figure \ref{fig:fft_double_faster_compute_time}, where we show computation time for inputs smaller than 128x128. From these measurements we see that the cuFFT library computes inputs up to 90x90
-faster in double precision than in single precision, even though the  double precision version works with twice the amount of data and uses operations with lower throughput. The cause is shown in Figure \ref{fig:fft_double_faster_steps}, which shows the algorithm steps measured separately. The \textit{Prepare} step, which allocates device memory and in this implementation runs the \textit{cufftPlan*} functions, is slower for single than for double. The Free step then deallocates these plans. Due to the closed source of the cuFFT library we can only speculate on the cause, but it is most likely due to some additional precomputation done for the single version. We also see the dependency on the precise size of the input. Measurement of each step separately adds some overhead, which is why the sum of individual steps is larger than the total computation time in Figure \ref{fig:fft_double_faster_compute_time}.
+% TODO: Figure about slowdown due to different input sizes
 
 \begin{figure}[ht]
 	\centering
@@ -306,7 +529,138 @@ faster in double precision than in single precision, even though the  double pre
 \end{figure}
 
 
-When compared to the definition-based implementations ...
+Another feature is illustrated in Figure \ref{fig:fft_double_faster_compute_time}, where we show computation time for inputs smaller than 128x128. From these measurements we see that the cuFFT library computes inputs with matrix size up to 90x90
+faster in double precision than in single precision, even though the  double precision version works with twice the amount of data and uses operations with lower throughput. The cause is shown in Figure \ref{fig:fft_double_faster_steps}, which shows the algorithm steps measured separately. The \textit{Prepare} step, which allocates device memory and in this implementation runs the \textit{cufftPlan*} functions, is slower for single than for double. The Free step then deallocates these plans. Due to the closed source of the cuFFT library we can only speculate on the cause, but it is most likely due to some additional precomputation done for the single version. We also see the dependency on the precise size of the input. Measurement of each step separately adds some overhead, which is why the sum of individual steps is larger than the total computation time in Figure \ref{fig:fft_double_faster_compute_time}.
+
+
+
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_speedup_one_to_one.pdf_tex}
+		\caption{One to one.}
+		\label{fig:fft_speedup_one_to_one}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_speedup_one_to_many.pdf_tex}
+		\caption{One to many.}
+		\label{fig:fft_speedup_one_to_many}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_speedup_n_to_mn.pdf_tex}
+		\caption{N to MN.}
+		\label{fig:fft_speedup_n_to_mn}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_speedup_n_to_m.pdf_tex}
+		\caption{N to M.}
+		\label{fig:fft_speedup_n_to_m}
+	\end{subfigure}
+	\caption{Speedup of the Basic definition-based implementation and best definition-based optimized implementation compared to FFT-based implementation.}
+	\label{fig:fft_speedup}
+\end{figure}
+
+When comparing with the definition-based implementations, we are mostly interested in the input matrix size where the definition-based and FFT-based implementations are equal and how that size changed thanks to the optimizations presented in this thesis. We call such matrix size the \textit{equality point}, as it is represented by a point where the graphs of the implementations intersect in the diagram. In this section, we measure the whole computation, including allocation, transfer to the GPU, kernel execution, transfer from the GPU and finally deallocation. This is because the FFT-based algorithm differs from the definition-based algorithm in all of these stages. Most importantly we need to include the overhead of the Prepare step which was shown in previous paragraphs to have major impact on the total run time.
+
+% TODO: Update matrix sizes with the correct precision
+First we measure with the same matrix sizes as in previous sections, 32x32, 64x64, 128x128, and 256x256 as shown in Figure \ref{fig:fft_speedup}. As described above, cuFFT library used by the FFT-based implementation is optimized for sizes which can be expressed as $2^{a}*3^{b}*5^{c}*7^{d}$, with powers of two being the fastest. As such, measurements in Figure \ref{fig:fft_speedup} are optimal for the FFT-based implementation. The figure shows improvement in the position of the equality point for all input types.
+
+The most noticeable change between Basic and Optimized implementation is in the \textit{one-to-one} type, shown in Figure \ref{fig:fft_speedup_one_to_one}. Due to the small input data size, the GPU cannot be fully saturated by the FFT-based implementation. Even though this change is the most noticeable, it is the least important, as the total execution time is very low for all implementations of this input type. 
+
+For the \textit{one-to-many} type in Figure \ref{fig:fft_speedup_one_to_many}, the results again show great improvement for small input data sizes, here represented by small number of right input matrices. For these sizes, the Basic implementation often did not reach the speed of FFT-based algorithm for any measured input matrix size, whereas the optimized implementation have their equality point above matrix size of 100x100. With large number of right input matrices, we see that the equality point moves to around 64x64 input matrices.
+
+The \textit{n-to-mn} type in Figure \ref{fig:fft_speedup_n_to_mn} again displays great similarity to the \textit{one-to-many} type due to the way it is implemented. The equality points are at similar positions, being slightly below 64x64 for the largest input.
+
+The \textit{n-to-m} type in Figure \ref{fig:fft_speedup_n_to_m} shows surprisingly good performance even for the Basic implementation. For small number of matrices, optimized equality points are all above 120x120 matrix size. For large number of matrices, the equality point is just below 80x80.
+
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_speedup_one_to_one_anti_fft.pdf_tex}
+		\caption{One to one.}
+		\label{fig:fft_speedup_antifft_one_to_one}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_speedup_one_to_many_anti_fft.pdf_tex}
+		\caption{One to many.}
+		\label{fig:fft_speedup_antifft_one_to_many}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_speedup_n_to_mn_anti_fft.pdf_tex}
+		\caption{N to MN.}
+		\label{fig:fft_speedup_antifft_n_to_mn}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_speedup_n_to_m_anti_fft.pdf_tex}
+		\caption{N to M.}
+		\label{fig:fft_speedup_antifft_n_to_m}
+	\end{subfigure}
+	\caption{Speedup when measured in matrix sizes which are prime numbers.}
+	\label{fig:fft_speedup_antifft}
+\end{figure}
+
+The second set of results, shown in Figure \ref{fig:fft_speedup_antifft}, changes the matrix sizes for which we measure the implementations. We take the matrix sizes used to measure the original results in Figure \ref{fig:fft_speedup} and find the closest prime number. For example 64x64 becomes 61x61, 128x128 becomes 127x127 and 256x256 becomes 257x257. This should make the FFT-based implementation slower, making the improvements provided by our optimizations of definition-based implementation greater as the definition-based implementation is not that closely dependent on the precise size of the input matrices.
+
+We see a major change in the behavior of \textit{one-to-one} type, shown in Figure \ref{fig:fft_speedup_antifft_one_to_one}. The equality point moves beyond 256x256 matrix size and we see two peaks in the improvement as the FFT-based implementation becomes faster for the 127x127 input before slowing down again for the 157x157 matrix size. 
+
+% TODO: Expand this
+For other input types, we also see an improvement compared to the previous measurements, even if not as significant as for the \textit{one-to-one} type. The speedup values are better across the board, with equality points moving to larger matrix sizes.
+
+\begin{figure}[ht]
+	\centering	
+
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_startup_one_to_many.pdf_tex}
+		\caption{One to many.}
+		\label{fig:fft_startup_one_to_many}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_startup_n_to_mn.pdf_tex}
+		\caption{N to MN.}
+		\label{fig:fft_startup_n_to_mn}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/fft_startup_n_to_m.pdf_tex}
+		\caption{N to M.}
+		\label{fig:fft_startup_n_to_m}
+	\end{subfigure}
+	\caption{Speedup of the Basic definition-based implementation and best definition-based optimized implementation compared to FFT-based implementation.}
+	\label{fig:fft_startup}
+\end{figure}
+
+Due to the many iterations of the algorithm which are measured together, the measured time reflects many repeated computations on the same input data. This results in caches being fully populated and allows the cuFFT library possible internal caching. Figure \ref{fig:fft_startup} shows measurement of a single iteration which limits or possibly even removes the ability for internal caching in the cuFFT library and populating of any caches, measuring \textit{warm-up performance} instead of \textit{sustainable performance}. This type of measurement better reflects the usual usage of a cross-correlation computing function, as it is not useful to compute cross-correlation for the same input multiple times.
+
+This measurement can only be done for large input sizes, as the background noise when measuring smaller input sizes would make any measured results useless. In Figures \ref{fig:fft_startup_one_to_many} and \ref{fig:fft_startup_n_to_mn} we see that the equality point is around 90x90, which is an improvement compared to previous measurements. This hints at some internal caching done by the cuFFT library between computations. The equality point in Figure \ref{fig:fft_startup_n_to_m} is also improved, now just below 60x60.
 
 \subsection{Real world implementations}
 
