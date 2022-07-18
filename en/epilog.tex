@@ -1,4 +1,24 @@
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
 
+In this thesis we have analyzed the definition-based algorithm for computing cross-correlation in Section \ref{sec:cross_corr_def}, listing general possibilities for parallelization in Section \ref{sec:cross_corr_opt}. % TODO: Reword this
+We then provided introduction to the GPU hardware and the CUDA platform in Section \ref{sec:gpu}. Next we elaborated in more detail on the parallelization and data reuse in Sections \ref{sec:implementation_parallelism} and \ref{sec:data_reuse}, this time focusing on the use of GPU hardware in general and CUDA platform in particular. The principles described in these sections were then used to create several optimized implementations of definition-based cross-correlation, first based on warp shuffle instructions described in Sections \ref{sec:warp_shuffle_alg} and \ref{sec:warp_shuffle_advanced}, next trying to optimize for occupancy with smaller inputs in Section \ref{sec:occupancy_improvements}. The optimizations were then evaluated in Chapter \ref{sec:results}, comparing them against each other as well as FFT-based implementation and preexisting implementations in the Python SciPy library and Matlab.
+
+When compared to the basic definition-based implementation using CUDA, our optimized implementation achieves at least 5 times speedup for most inputs and up to 10 to 80 times speedup for certain input sizes. When compared with the FFT-based implementation, we achieve speed parity for input matrix sizes over 100x100 for smaller number of input matrices, decreasing down to 60x60 for larger number of matrices. 
+
+As we have discovered in Section \ref{sec:results_fft_based}, the largest overhead of the cuFFT library used for the implementation of the FFT-based algorithm is the creation of cuFFT plan. When these plans cannot be reused, for example when the input matrix size changes often or the implementation is started in a new process for each batch, the optimized definition-based implementation is better for input sizes listed above.
+
+When compared with the CPU based Python SciPy library implementation, our optimized implementation achieved from 50 times speedup for the smallest input matrix sizes up to 3000 times speedup for input matrix size 64x64.  
+% TODO: Check how matlab behaves when computing different matrix sizes in a single process
+% TODO: Maybe compare with normal usage of matlab
+Usage of Matlab has similar pitfalls as the use of cuFFT library, with continued processing of many input matrices in a single process being orders of magnitudes faster than separate processing of each batch in different processes. When separate process per batch is required, the optimized implementations provided in this thesis achieve even greater speedups than when compared to directly using cuFFT, with large number of small input matrices with size up to 100x100 achieving up to 15 times speedup, with smaller input matrix sizes achieving more than 20 times speedup.
+
+
 \section{Future work}
+Although the optimized implementations provided in this thesis are useful and achieve the speedup listed above, they are mostly designed for easy instrumentation and benchmarking. This results in several restrictions on the size and form of the input data, long build times and giant executable. In the future, the implementation could be streamlined and the limitations removed.
+
+This thesis also focused heavily on utilizing the CUDA platform for implementation of the optimized definition-based algorithms. Future work could be aimed at implementation using other, currently less common tools such as OpenCL. 
+
+Next, the implementation in this thesis utilize only a single GPU. In the future, the implementation could be expanded to utilize more GPUs on a single system, or even further to utilize GPUs over multiple systems. Based on the inherent parallelism in the definition-based cross-correlation described in this thesis, the  implementation of distributed version could build on the work provided in this thesis very easily.
+
+To further speed up the definition-based cross-correlation, additional properties of the input data could be used. This includes utilizing non-negative input data and terminating parts of the computation which cannot reach current maximum, or computing a submatrix of the full cross-correlation matrix.

@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{533.25bp}%
+    \setlength{\unitlength}{549bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,16 +50,32 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.61251758)%
+  \begin{picture}(1,0.83401639)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{overlap-DataSharedRowSubsets.pdf}}%
-    \put(0.50351617,0.23488045){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Job 0\end{tabular}}}}%
+    \put(0.17144809,0.58333333){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Job 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{overlap-DataSharedRowSubsets.pdf}}%
-    \put(0.50351617,0.05203938){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Job 1\end{tabular}}}}%
+    \put(0.82718579,0.58333333){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Job 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{overlap-DataSharedRowSubsets.pdf}}%
-    \put(0.15471167,0.59353024){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Overlap [0,-1]\end{tabular}}}}%
+    \put(0.16461749,0.81557377){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Overlap [0,-1]\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{overlap-DataSharedRowSubsets.pdf}}%
-    \put(0.84388186,0.59353024){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Overlap [1,-1]\end{tabular}}}}%
+    \put(0.83401639,0.81557377){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Overlap [1,-1]\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{overlap-DataSharedRowSubsets.pdf}}%
+    \put(0.06489071,0.12295082){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Left input matrix\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{overlap-DataSharedRowSubsets.pdf}}%
+    \put(0.06489071,0.06830601){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Right input matrix\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{overlap-DataSharedRowSubsets.pdf}}%
+    \put(0.06489071,0.0136612){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Overlapping inputs\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{overlap-DataSharedRowSubsets.pdf}}%
+    \put(0.53620219,0.06830601){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Output matrix\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{overlap-DataSharedRowSubsets.pdf}}%
+    \put(0.53620219,0.12295082){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shared overlapping inputs\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{overlap-DataSharedRowSubsets.pdf}}%
+    \put(0.53620219,0.0136612){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Showcased overlaps\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{overlap-DataSharedRowSubsets.pdf}}%
+    \put(0.17144809,0.3510929){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Job 1\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{overlap-DataSharedRowSubsets.pdf}}%
+    \put(0.82718579,0.3510929){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Job 1\end{tabular}}}}%
   \end{picture}%
 \endgroup%

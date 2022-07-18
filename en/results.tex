@@ -56,16 +56,18 @@ To compare the implementations, we have developed a benchmarking tool which exec
 
 Experiments were run on two systems:
 \begin{itemize}
-	\item Intel Xeon Silver 4110 with 256GB of RAM and NVIDIA Tesla V100 PCIe 16 GB (gpulab),
-	\item AMD Ryzen 5 4600H with 16GB of RAM and NVIDIA GeForce RTX 2060 (laptop).
+	\item Intel Xeon Silver 4110 with 256GB of RAM and NVIDIA Tesla V100 PCIe 16 GB (gpulab), running Rocky Linux 8.5, gcc 11.2, CUDA 11.6, and nvidia driver 510.47.03;
+	\item AMD Ryzen 5 4600H with 16GB of RAM and NVIDIA GeForce RTX 2060 (laptop), running Ubuntu 20.04, gcc 9.4.0, CUDA 11.4, and nvidia driver 470.129.06.
 \end{itemize}
 
-Most showcased results are collected using the adaptive iteration count. The resulting value shown is the total measured time divided by the number of iterations. To further remove noise, all measurements are repeated 20 times and mean of these measurements is taken as the final result, as there are no significant outliers which would skew the mean.
+Most showcased results are collected using the adaptive iteration count. The timing is done using CUDA events when measuring run time of CUDA kernels or the high resolution clock provided by C++ standard library for all other measurements.  The resulting value shown is the total measured time divided by the number of iterations. To further remove noise, all measurements are repeated 20 times and mean of these measurements is taken as the final result, as there are no significant outliers which would skew the mean.
+
+Unless stated otherwise, the results showcased in this text are measured on gpulab. Laptop results will be added only when the behavior significantly differs from that of gpulab.
 
 \subsection{Result validation}
 
 
-When validating results of a computation, we compare them to a valid results computed using SciPy, Matlab or our simple CPU definition-based implementation. The output matrix is compared element by element with the valid result, computing a matrix of differences using formula \ref{eq:result_comparison}.
+When validating results of a computation, we compare them to a valid results computed using SciPy, Matlab or our simple CPU definition-based implementation. The output matrix is compared element by element with the valid result, computing a matrix of differences using formula \ref{eq:result_comparison} \citep{wiki:relative_difference}.
 
 % See https://en.wikipedia.org/wiki/Relative_change_and_difference
 % and https://c-faq.com/fp/fpequal.html
@@ -79,7 +81,7 @@ The maximum element in the matrix of differences is then taken as the error of t
 
 \section{Measurements}
 
-In this section, we first compare the basic definition-based implementation with simple warp shuffle implementation. We then compare Warp shuffle optimizations described in Section \ref{sec:warp_shuffle_alg} against each other. Next we measure the occupancy improving optimizations introduced in Section \ref{sec:occupancy_improvements}. Lastly we compare the best optimizations of the definition-based implementation with the FFT-based implementation and the existing SciPy and Matlab implementations.
+In this section, we first compare the basic definition-based implementation with simple warp shuffle implementation. We then compare Warp shuffle optimizations described in Section \ref{sec:warp_shuffle_alg} against each other. Next we measure and compare the Warp per shift family introduced in Section \ref{sec:occupancy_improvements}. Lastly we compare the best optimizations of the definition-based implementation with the FFT-based implementation and the existing SciPy and Matlab implementations.
 
 
 Each of the \textit{one-to-one}, \textit{one-to-many}, \textit{n-to-mn}, and \textit{n-to-m} input types is compared separately, as it allows for different optimizations and may benefit certain implementations better than others. We show only the measurement with the best combination of arguments for each implementation. We choose the arguments which are fastest when averaged across all input sizes. % TODO: Say this better
@@ -90,7 +92,7 @@ Each of the \textit{one-to-one}, \textit{one-to-many}, \textit{n-to-mn}, and \te
 
 Implementations utilizing warp shuffle instructions are usable across a range of input sizes. We measure their behavior on the following input matrix sizes: 16x16, 32x32, 64x64, 128x128, 256x256, 512x512. These sizes were chosen as larger input sizes are faster computed using the FFT-based implementation, and as such the speed of the optimizations of the definition-based implementation is irrelevant for the larger sizes. Based on the input type, we also measure with different number of left and right input matrices to gauge the changes in behavior of the implementations.
 
-When comparing the warp shuffle optimizations, we measure only the \textit{Run} step, as implementation of this step is the only difference between the optimizations. As such, the speedup reported in this section represents only the change in execution time of the \textit{Run} step, i.e. the computation itself, not including allocations, loading from disk, transfers to GPU etc.
+When comparing the warp shuffle optimizations, we measure only the kernels in the \textit{Run} step, as implementation of this step is the only difference between the optimizations. As such, the speedup reported in this section represents only the change in execution time of the \textit{Run} step, i.e. the computation itself, not including allocations, loading from disk, transfers to GPU etc.
 
 \subsubsection{one-to-one}
 For this input type, we have the following four implementations with these arguments:
@@ -127,7 +129,7 @@ For this input type, we have the following four implementations with these argum
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
-	\input{./img/warp_shuffle_one_to_one_results.pdf_tex}
+	\input{./img/warp_shuffle_one_to_one_gpulab.pdf_tex}
 	\caption{Speedup of \textit{one-to-one} warp shuffle optimizations on gpulab.}
 	\label{fig:warp_shuffle_one_to_one_results}
 \end{figure}
@@ -136,7 +138,7 @@ The results displayed in Figure \ref{fig:warp_shuffle_one_to_one_results} show t
 
 The behavior of work distribution optimization tells us that the GPU is not fully saturated by the Simple implementation up until the 512x512 input matrix size. This is an expected problem with the \textit{one-to-one} input type. For inputs smaller than 512x512, the large number of additional threads allows us to fully utilize the GPU, making the work distribution optimization more than 4 times faster than the Simple implementation without work distribution for certain input matrix sizes. As we increase the input size, the benefit of additional threads diminishes, completely disappearing at 512x512 input size. where the overhead introduced by the additional threads negates the increased GPU saturation. 
 
-
+The maximum absolute improvement is for the 512x512 input size, improving from $0.067$s to $0.024$s.
 % Make just one diagram showing the four implementations and their behavior across the input sizes
 % Mention the optimal arguments used
 
@@ -185,28 +187,28 @@ This input type has six implementations with the following arguments:
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_one_to_many_2_matrices_results.pdf_tex}
+		\input{./img/warp_shuffle_one_to_many_2_matrices_gpulab.pdf_tex}
 		%\label{fig:executed_instructions_shared_mem}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_one_to_many_8_matrices_results.pdf_tex}
+		\input{./img/warp_shuffle_one_to_many_8_matrices_gpulab.pdf_tex}
 		%\label{fig:pipeline_utilization_shared_mem}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_one_to_many_16_matrices_results.pdf_tex}
+		\input{./img/warp_shuffle_one_to_many_16_matrices_gpulab.pdf_tex}
 		%\label{fig:executed_instructions_shared_mem}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_one_to_many_1024_matrices_results.pdf_tex}
+		\input{./img/warp_shuffle_one_to_many_1024_matrices_gpulab.pdf_tex}
 		%\label{fig:pipeline_utilization_shared_mem}
 	\end{subfigure}
 	
@@ -220,6 +222,7 @@ For larger input sizes, the improved ratio of warp shuffle instructions to fused
 
 The best improvement for the input sizes we are interested in is the combination of \textit{multimat right} with \textit{multirow both}. This combination removes the disadvantage of multiple reads of the \textit{multirow right}, leaving just the improved instruction ratio.
 
+The maximum absolute improvement is for the $512 \times 512$ matrix size with 1024 right matrices, where we see decrease from $67$s to $16.8$s.
 
 \subsubsection{n-to-mn}
 This input type shares implementations with the \textit{one-to-many} type, as it does not provide any additional possibilities for data reuse, because each left input matrix is cross-correlated with a different set of $m$ right input matrices. This means that each implementation of \textit{n-to-mn} type just executes the \textit{one-to-many} implementation kernel $n$ times in parallel, once for each left input matrix. Due to this, the main factor here is how many of the \textit{one-to-many} kernels can we run in parallel, or more precisely how many thread blocks from these kernels can fit on a single SM.
@@ -277,21 +280,21 @@ The arguments differ slightly due to the higher GPU utilization:
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_mn_2_4_results.pdf_tex}
+		\input{./img/warp_shuffle_n_to_mn_2_4_gpulab.pdf_tex}
 		%\label{fig:executed_instructions_shared_mem}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_mn_4_16_results.pdf_tex}
+		\input{./img/warp_shuffle_n_to_mn_4_16_gpulab.pdf_tex}
 		%\label{fig:pipeline_utilization_shared_mem}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_mn_100_1000_results.pdf_tex}
+		\input{./img/warp_shuffle_n_to_mn_100_1000_gpulab.pdf_tex}
 		%\label{fig:executed_instructions_shared_mem}
 	\end{subfigure}
 	
@@ -307,7 +310,7 @@ The results in Figure \ref{fig:warp_shuffle_n_to_mn_results} show that for small
 Here we choose 4 warps per thread even if it cannot run the whole range of inputs as work distribution is faster only for the smaller input sizes.
 
 The explanation of the performance of the \textit{multimat right}, the \textit{multirow right multimat right} and the \textit{multirow both multimat right} optimizations is the same as for the \textit{one-to-many} type. % The slightly improved performance of the \textit{multirow both multimat right} optimization combination can most likely be attributed to 
-
+The maximum absolute improvement is for the $512 \times 512$ matrix size with 100 left matrices to 1000 right matrices, where we see decrease from $65.43$s to $17.29$s.
 
 
 \subsubsection{n-to-m}
@@ -372,21 +375,21 @@ The final input type has a group of implementations specifically optimized for t
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_m_2_4_results.pdf_tex}
+		\input{./img/warp_shuffle_n_to_m_2_4_gpulab.pdf_tex}
 		%\label{fig:executed_instructions_shared_mem}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_m_4_16_results.pdf_tex}
+		\input{./img/warp_shuffle_n_to_m_4_16_gpulab.pdf_tex}
 		%\label{fig:pipeline_utilization_shared_mem}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_m_50_50_results.pdf_tex}
+		\input{./img/warp_shuffle_n_to_m_50_50_gpulab.pdf_tex}
 		%\label{fig:executed_instructions_shared_mem}
 	\end{subfigure}
 	
@@ -395,6 +398,8 @@ The final input type has a group of implementations specifically optimized for t
 \end{figure}
 
 Again, Figure \ref{fig:warp_shuffle_n_to_m_results} shows that \textit{work distribution} is advantageous for smaller inputs, but is not required for larger inputs. As expected, the \textit{multimat both} optimization specifically designed for this input type gives the best performance. For smaller inputs, it is best when combined with \textit{work distribution}, for medium and large inputs it is best when combined with \textit{multirow both} optimization. As \textit{multimat right} improvement does not reuse data from the left input matrices, it falls behind the \textit{multimat both}.
+
+The maximum absolute improvement is for the $512 \times 512$ matrix size with 50 left matrices to 50 right matrices, where we see decrease from $163.95$s to $31.66$s.
 
 \subsection{Occupancy improving optimizations}
 \label{sec:results_occupancy_improvements}
@@ -433,13 +438,15 @@ From the results in Figure \ref{fig:warp_per_shift_results}, we see that the War
 
 The shared memory optimization is not beneficial for inputs smaller than 64x64, as it adds synchronization overhead between warps of a thread block when loading data into shared memory. For larger input data sizes, the reduced number of global memory accesses gives this optimization an advantage over pure Warp per shift implementation.
 
+The largest absolute improvement is for the $512 \times 512$ matrix from $0.158$s to $0.074$s.
+
 \begin{figure}[ht]
 	\centering
 	\def\svgwidth{0.5\textwidth}
 	% Must be relative to current directory
 	% as input ignores graphicspath, which is
 	% only for includegraphics{}
-	\input{./img/warp_per_shift_one_to_one_results.pdf_tex}
+	\input{./img/warp_per_shift_one_to_one_gpulab.pdf_tex}
 	\caption{Relative speed of warp per shift optimizations.}
 	\label{fig:warp_per_shift_results}
 \end{figure}
@@ -455,7 +462,7 @@ Now that we have compared the optimizations of each implementation, we now compa
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/definition_based_speedup_one_to_one.pdf_tex}
+		\input{./img/definition_based_speedup_one_to_one_gpulab.pdf_tex}
 		\caption{One to one.}
 		\label{fig:definition_based_speedup_one_to_one}
 	\end{subfigure}
@@ -463,7 +470,7 @@ Now that we have compared the optimizations of each implementation, we now compa
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/definition_based_speedup_one_to_many.pdf_tex}
+		\input{./img/definition_based_speedup_one_to_many_gpulab.pdf_tex}
 		\caption{One to many.}
 		\label{fig:definition_based_speedup_one_to_many}
 	\end{subfigure}
@@ -471,7 +478,7 @@ Now that we have compared the optimizations of each implementation, we now compa
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/definition_based_speedup_n_to_mn.pdf_tex}
+		\input{./img/definition_based_speedup_n_to_mn_gpulab.pdf_tex}
 		\caption{N to MN.}
 		\label{fig:definition_based_speedup_n_to_mn}
 	\end{subfigure}
@@ -479,7 +486,7 @@ Now that we have compared the optimizations of each implementation, we now compa
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/definition_based_speedup_n_to_m.pdf_tex}
+		\input{./img/definition_based_speedup_n_to_m_gpulab.pdf_tex}
 		\caption{N to M.}
 		\label{fig:definition_based_speedup_n_to_m}
 	\end{subfigure}
@@ -489,15 +496,16 @@ Now that we have compared the optimizations of each implementation, we now compa
 
 Figure \ref{fig:definition_based_speedup} shows the achieved speedup for each of the four input types by the best optimization when compared to the Basic implementation. We see inputs for which our implementations are up to 80 times faster. For large inputs, the speedup is around 5 times, i.e. the computation requires one fifth of the time required by Basic implementation.
 
-For the \textit{one-to-one} input type shown in Figure \ref{fig:definition_based_speedup_one_to_one}, we separate the Warp shuffle and Warp per shift based optimizations. As Warp per shift optimizations are designed to improve occupancy, they are generally only relevant for the \textit{one-to-one} input type, as the total size of input data is not enough  to saturate the GPU using Basic implementation and simple Warp shuffle implementation. But as we see in the results, Warp shuffle combined with the \textit{work distribution} optimization is almost as fast as Warp per shift. For inputs larger than 200x200, we see that the occupancy is not a limiting factor and the data reuse provided by Warp shuffle optimizations becomes more relevant. For all following input types, we use only Warp shuffle implementations as they are always better than Warp per shift implementations.
+For the \textit{one-to-one} input type shown in Figure \ref{fig:definition_based_speedup_one_to_one}, we separate the Warp shuffle and Warp per shift based optimizations. As Warp per shift optimizations are designed to improve occupancy, they are generally only relevant for the \textit{one-to-one} input type, as the total size of input data is not enough  to saturate the GPU using Basic implementation and simple Warp shuffle implementation. But as we see in the results, Warp shuffle combined with the \textit{work distribution} optimization is almost as fast as Warp per shift. For inputs larger than 200x200, we see that the occupancy is not a limiting factor and the data reuse provided by Warp shuffle optimizations becomes more relevant. The maximum absolute time improvement is from $0.072$s to $0.024$s. For all following input types, we use only Warp shuffle implementations as they are always better than Warp per shift implementations.
 
-The \textit{one-to-many} input type shown in Figure \ref{fig:definition_based_speedup_one_to_many} achieves the highest speedup, up to 80 times faster when computing one left matrix against 1024 right matrices of size 32x32. For smaller matrix sizes, increasing number of right matrices improves speed, which indicates that the GPU is not fully utilized. For larger matrix sizes, the difference between speedups for different number of matrices becomes negligible, with all converging around speedup of 5. This seems to be the speedup of our best implementations when GPU is fully saturated.
+The \textit{one-to-many} input type shown in Figure \ref{fig:definition_based_speedup_one_to_many} achieves the highest speedup, up to 80 times faster when computing one left matrix against 1024 right matrices of size 32x32. For smaller matrix sizes, increasing number of right matrices improves speed, which indicates that the GPU is not fully utilized. For larger matrix sizes, the difference between speedups for different number of matrices becomes negligible, with all converging around speedup of 5. This seems to be the speedup of our best implementations when GPU is fully saturated. The maximum absolute time improvement is from $86.21$s to $16.83$s. 
 
-The \textit{n-to-mn} input type shown in Figure \ref{fig:definition_based_speedup_n_to_mn} shows different behavior to the \textit{one-to-many} type. The speedup spike for smaller matrix sizes caused by \textit{work distribution} is also present, but now with increasing number of matrices we get smaller speedup. Above matrix size of 200x200, optimizations with improved data reuse become prominent, causing the improving speedup for larger matrix sizes.
+The \textit{n-to-mn} input type shown in Figure \ref{fig:definition_based_speedup_n_to_mn} shows different behavior to the \textit{one-to-many} type. The speedup spike for smaller matrix sizes caused by \textit{work distribution} is also present, but now with increasing number of matrices we get smaller speedup. Above matrix size of 200x200, optimizations with improved data reuse become prominent, causing the improving speedup for larger matrix sizes. The maximum absolute time improvement is from $83.42$s to $17.29$s. 
 
-The \textit{n-to-m} input type shown in Figure \ref{fig:definition_based_speedup_n_to_m} shows similar characteristics to the \textit{n-to-mn} type. We again see the \textit{work distribution} spike for small matrix sizes, transitioning to optimizations providing better data reuse.
+The \textit{n-to-m} input type shown in Figure \ref{fig:definition_based_speedup_n_to_m} shows similar characteristics to the \textit{n-to-mn} type. We again see the \textit{work distribution} spike for small matrix sizes, transitioning to optimizations providing better data reuse. The maximum absolute time improvement is from $203.28$s to $31.66$s.
 
 \subsection{FFT-based implementation}
+\label{sec:results_fft_based}
 
 The FFT-based implementation used in this thesis is adapted from the one used by \citet{misko}. It uses the cuFFT library for the Fast Fourier Transform and custom kernel for Hadamard multiplication. 
 
@@ -539,7 +547,7 @@ faster in double precision than in single precision, even though the  double pre
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_speedup_one_to_one.pdf_tex}
+		\input{./img/fft_speedup_one_to_one_gpulab.pdf_tex}
 		\caption{One to one.}
 		\label{fig:fft_speedup_one_to_one}
 	\end{subfigure}
@@ -547,7 +555,7 @@ faster in double precision than in single precision, even though the  double pre
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_speedup_one_to_many.pdf_tex}
+		\input{./img/fft_speedup_one_to_many_gpulab.pdf_tex}
 		\caption{One to many.}
 		\label{fig:fft_speedup_one_to_many}
 	\end{subfigure}
@@ -555,7 +563,7 @@ faster in double precision than in single precision, even though the  double pre
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_speedup_n_to_mn.pdf_tex}
+		\input{./img/fft_speedup_n_to_mn_gpulab.pdf_tex}
 		\caption{N to MN.}
 		\label{fig:fft_speedup_n_to_mn}
 	\end{subfigure}
@@ -563,7 +571,7 @@ faster in double precision than in single precision, even though the  double pre
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_speedup_n_to_m.pdf_tex}
+		\input{./img/fft_speedup_n_to_m_gpulab.pdf_tex}
 		\caption{N to M.}
 		\label{fig:fft_speedup_n_to_m}
 	\end{subfigure}
@@ -589,7 +597,7 @@ The \textit{n-to-m} type in Figure \ref{fig:fft_speedup_n_to_m} shows surprising
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_speedup_one_to_one_anti_fft.pdf_tex}
+		\input{./img/fft_speedup_one_to_one_anti_fft_gpulab.pdf_tex}
 		\caption{One to one.}
 		\label{fig:fft_speedup_antifft_one_to_one}
 	\end{subfigure}
@@ -597,7 +605,7 @@ The \textit{n-to-m} type in Figure \ref{fig:fft_speedup_n_to_m} shows surprising
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_speedup_one_to_many_anti_fft.pdf_tex}
+		\input{./img/fft_speedup_one_to_many_anti_fft_gpulab.pdf_tex}
 		\caption{One to many.}
 		\label{fig:fft_speedup_antifft_one_to_many}
 	\end{subfigure}
@@ -605,7 +613,7 @@ The \textit{n-to-m} type in Figure \ref{fig:fft_speedup_n_to_m} shows surprising
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_speedup_n_to_mn_anti_fft.pdf_tex}
+		\input{./img/fft_speedup_n_to_mn_anti_fft_gpulab.pdf_tex}
 		\caption{N to MN.}
 		\label{fig:fft_speedup_antifft_n_to_mn}
 	\end{subfigure}
@@ -613,7 +621,7 @@ The \textit{n-to-m} type in Figure \ref{fig:fft_speedup_n_to_m} shows surprising
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_speedup_n_to_m_anti_fft.pdf_tex}
+		\input{./img/fft_speedup_n_to_m_anti_fft_gpulab.pdf_tex}
 		\caption{N to M.}
 		\label{fig:fft_speedup_antifft_n_to_m}
 	\end{subfigure}
@@ -634,7 +642,7 @@ For other input types, we also see an improvement compared to the previous measu
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_startup_one_to_many.pdf_tex}
+		\input{./img/fft_startup_one_to_many_gpulab.pdf_tex}
 		\caption{One to many.}
 		\label{fig:fft_startup_one_to_many}
 	\end{subfigure}
@@ -642,7 +650,7 @@ For other input types, we also see an improvement compared to the previous measu
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_startup_n_to_mn.pdf_tex}
+		\input{./img/fft_startup_n_to_mn_gpulab.pdf_tex}
 		\caption{N to MN.}
 		\label{fig:fft_startup_n_to_mn}
 	\end{subfigure}
@@ -650,7 +658,7 @@ For other input types, we also see an improvement compared to the previous measu
 	\begin{subfigure}{0.35\textwidth}
 		\centering
 		\def\svgwidth{\textwidth}
-		\input{./img/fft_startup_n_to_m.pdf_tex}
+		\input{./img/fft_startup_n_to_m_gpulab.pdf_tex}
 		\caption{N to M.}
 		\label{fig:fft_startup_n_to_m}
 	\end{subfigure}
@@ -663,6 +671,62 @@ Due to the many iterations of the algorithm which are measured together, the mea
 This measurement can only be done for large input sizes, as the background noise when measuring smaller input sizes would make any measured results useless. In Figures \ref{fig:fft_startup_one_to_many} and \ref{fig:fft_startup_n_to_mn} we see that the equality point is around 90x90, which is an improvement compared to previous measurements. This hints at some internal caching done by the cuFFT library between computations. The equality point in Figure \ref{fig:fft_startup_n_to_m} is also improved, now just below 60x60.
 
 \subsection{Real world implementations}
+% Reference matlab implementation https://www.mathworks.com/help/signal/ref/xcorr2.html?s_tid=mwa_osa_a
+% Reference Scipy implementation
 
-We now compare the best of our definition-based implementations with cross-correlation implementation from existing libraries and toolkits. We have chosen the Python SciPy library as a generally used CPU implementation of 2D cross-correlation and Matlab with Parallel Computing Toolbox for GPU accelerated 2D cross-correlation. Due to licensing limitations, Matlab will only be compared on the RTX 2060 system.
+We now compare the best of our definition-based implementations with cross-correlation implementation from existing libraries and toolkits. We have chosen the Python SciPy \citet{journal:scipy} library as a generally used CPU implementation of 2D cross-correlation and Matlab \citep{site:matlab} with Parallel Computing Toolbox for GPU accelerated 2D cross-correlation. Due to licensing limitations, Matlab will only be compared on the RTX 2060 system.
+
+As with the rest of the measurements in this chapter, we do not include data loading into the measured time. For timing the SciPy implementation, we use the \texttt{perf\_counter\_ns} function provided by the Python standard library. For Matlab, the pair of functions named \texttt{tic} and \texttt{toc} is used to measure the execution time. For both implementations, we also utilize the adaptive iteration count, where the number of iterations measured is increased until the total measured time crosses a predefined boundary. In all our measurements this boundary is set to 1 second. The resulting time is then the total measured time (longer than 1 second) divided by the number of iterations executed. In each iteration, we measure all allocations, all possible data transfers between different memories (for GPU implementation), the execution itself and deallocation.
+
+
+When we compare the best of the implementations provided by this thesis with Scipy in Figure \ref{fig:scipy_speedup}, the difference is clear. Even though SciPy uses multithreaded FFT-based implementation, 
+for any input with input matrix size above 8x8 the definition based CUDA C++ implementation is many times faster.
+
+For the \textit{one-to-one} type shown in Figure \ref{fig:scipy_one_to_one_gpulab}, we see that for the input matrix size of $8 \times 8$ the SciPy implementation is $5.7$ times faster. For the $16 \times 16$ input matrix, the CUDA C++ implementation is already $2$ times faster, rising up to $408$ times faster for the $64 \times 64$ input matrix. In absolute times, the $408$ times speedup translates to improvement from $0.13$ seconds to $0.000320$ seconds.
+
+For the \textit{one-to-many} type shown in Figure \ref{fig:scipy_one_to_many_gpulab}, we again see the expected advantage of SciPy for the smallest inputs of $8 \times 8$ matrices. With two input matrices, SciPy is $3.3$ times and for four input matrices it is $1.63$ times faster. For all other input sizes, the CUDA C++ is significantly faster, up to $2991$ times faster for the maximum size we have measured. In absolute times, $1.97$ seconds is improved to $0.000659$ seconds.
+
+For the \textit{n-to-mn} type shown in Figure \ref{fig:scipy_n_to_mn_gpulab}, we see similar improvements to the \textit{one-to-one} type, with the best improvement being $3152$ times speedup from $2$ seconds to $0.000668$ seconds.
+
+Lastly for the \textit{n-to-m} type shown in Figure \ref{fig:scipy_n_to_m_gpulab}, the maximum improvement is $3080$ times from $2.03$ seconds to $0.000661$ seconds. Interesting thing here is that the maximum speedup is not achieved for the largest input in terms of number of matrices, but for a smaller 4 to 4 matrices. The \textit{n-to-m} type is very computationally intensive, which means that even for the 4 to 4 computation we may be saturating the GPU. This would result in the lower improvement we see for larger number of matrices.
+
+Otherwise the results are as expected with SciPy being faster for the smallest inputs as the latency of data transfer and kernel to and from the GPU, and the overhead of kernel start are independent of the data size and will result in slower speed. For all larger inputs, the general slow speed of Python and limited parallelism of the CPU results in the GPU CUDA C++ implementation being faster.
+
+
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/scipy_one_to_one_gpulab.pdf_tex}
+		\caption{One to one.}
+		\label{fig:scipy_one_to_one_gpulab}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/scipy_one_to_many_gpulab.pdf_tex}
+		\caption{One to many.}
+		\label{fig:scipy_one_to_many_gpulab}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/scipy_n_to_mn_gpulab.pdf_tex}
+		\caption{N to MN.}
+		\label{fig:scipy_n_to_mn_gpulab}
+	\end{subfigure}
+	%\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/scipy_n_to_m_gpulab.pdf_tex}
+		\caption{N to M.}
+		\label{fig:scipy_n_to_m_gpulab}
+	\end{subfigure}
+	\caption{Speedup of the best definition-based implementation in this thesis compared to SciPy.}
+	\label{fig:scipy_speedup}
+\end{figure}
 

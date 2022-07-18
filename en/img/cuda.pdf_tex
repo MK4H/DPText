@@ -1,0 +1,106 @@
+%% Creator: Inkscape 1.2 (dc2aedaf03, 2022-05-15), www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'cuda.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{548.25bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.72640219)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{cuda.pdf}}%
+    \put(0.12585499,0.7004104){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}GPU device\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{cuda.pdf}}%
+    \put(0.15321477,0.2626539){\color[rgb]{1,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}DRAM\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{cuda.pdf}}%
+    \put(0.15321477,0.64569083){\color[rgb]{1,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}SM\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{cuda.pdf}}%
+    \put(0.57729138,0.64569083){\color[rgb]{1,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}SM\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{cuda.pdf}}%
+    \put(0.16689466,0.46785226){\color[rgb]{1,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Register file\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{cuda.pdf}}%
+    \put(0.59097127,0.46785226){\color[rgb]{1,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Register file\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{cuda.pdf}}%
+    \put(0.59097127,0.37209302){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shared memory\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{cuda.pdf}}%
+    \put(0.00273598,0.56361149){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Grid\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{cuda.pdf}}%
+    \put(0.16689466,0.37209302){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Shared memory\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{cuda.pdf}}%
+    \put(0.16689466,0.59097127){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Block\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{cuda.pdf}}%
+    \put(0.35841313,0.59097127){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Block\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{cuda.pdf}}%
+    \put(0.59097127,0.59097127){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Block\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{cuda.pdf}}%
+    \put(0.78248974,0.59097127){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Block\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{cuda.pdf}}%
+    \put(0.20930233,0.5499316){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Thread\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{cuda.pdf}}%
+    \put(0.29138167,0.5499316){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Thread\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{cuda.pdf}}%
+    \put(0.40082079,0.5499316){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Thread\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{cuda.pdf}}%
+    \put(0.48290014,0.5499316){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Thread\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{cuda.pdf}}%
+    \put(0.63337893,0.5499316){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Thread\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{cuda.pdf}}%
+    \put(0.71545828,0.5499316){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Thread\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{cuda.pdf}}%
+    \put(0.82763338,0.5499316){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Thread\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{cuda.pdf}}%
+    \put(0.90971272,0.5499316){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Thread\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=22]{cuda.pdf}}%
+    \put(0.16689466,0.12585499){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Global memory\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=23]{cuda.pdf}}%
+    \put(0.16689466,0.22161423){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Local memory\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=24]{cuda.pdf}}%
+    \put(0.04787962,0.08481532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Host\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=25]{cuda.pdf}}%
+  \end{picture}%
+\endgroup%

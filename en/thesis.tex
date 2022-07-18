@@ -3,27 +3,27 @@
 %% Settings for single-side (simplex) printing
 % Margins: left 40mm, right 25mm, top and bottom 25mm
 % (but beware, LaTeX adds 1in implicitly)
-\documentclass[12pt,a4paper]{report}
+%\documentclass[12pt,a4paper]{report}
+%\setlength\textwidth{145mm}
+%\setlength\textheight{247mm}
+%\setlength\oddsidemargin{15mm}
+%\setlength\evensidemargin{15mm}
+%\setlength\topmargin{0mm}
+%\setlength\headsep{0mm}
+%\setlength\headheight{0mm}
+% \openright makes the following text appear on a right-hand page
+%\let\openright=\clearpage
+
+%% Settings for two-sided (duplex) printing
+\documentclass[12pt,a4paper,twoside,openright]{report}
 \setlength\textwidth{145mm}
 \setlength\textheight{247mm}
-\setlength\oddsidemargin{15mm}
-\setlength\evensidemargin{15mm}
+\setlength\oddsidemargin{14.2mm}
+\setlength\evensidemargin{0mm}
 \setlength\topmargin{0mm}
 \setlength\headsep{0mm}
 \setlength\headheight{0mm}
-% \openright makes the following text appear on a right-hand page
-\let\openright=\clearpage
-
-%% Settings for two-sided (duplex) printing
-% \documentclass[12pt,a4paper,twoside,openright]{report}
-% \setlength\textwidth{145mm}
-% \setlength\textheight{247mm}
-% \setlength\oddsidemargin{14.2mm}
-% \setlength\evensidemargin{0mm}
-% \setlength\topmargin{0mm}
-% \setlength\headsep{0mm}
-% \setlength\headheight{0mm}
-% \let\openright=\cleardoublepage
+\let\openright=\cleardoublepage
 
 %% Generate PDF/A-2u
 \usepackage[a-2u]{pdfx}
@@ -57,6 +57,7 @@
 
 \usepackage{hyperref}
 \usepackage{multirow}
+\usepackage{textcomp}
 
 \usepackage{color}
 \definecolor{bluekeywords}{rgb}{0,0,1}
@@ -77,7 +78,7 @@
 	emphstyle={[1]\color{classgreen}},
 	emph={[1]T, NUM\_RIGHTS, NUM\_LEFTS, LENGTH},
 	emphstyle={[2]\color{interfaceyellow}},
-	emph={[2]shfl, shfl\_down, thread\_rank, size, load\_with\_bounds\_check, some\_function},
+	emph={[2]shfl, shfl\_down, thread\_rank, size, load\_with\_bounds\_check, some\_function, load\_submatrix, compute\_from\_shared\_mem\_buffers, \_\_syncthreads},
 	directivestyle=\color{directivepink}
 }
 
@@ -216,9 +217,10 @@ Abstract.
 %%% should be uploaded to SIS and optionally also included in the thesis on a~CD/DVD.
 %%% Allowed file formats are specified in provision of the rector no. 72/2017.
 \appendix
-\chapter{Attachments}
 
-\section{First Attachment}
+\include{appendix}
+
+
 
 \openright
 \end{document}
