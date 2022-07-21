@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{345.375bp}%
+    \setlength{\unitlength}{638.25bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,15 +50,24 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.63083605)%
+  \begin{picture}(1,0.54054054)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{warp_per_shift-ThreadBlockOverlapsWrong.pdf}}%
-    \put(0.27687296,0.45819761){\makebox(0,0)[rt]{\lineheight{1.25}\smash{\begin{tabular}[t]{r}Middle loop iteration 0\end{tabular}}}}%
+    \put(0.15041128,0.40599295){\makebox(0,0)[rt]{\lineheight{1.25}\smash{\begin{tabular}[t]{r}Middle loop iteration 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{warp_per_shift-ThreadBlockOverlapsWrong.pdf}}%
-    \put(0.27687296,0.19761129){\makebox(0,0)[rt]{\lineheight{1.25}\smash{\begin{tabular}[t]{r}Middle loop iteration 1\end{tabular}}}}%
+    \put(0.15041128,0.26204465){\makebox(0,0)[rt]{\lineheight{1.25}\smash{\begin{tabular}[t]{r}Middle loop iteration 1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{warp_per_shift-ThreadBlockOverlapsWrong.pdf}}%
-    \put(0.65038002,0.59934853){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Shared memory buffers\end{tabular}}}}%
+    \put(0.81081081,0.52350176){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Without first buffer offset\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{warp_per_shift-ThreadBlockOverlapsWrong.pdf}}%
+    \put(0.3760282,0.52467685){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}As used above\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{warp_per_shift-ThreadBlockOverlapsWrong.pdf}}%
+    \put(0.03760282,0.11692127){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Buffer rows processed together by warp 0\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{warp_per_shift-ThreadBlockOverlapsWrong.pdf}}%
+    \put(0.03760282,0.08166863){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Empty part of shared memory buffer\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{warp_per_shift-ThreadBlockOverlapsWrong.pdf}}%
+    \put(0.03760282,0.04641598){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Row loaded into shared memory\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{warp_per_shift-ThreadBlockOverlapsWrong.pdf}}%
+    \put(0.03760282,0.01116334){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Row kept in shared memory from previous iterati...\end{tabular}}}}%
   \end{picture}%
 \endgroup%

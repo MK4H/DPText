@@ -50,14 +50,18 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.20295055)%
+  \begin{picture}(1,0.29994322)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{overlap-MultirowFinalize.pdf}}%
-    \put(0.10507881,0.00417647){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Main loop 0\end{tabular}}}}%
-    \put(0.36777583,0.00417647){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Main loop 1\end{tabular}}}}%
-    \put(0.63047285,0.00417647){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Finish 2\end{tabular}}}}%
-    \put(0.89316988,0.00417647){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Finish 1\end{tabular}}}}%
+    \put(0.10507881,0.05696216){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Main loop 0\end{tabular}}}}%
+    \put(0.36777583,0.05696216){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Main loop 1\end{tabular}}}}%
+    \put(0.63047285,0.05696216){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Finish 2\end{tabular}}}}%
+    \put(0.89316988,0.05696216){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Finish 1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{overlap-MultirowFinalize.pdf}}%
+    \put(0.0385289,0.00442275){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Left input matrix\end{tabular}}}}%
+    \put(0.40630473,0.00442275){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Right input matrix\end{tabular}}}}%
+    \put(0.77408056,0.00442275){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Accessed elements\end{tabular}}}}%
+    \put(0.49912434,0.28463291){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Overlaps computed in given iteration\end{tabular}}}}%
   \end{picture}%
 \endgroup%

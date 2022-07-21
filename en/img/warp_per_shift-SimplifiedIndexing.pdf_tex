@@ -50,84 +50,92 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.34478936)%
+  \begin{picture}(1,0.5443459)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.63858093,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.63858093,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.6940133,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.6940133,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.74944568,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.74944568,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.63858093,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.63858093,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=5]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.6940133,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.6940133,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.74944568,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.74944568,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=7]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.63858093,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.63858093,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=8]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.6940133,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.6940133,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=9]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.74944568,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.74944568,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=10]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.80487805,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.80487805,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=11]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.86031042,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.86031042,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=12]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.91574279,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.91574279,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=13]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.80487805,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.80487805,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=14]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.86031042,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.86031042,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=15]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.91574279,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.91574279,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=16]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.80487805,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.80487805,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=17]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.86031042,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.86031042,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=18]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.91574279,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.91574279,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=19]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.08425721,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.08425721,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=20]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.13968958,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.13968958,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=21]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.19512195,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.19512195,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=22]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.08425721,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.08425721,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=23]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.13968958,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.13968958,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=24]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.19512195,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.19512195,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=25]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.08425721,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.08425721,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=26]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.13968958,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.13968958,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=27]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.19512195,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.19512195,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=28]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.25055432,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.25055432,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=29]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.3059867,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.3059867,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=30]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.36141907,0.18847007){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.36141907,0.38802661){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=31]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.25055432,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.25055432,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=32]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.3059867,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
+    \put(0.3059867,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}2\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=33]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.36141907,0.13303769){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.36141907,0.33259424){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=34]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.25055432,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
+    \put(0.25055432,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=35]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.3059867,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
+    \put(0.3059867,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=36]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.36141907,0.07760532){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
+    \put(0.36141907,0.27716186){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}1\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=37]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.22172949,0.31485588){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Basic indexing\end{tabular}}}}%
+    \put(0.22172949,0.51441242){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Basic indexing\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=38]{warp_per_shift-SimplifiedIndexing.pdf}}%
-    \put(0.77605322,0.31485588){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Simplified indexing\end{tabular}}}}%
+    \put(0.77605322,0.51441242){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Simplified indexing\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=39]{warp_per_shift-SimplifiedIndexing.pdf}}%
+    \put(0.02882483,0.02217295){\color[rgb]{0,0,0}\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}i\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=40]{warp_per_shift-SimplifiedIndexing.pdf}}%
+    \put(0.08203991,0.11086475){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Left input matrix\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=41]{warp_per_shift-SimplifiedIndexing.pdf}}%
+    \put(0.53658537,0.11086475){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Right input matrix\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=42]{warp_per_shift-SimplifiedIndexing.pdf}}%
+    \put(0.08203991,0.02217295){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Overlapping elements processed by thread i\end{tabular}}}}%
   \end{picture}%
 \endgroup%

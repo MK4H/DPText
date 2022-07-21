@@ -126,16 +126,16 @@
 % Name of the department or institute, where the work was officially assigned
 % (according to the Organizational Structure of MFF UK in English,
 % or a full name of a department outside MFF)
-\def\Department{Name of the department}
+\def\Department{Department of Distributed and Dependable Systems}
 
 % Is it a department (katedra), or an institute (ústav)?
 \def\DeptType{Department}
 
 % Thesis supervisor: name, surname and titles
-\def\Supervisor{Supervisor's Name}
+\def\Supervisor{doc. RNDr. Martin Kruliš, Ph.D}
 
 % Supervisor's department (again according to Organizational structure of MFF)
-\def\SupervisorsDepartment{department}
+\def\SupervisorsDepartment{Department of Distributed and Dependable Systems}
 
 % Study programme and specialization
 \def\StudyProgramme{Computer Science}
@@ -148,15 +148,15 @@ Dedication.
 }
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
-% TODO: Write to the thesis.xmpdata too
 \def\Abstract{%
-Abstract.
+Cross-correlation is a commonly used tool in the field of signal processing, with applications in pattern recognition, particle physics, electron tomography, and many other areas. For many of these applications, it is often the limiting factor on system performance due to its computational complexity. In this thesis, we analyze the cross-correlation algorithm and its optimization and parallelization possibilities. We then implement several optimizations of the definition-based algorithm, mainly focused on parallelization using the Graphical processing unit (GPU). Even though the definition-based algorithm provides many possibilities for parallelization, the implementation needs to solve several problems, such as the algorithm's low arithmetic intensity. Furthermore, the problems differ between computation types, which include cross-correlating a pair of inputs, one input with many other inputs, or many inputs with many other inputs. Lastly, we compare the optimizations of the definition-based algorithm with the asymptotically faster and commonly used algorithm based on the Fast Fourier Transform. Depending on the total size of the data, we achieve parity between the two algorithms for matrix sizes ranging from 60x60 to 150x150, allowing performance improvements for systems using matrices smaller than these sizes.
 }
 
+
+
 % 3 to 5 keywords (recommended), each enclosed in curly braces
-% TODO: Write to the thesis.xmpdata too
 \def\Keywords{%
-{key} {words}
+{cross-correlation} {GPU} {parallelization} {optimization}
 }
 
 %% The hyperref package for clickable links in PDF and also for storing
