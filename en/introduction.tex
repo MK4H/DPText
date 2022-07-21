@@ -1,25 +1,25 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-The field of Signal processing is present everywhere in today's world. From image processing through seismology to particle physics, the need to analyze, modify, or synthesize signals such as sound, images, and other scientific measurements is shared throughout many fields. One of the commonly used algorithms in signal processing is cross-correlation, which will be the subject of this thesis. The aim is to analyze, implement and evaluate possible methods of optimization, and parallelization of definition based cross-correlation algorithm. The implementations will then be further compared to the generally used implementation based on Fast Fourier transform.
+The field of signal processing is present everywhere in today's world. From image processing through seismology to particle physics, the need to analyze, modify or synthesize signals such as sound, images, and other scientific measurements is shared across many fields. One of the commonly used algorithms in signal processing is cross-correlation, which will be the subject of this thesis. The aim is to analyze, implement and evaluate possible methods of optimization and parallelization of the definition-based cross-correlation algorithm. The implementations will then be further compared to the generally used implementation based on the Fast Fourier transform.
 
 \section*{Motivation}
 
 Cross-correlation is one of the key operations in both analog and digital signal processing.
-It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography, and many other fields \citep{Kapinchev2015}. For many of these applications, the computation time of cross-correlation is often the limiting factor in the data processing pipeline. The amount of input data combined with the computational complexity make simple sequential CPU-based implementations and even more advanced parallel CPU-based implementation inadequate.
+It is widely used in image analysis, pattern recognition, image segmentation, particle physics, electron tomography, and many other fields \citep{Kapinchev2015}. For many of these applications, the computation time of cross-correlation is often the limiting factor in the data processing pipeline. The amount of input data combined with the computational complexity makes simple sequential CPU-based implementations and even more advanced parallel CPU-based implementations inadequate.
 
-Algorithms based on the definition of cross-correlation or on Fast Fourier transform (FFT) can take advantage of the inherent high degree of data parallelism in the definition of cross-correlation or FFT respectively to utilize the high throughput and massive amounts of computational power provided by massively parallel systems in the form of Graphical processing units (GPU).
+Algorithms based on the definition of cross-correlation or on the Fast Fourier transform (FFT) can take advantage of the inherent high degree of data parallelism in the definition of cross-correlation or FFT, respectively. This parallelism allows them to utilize the high throughput and large amounts of computational power provided by the massively parallel systems in the form of Graphical processing units (GPU).
 
-This thesis is a continuation of the thesis "Employing GPU to Process Data from Electron Microscope" \citep{misko}, which uses both basic definition based cross-correlation as well as one based on FFT. This thesis aims to compare the asymptotically faster FFT based algorithm with the asymptotically slower definition based algorithm and provide an optimized implementation of the definition based algorithm which, for the input sizes used by the original thesis, should be faster than the FFT based implementation.
+This thesis is a continuation of the thesis "Employing GPU to Process Data from Electron Microscope" \citep{misko}, which uses both a basic definition-based cross-correlation algorithm and one based on FFT. The aim is to compare the asymptotically faster FFT-based algorithm with the asymptotically slower definition-based algorithm and provide an optimized implementation of the definition-based algorithm, which, for the input sizes used by the original thesis, should be faster than the FFT-based implementation.
 
 \section*{Objective}
-The objective of this thesis is to analyze the possibilities for optimization and parallelization of the definition based algorithm and provide detailed measurements and comparisons with the FFT based algorithm for range of input forms and sizes. The optimizations and parallelization of the definition based algorithm will utilize capabilities provided by the CUDA platform.
+This thesis aims to analyze the possibilities for optimization and parallelization of the definition-based algorithm and provide detailed measurements and comparisons with the FFT-based algorithm for a range of input forms and sizes. The optimizations and parallelization of the definition-based algorithm will utilize capabilities provided by the CUDA platform.
 
 The main contributions of this thesis are:
 \begin{itemize}
-	\item a family of optimized definition based implementations utilizing the CUDA platform,
-	\item comparison of the definition based implementations with one based on Fast Fourier Transform,
-	\item measurements of the behavior of these implementations based on input size and type.
+	\item a family of optimized definition-based implementations utilizing the CUDA platform,
+	\item comparison of the definition-based implementations with one based on the Fast Fourier Transform,
+	\item measurements of the behavior of these implementations and its dependence on input size and type.
 \end{itemize}
 
 \section*{Thesis outline}
@@ -27,8 +27,9 @@ The contents of this thesis are ordered as follows:
 \begin{itemize}
 	\item description of cross-correlation algorithm;
 	\item introduction to computations utilizing GPU hardware and the CUDA platform;
-	\item analysis of the optimizations of the definition based algorithm, focused on parallelization using CUDA platform,
-	\item measurement of the behavior of both the optimized definition based and Fast Fourier transform based algorithm.
+	\item analysis of the optimizations of the definition-based algorithm, focused on parallelization using the CUDA platform,
+	\item measurement of the behavior of both the optimized definition-based algorithm and the algorithm based on the Fast Fourier transform.
 \end{itemize}
+
 
 

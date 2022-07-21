@@ -1,14 +1,14 @@
 \chapter{GPU}
 
-This chapter describes Graphical processing unit (GPU) hardware and its basic advantages and disadvantages when compared to the Central processing unit (CPU) in general. Next we introduce Compute Unified Device Architecture, better known by its acronym CUDA, a "general purpose parallel computing platform and programming model" \citep{site:cuda}, which will be used in this thesis. Lastly we list several key points which need to be addressed for optimal code performance mostly in CUDA, but also applicable when working with GPUs of other vendors or when using GPUs for graphics.
+This chapter describes the graphics processing unit (GPU) hardware and its primary advantages and disadvantages compared to the Central processing unit (CPU). Next, we introduce Compute Unified Device Architecture, better known by its acronym CUDA, a "general purpose parallel computing platform and programming model" \citep{site:cuda}, which will be used in this thesis. Lastly, we list several key points which need to be addressed for optimal code performance, mainly in CUDA, but also applicable when working with GPUs of other vendors or when using GPUs for graphics.
 
 \section{Fundamentals}
 \label{sec:gpu}
 
-Graphical processing unit (GPU) is optimized for throughput of a single stream of instructions working on many streams of data, which allows GPU hardware design to make trade-offs which are not available for Central processing unit (CPU) hardware.
-CPUs are optimized to process a single stream of instructions working on a single stream of data as fast as possible. This requires CPU design to minimize instruction latency, which is achieved by using branch predictions, multiple levels of caching, and other such mechanisms. On the other hand, the single stream of instructions is executed many times in parallel in a GPU, which allows GPU hardware to hide high latency operations by switching to other threads instead of trying to optimize for lower latency of each instruction. The thread switching is made instantaneous by keeping the execution context, such as registers, of all threads resident at all times. Compare this with CPU context switching, where the state of all registers has to be offloaded into memory and state of another thread loaded from memory each time a CPU switches threads.
+The graphics processing unit (GPU) is optimized for the throughput of a single stream of instructions working on many streams of data. This allows GPU hardware design to make trade-offs not available for Central processing unit (CPU) hardware.
+CPUs are optimized to process a single stream of instructions working on a single stream of data as fast as possible. This goal requires CPU design to minimize instruction latency, which is achieved using branch predictions, multiple levels of caching, and other such mechanisms. On the other hand,  the single stream of instructions is executed many times in parallel in a GPU, allowing the GPU hardware to hide high latency operations by switching to other threads instead of optimizing for lower latency of each instruction. Furthermore, the thread switching is made instantaneous by keeping the execution context, such as registers, of all threads resident at all times. Compare this with CPU context switching, where the state of all registers has to be offloaded into memory and the state of another thread loaded from memory each time a CPU switches threads.
 
-Another defining characteristic of the GPU hardware is a separate memory space. Code running on the GPU device cannot directly access the same memory as code running on the CPU. Instead, all data to be processed on the GPU has to be moved across the bus connecting the GPU to the host system, most commonly a PCIe bus. Similarly to the GPU execution units, the separate GPU device memory is optimized for high throughput at the cost of higher latency compared to the host memory. The device memory is further optimized for specific access patterns by groups of threads running on the GPU, with Nvidia GPU version of the optimization described in Section \ref{sec:global_memory_access}.
+Another defining characteristic of the GPU hardware is separate memory space. Code running on the GPU device cannot directly access the same memory as code running on the CPU. Instead, all data processed on the GPU must first be moved across the bus connecting the GPU to the host system, most commonly a PCIe bus. Similar to the GPU execution units, the separate GPU device memory is optimized for high throughput at the cost of higher latency compared to the host memory. The device memory is further optimized for specific access patterns by groups of threads running on the GPU, with the Nvidia GPU version of the optimization described in Section \ref{sec:global_memory_access}.
  
 % TODO: Maybe summary
 
@@ -16,26 +16,26 @@ Another defining characteristic of the GPU hardware is a separate memory space. 
 \section{CUDA Programming model}
 \label{sec:programming_model}
 
-Compute Unified Device Architecture, better known by its acronym CUDA, a "general purpose parallel computing platform and programming model" \citep{site:cuda}, which allows simplified utilization of NVIDIA Graphics processing units (GPU) for solving complex computational problems.
+Compute Unified Device Architecture, better known by its acronym CUDA, is a "general purpose parallel computing platform and programming model" \citep{site:cuda}, which allows simplified utilization of NVIDIA Graphics processing units (GPU) for solving complex computational problems.
 
-CUDA distinguishes two parts of the system running two types of code. First is the \textit{host} code running on the host part of the system. This is standard C++ program running on the CPU, accessing system memory and calling the operating system, as any other standard C++ program would. The second part is the \textit{device} code, running on a device or on multiple devices. Each device corresponds to a single GPU \footnote{Since Compute Capability 8.0 Ampere, device can represent a GPU slice.}.
+CUDA distinguishes two parts of the system running two types of code. First is the \textit{host} code running on the host part of the system. This is a standard C++ program running on the CPU, accessing system memory and calling the operating system, as any other standard C++ program would. The second part is the \textit{device} code, running on a device or multiple devices. Each device corresponds to a single GPU \footnote{Since Compute Capability 8.0 Ampere, a device can represent a GPU slice.}.
 
-Both parts of the code are programmed in the same language, CUDA C++, which is an extension to the C++ language, with some restrictions to the device code and some parts of the language only usable in the device code.
-One of the important things CUDA C++ introduces are \textit{function execution space specifiers}, which are attributes added to a function declaration and which specify if the given function is part of the host code, device code or if it should be compiled both for host and device code. The available \textit{function execution space specifiers} are:
+Both parts of the code are programmed in the same language, CUDA C++, an extension of the C++ language. This extension places some restrictions on the device code, while some parts of the language are only usable in the device code.
+One of the important things CUDA C++ introduces are the \textit{function execution space specifiers}. These specifiers are attributes added to a function declaration that specify if the given function is part of the host code, device code or if it should be compiled both for host and device code. The available \textit{function execution space specifiers} are:
 \begin{itemize}
 	\item \texttt{\_\_global\_\_}, which declares the function as being a kernel, callable from host code and executed on the device,
 	\item \texttt{\_\_device\_\_}, which declares the function as executed on the device, callable by another device or global function,
 	\item \texttt{\_\_host\_\_}, which declares the function as executed on the host, callable from the host only.
 \end{itemize}
 
-Without any specifiers, function is compiled as part of the host code. \textbf{Kernel} is a function with the \texttt{\_\_global\_\_} specifier, which is callable from the host code but is executed on a device. Kernels serve as entry points which the host code uses to offload computation to the device. Kernel invocation is asynchronous, where the function call to the kernel in host code does not wait for the kernel on the device to finish but returns immediately after the kernel is submitted.
+Without any specifiers, a function is compiled as part of the host code. \textbf{Kernel} is a function with the \texttt{\_\_global\_\_} specifier, which is callable from the host code but is executed on a device. Kernels serve as entry points that the host code uses to offload computation to the device. Kernel invocation is asynchronous, where the function call to the kernel in host code does not wait for the kernel on the device to finish but returns immediately after the kernel is submitted.
 
-When invoking a kernel, host code specifies the number of threads which are to run the device code. Basic description of how the device code is ran on the GPU is provided in Section \ref{sec:basic_device_code}. Detailed description of the abstraction defining the behavior of the device code, called the SIMT execution model, is given in Section \ref{sec:hardware_details}.
+When invoking a kernel, the host code specifies the number of threads that are to run the device code. A basic description of how the device code is run on the GPU is provided in Section \ref{sec:basic_device_code}. A detailed description of the abstraction defining the behavior of the device code called the SIMT execution model is given in Section \ref{sec:hardware_details}.
 
 \subsection{Running the device code}
 \label{sec:basic_device_code}
 
-The device code, written in CUDA C++ as a part of \textit{global} or \textit{device} function, describes the behavior of a single thread running on the device. Compared to host code running on the CPU, the device code is always ran by many threads simultaneously. On the surface, the device code is very similar to the host code written for the CPU, and will most likely work correctly if written as if for the CPU. The number of threads running the device code is determined by the arguments provided to the \textit{kernel} function. The threads are hierarchically grouped on several levels. These groups define scheduling behavior and guarantees, access to different kinds of memory and primitives for cooperation.
+The device code, written in CUDA C++ as a part of a \textit{global} or a \textit{device} function, describes the behavior of a single thread running on the device. Compared to the host code running on the CPU, the device code is always run by many threads simultaneously. On the surface, the device code is very similar to the host code written for the CPU and will most likely work correctly if written as if for the CPU. The number of threads running the device code is determined by the arguments provided to the \textit{kernel} function. The threads are hierarchically grouped on several levels. These groups define scheduling behavior, access to different kinds of memory, and primitives for cooperation.
 
 To maximize performance, one must structure the code and the overall algorithm according to details provided in Section \ref{sec:hardware_details}.
 
@@ -44,18 +44,18 @@ To maximize performance, one must structure the code and the overall algorithm a
 \subsection{Thread hierarchy}
 \label{sec:thread_hierarchy}
 
-Threads on the device are grouped into Cooperative Thread Arrays (CTA), also known as thread blocks. Thread blocks can be one-dimensional, two-dimensional or three-dimensional, which provides an easy way to distribute work when processing arrays, matrices or volumes. Thread blocks are further organized into one-dimensional, two-dimensional or three-dimensional grid, as can be seen in Figure \ref{fig:thread_hierarchy}. When launching a kernel, we specify thread block size and grid size, which combined together give us the number of threads executing the given kernel.
+Threads on the device are grouped into Cooperative Thread Arrays (CTA), also known as thread blocks. Thread blocks can be one-dimensional, two-dimensional, or three-dimensional, which provides an easy way to distribute work when processing arrays, matrices, or volumes. Thread blocks are further organized into a one-dimensional, two-dimensional, or three-dimensional grid, as shown in Figure \ref{fig:thread_hierarchy}. When launching a kernel, we specify the thread block size and the grid size, which combined give us the number of threads executing the given kernel.
 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{grid_of_thread_blocks.png}
-	\caption{Thread grouping hierarchy \citep{site:cuda}.}
+	\caption{Thread hierarchy \citep{site:cuda}.}
 	\label{fig:thread_hierarchy}
 \end{figure}
 
-Each thread is assigned an index, accessible through \texttt{threadIdx} built-in variable. Each thread can also access the index of the thread block it is part of through \texttt{blockIdx}, the block size through \texttt{blockDim} and grid size through \texttt{gridDim}. All of these variables are three dimensional vectors, with dimensions unused during kernel launch set to zero for indices and one for dimensions. Using these built-in variables, we can distribute work between threads, most often assigning each thread a part of the input to process.
+Each thread is assigned an index, accessible through \texttt{threadIdx} built-in variable. Each thread can also access the index of the thread block it is part of through \texttt{blockIdx}, the block size through \texttt{blockDim} and the grid size through \texttt{gridDim}. All of these variables are three-dimensional vectors, with dimensions unused during kernel launch set to zero for indices and one for dimensions. Using these built-in variables, we can distribute work between threads, most often assigning each thread a part of the input to process.
 
-Due to hardware details described in Section \ref{sec:hardware_details}, each 32 threads of a thread block are grouped into a \textit{warp}. Warps are used for scheduling and close cooperation of threads. 
+Due to hardware details described in Section \ref{sec:hardware_details}, every 32 threads of a thread block are grouped into a \textit{warp}. Warps are used for scheduling and close cooperation of threads. 
 
 \subsection{Thread cooperation}
 \label{sec:thread_cooperation}
@@ -67,10 +67,10 @@ CUDA provides several mechanisms for thread cooperation. Threads can cooperate o
 	\item warp level.
 \end{itemize}
 
-The rest of this subsection describes the older API using intrinsic functions. The newer Cooperative Groups API, which is a superset of the older API, is described in Subsection \ref{sec:cooperative_groups}.
+The rest of this subsection describes the older API using intrinsic functions. The newer Cooperative Groups API, a superset of the older API, is described in Subsection \ref{sec:cooperative_groups}.
 
 \subsubsection{Grid level}
-On grid level, the only available tools for cooperation are atomic operations on global memory. These operations can be used to perform read-modify-write on a 32-bit or 64-bit word in global memory without introducing race conditions.
+On the grid level, the only available tools for cooperation are atomic operations on the global memory. These operations can be used to perform read-modify-write on a 32-bit or 64-bit word in global memory without introducing race conditions.
 
 \subsubsection{Thread block level}
 On a thread block level, threads can use two mechanisms for cooperation:
@@ -82,9 +82,9 @@ On a thread block level, threads can use two mechanisms for cooperation:
 As per the CUDA C++ programming guide: 
 "the shared memory is expected to be a low-latency memory near each processor core (much like an L1 cache) and \_\_syncthreads() is expected to be lightweight" \citep{site:cuda}.
 
-Shared memory is a small memory close to the execution cores, described in more detail in the subsection \ref{sec:memory_hierarchy}. Each thread block receives a slice of shared memory,  which is then accessible only from the threads of the given thread block. Shared memory can be used as software managed cache or to share results between threads of the thread block. 
+Shared memory is a small memory close to the execution cores, described in more detail in Section \ref{sec:memory_hierarchy}. Each thread block receives a slice of shared memory accessible only from the threads of the given thread block. Shared memory can be used as software managed cache or to share results between threads of the thread block. 
 
-To synchronize threads of a single thread block, for example to communicate through shared memory, we use synchronization barrier \texttt{\_\_syncthreads()}. All threads in the block must execute the call to \texttt{\_\_syncthreads()} before any of the threads can proceed beyond the call to \texttt{\_\_syncthreads()}. 
+To synchronize threads of a single thread block, for example, to communicate through shared memory, we use synchronization barrier \texttt{\_\_syncthreads()}. All threads in the block must execute the call to \texttt{\_\_syncthreads()} before any of the threads can proceed beyond the call to \texttt{\_\_syncthreads()}. 
 The \texttt{\_\_syncthreads()} function also serves as memory barrier. % TODO: Maybe describe what memory barrier is
 
 \subsubsection{Warp level}
@@ -92,24 +92,24 @@ The \texttt{\_\_syncthreads()} function also serves as memory barrier. % TODO: M
 Threads of the warp, or lanes as they are referred to in the documentation, can utilize intrinsic functions to exchange data without the use of shared memory and perform simple hardware accelerated operations. 
 
 % This is important as this is the basis of one of our algorithms
-For data exchange between lanes of a warp, CUDA provides several warp shuffle functions, such as \_\_shfl\_sync, \_\_shfl\_up\_sync, \_\_shfl\_down\_sync, \_\_shfl\_xor\_sync. These differ in how they interpret the provided index, either using it directly as lane index, adding or subtracting from current lane index or executing \textit{xor} with current lane index. The data exchange does not have to span the whole warp. Shuffle operations allow the warp to be subdivided into groups with width of a power of 2. These operations can be used for different data exchange patterns, such as the obvious shuffle up or down, data rotation across lanes, broadcast of a value from single lane etc.
+For data exchange between lanes of a warp, the CUDA framework provides the following warp shuffle functions: \_\_shfl\_sync, \_\_shfl\_up\_sync, \_\_shfl\_down\_sync, \_\_shfl\_xor\_sync. These functions differ in how they interpret the provided index, either using it directly as lane index, adding or subtracting from the current lane index, or executing \textit{xor} with the current lane index. The data exchange does not have to span the whole warp. Shuffle operations allow the warp to be subdivided into groups with a width of a power of 2. These operations can be used for different data exchange patterns, such as the obvious shuffle up or down, data rotation across lanes, broadcast of a value from a single lane, etc.
 
 %Only direct lane indexing performs lane index wrap around. In other addressing modes, the lanes with out of range source lane index are left unchanged, receiving the value they pass in. The wrap around mechanism allows us to rotate data between threads instead of just shifting. The direct lane indexing can also be used to broadcast a value from a single lane to all other lanes. Both of these properties are utilized in the optimized implementations of cross-correlation described in Section \ref{sec:warp_shuffle_alg}. % TODO: Maybe mention how the wrap around can be used to implement ring buffer shifting between two parts of a buffer
 
 Warps can perform the following types of operations:
 \begin{itemize}
-	\item vote operations (\_\_any\_sync, \_\_all\_sync, \_\_ballot\_sync), which determine if any or all threads provided non-zero value, or return a mask of threads which provided non-zero value respectively;
-	\item match operations (\_\_match\_any\_sync, \_\_match\_all\_sync), which return mask of threads which provided the same value, or determine if all threads provided the same value;
-	\item reduce operations (\_\_reduce\_$\lbrack op \rbrack$\_sync), which execute one of the following operations on values provided: \textit{add}, \textit{max}, \textit{min}, \textit{and}, \textit{or}, \textit{xor}.
+	\item vote operations (\_\_any\_sync, \_\_all\_sync, \_\_ballot\_sync) determine if any or all threads provided non-zero value or return a mask of threads which provided non-zero value respectively;
+	\item match operations (\_\_match\_any\_sync, \_\_match\_all\_sync) return a mask of threads that provided the same value or determine if all threads provided the same value;
+	\item reduce operations (\_\_reduce\_$\lbrack op \rbrack$\_sync) execute one of the following operations on values provided: \textit{add}, \textit{max}, \textit{min}, \textit{and}, \textit{or}, \textit{xor}.
 \end{itemize}
 
 
-The API described in this subsection forms the basis of thread cooperation in CUDA. Most of this API is available since the early versions of CUDA. Subsection \ref{sec:cooperative_groups} will describe the newer Cooperative groups API, which builds on top of and extends the API described in this subsection.
+The API described in this subsection forms the basis of the thread cooperation in CUDA. Most of this API has been available since the early versions of CUDA. Subsection \ref{sec:cooperative_groups} will describe the newer Cooperative groups API, which builds on top of and extends the API described in this subsection.
 
 \subsection{Cooperative groups}
 \label{sec:cooperative_groups}
 
-Cooperative Groups API, introduced with CUDA 9, is an extension to the CUDA programming model for organizing groups of communicating threads \citep{site:cuda}. The API introduces data types representing groups of cooperating threads, be it a warp, a part of a warp, a thread block, a grid or even a multigrid\footnote{Multigrid represents multiple grids each running on a separate device.}.
+Cooperative Groups API, introduced with CUDA 9, is an extension to the CUDA programming model for organizing groups of communicating threads \citep{site:cuda}. The API introduces data types representing groups of cooperating threads, be it a warp, a part of a warp, a thread block, a grid, or even a multigrid\footnote{Multigrid represents multiple grids each running on a separate device.}.
 
 
 The API distinguishes two types of groups. First are the \textit{implicit groups}, which are present implicitly in each CUDA kernel. These are:
@@ -121,27 +121,27 @@ The API distinguishes two types of groups. First are the \textit{implicit groups
 \end{itemize}
 
 The API provides functions to create objects representing the implicit groups. 
-The other type are \textit{explicit groups}, which must be explicitly created from one of the implicit groups. The two explicit groups are:
+The other type is the \textit{explicit groups}, which must be explicitly created from one of the implicit groups. The two explicit groups are:
 
 \begin{itemize}
 	\item thread block tile,
 	\item coalesced group.
 \end{itemize}
 
-Both of these groups represent warp or subwarp size grouping of threads. Thread block tile can be created from a thread block or from another thread block tile, representing a warp or a part of a warp of size of a power of 2. The warp level operations described in the previous subsection \ref{sec:thread_cooperation} are available as methods on this group, with mask and width arguments of the built-in functions implicitly derived from the properties of the group. 
+Both of these groups represent a warp or a subwarp size grouping of threads. Thread block tile can be created from a thread block or from another thread block tile, representing a warp or a part of a warp of size of a power of 2. The warp level operations described in Section \ref{sec:thread_cooperation} are available as methods on the object representing this group, with mask and width arguments of the built-in functions implicitly derived from the properties of the group. 
 
-Coalesced group contains threads of a warp which are currently active, i.e. not masked.
+Coalesced group contains threads of a warp that are currently active, i.e., not masked.
 
-Creating an object representing an implicit group is a collective operation, in which all threads of the group must participate. Creating the object in a conditional branch may lead to deadlocks or data corruption. It may also introduce unnecessary synchronization points, limiting concurrency. Similarly to implicit group object creation, partitioning of groups is a collective operation which must be executed by all threads of the parent group and may introduce synchronization points. It is recommended to create objects representing implicit groups and do all partitioning at the start of the kernel and pass \textit{const} references throughout the code \cite{site:cuda}.
+Creating an object representing an implicit group is a collective operation in which all threads of the group must participate. Creating the object in a conditional branch may lead to deadlocks or data corruption. It may also introduce unnecessary synchronization points, limiting concurrency. Similar to the implicit group object creation, partitioning groups is a collective operation that all threads of the parent group must execute and may introduce synchronization points. Therefore, it is recommended to create objects representing implicit groups and do all partitioning at the start of the kernel and pass \textit{const} references throughout the code \cite{site:cuda}.
 
 \subsection{Memory hierarchy}
 \label{sec:memory_hierarchy}
 
-Each CUDA device has its own DRAM memory, so called \textit{device memory} or \textit{VRAM}, which is separate from the host system memory and from the \textit{device memory} of all other devices. Physically, \textit{device memory} can be seen on most GPU boards as DRAM chips separate from the main silicon chip.
+Each CUDA device has its own DRAM memory, so-called \textit{device memory} or \textit{VRAM}, which is separate from the host system memory and the \textit{device memory} of all other devices. Physically, \textit{device memory} can be seen on most GPU boards as DRAM chips separate from the main silicon chip.
 
 Data transferred between the host and device memory has to cross over the PCI-e bus, either explicitly by calls to \textit{cudaMemcpy} in the host code or by mapping parts of host memory to the \textit{device memory} address space using the \textit{Unified Memory} system, which then handles the data transfers in the background automatically.
 
-From the point of view of a CUDA thread, there are several types of memory available, as can be seen in Figure \ref{fig:memory_types}. For this thesis, the main types are:
+From the point of view of a CUDA thread, several types of memory are available, as can be seen in Figure \ref{fig:memory_types}. For this thesis, the main types are:
 
 \begin{itemize}
 	\item global memory,
@@ -163,35 +163,35 @@ From the point of view of a CUDA thread, there are several types of memory avail
 \end{figure}
 
 
-\textbf{Global memory} is part of the device memory. It is shared by all threads of a grid, and as such any access which could lead to race condition must be synchronized using atomic operations, as described in Section \ref{sec:thread_cooperation}. Global memory is allocated by the host code using \texttt{cudaMalloc} family of functions. When host code transfers data to the device using \texttt{cudaMemcpy} or any other means, global memory is the part of device memory this data will be transferred to. The pointers returned by \texttt{cudaMalloc} and possibly used in \texttt{cudaMemcpy} are then passed as arguments to the kernel. Device code can then use these to access the global memory. 
+\textbf{Global memory} is part of the device memory. It is shared by all threads of a grid, and as such, any access which could lead to a race condition must be synchronized using atomic operations, as described in Section \ref{sec:thread_cooperation}. Global memory is allocated by the host code using the \texttt{cudaMalloc} family of functions. When the host code transfers data to the device using \texttt{cudaMemcpy} or any other means, global memory is the part of device memory this data will be transferred to. The pointers returned by \texttt{cudaMalloc} and possibly used in \texttt{cudaMemcpy} are then passed as arguments to the kernel. The device code can then use these to access the global memory. 
 
-\textbf{Shared memory}, as mentioned in the section \ref{sec:thread_cooperation}, is expected to be a low-latency memory near each processor core (much like an L1 cache). The relation with L1 cache can be seen in the fact that each kernel can configure the proportion between hardware allocated to L1 cache and to Shared memory, which means these memories share the same underlying hardware. Shared memory can be allocated either dynamically by declaring an array type variable with the memory space specifier \texttt{\_\_shared\_\_} and providing the size to be allocated during kernel launch, or statically by defining the variable with static size.
+\textbf{Shared memory}, as mentioned in the section \ref{sec:thread_cooperation}, is expected to be a low-latency memory near each processor core (much like an L1 cache). The relation with the L1 cache can be seen in the fact that each kernel can configure the proportion between hardware allocated to the L1 cache and to Shared memory, which means these memories share the same underlying hardware. Shared memory can be allocated either dynamically by declaring an array type variable with the memory space specifier \texttt{\_\_shared\_\_} and providing the size to be allocated during kernel launch, or statically by defining the variable with a static size.
 
-\textbf{Registers} are the fastest memory available for device code. Compared to CPUs, GPUs provide large amount of registers. For all recent GPU generations, the register file provides 65536 32bit registers. All variables used by the kernel code are stored in registers. If a kernel requires more registers than available, the data is \textit{spilled} into Local memory.
+\textbf{Registers} are the fastest memory available for the device code. Compared to CPUs, GPUs provide a large number of registers. For all recent GPU generations, the register file provides 65536 32bit registers. All variables used by the kernel code are stored in registers. If a kernel requires more registers than available, the data is \textit{spilled} into Local memory.
 
-\textbf{Local memory} is part of device memory private for each thread, allocated automatically based on the requirements of the CUDA compiler. This type of memory is used for register spilling, arrays with non-constant indexing and large structures or arrays which would consume too much register space. 
+\textbf{Local memory} is part of device memory private for each thread, allocated automatically based on the requirements of the CUDA compiler. This type of memory is used for register spilling, arrays with non-constant indexing, and large structures or arrays which would consume too much register space. 
 
 
 \subsection{Hardware details}
 \label{sec:hardware_details}
-The abstraction defining the behavior of the device code is called the Single instruction, multiple threads(SIMT) execution model. In this execution model, threads on the device are split into groups of 32, called \textit{warps}. Each warp of threads is scheduled together, starting at the same program address and executing in lockstep.\footnote{Since Compute Capability 7.0 Volta, threads of a warp can be scheduled more independently and do not execute strictly in lockstep \citep{paper:volta}.}
+The abstraction defining the behavior of the device code is called the Single Instruction, Multiple Threads(SIMT) execution model. In this execution model, threads on the device are split into groups of 32, called \textit{warps}. Each warp of threads is scheduled together, starting at the same program address and executing in lockstep.\footnote{Since Compute Capability 7.0 Volta, threads of a warp can be scheduled more independently and do not execute strictly in lockstep \citep{paper:volta}.}
 
 
-If branching occurs, as can be seen in Figure \ref{fig:thread_divergence_old}, any branch that is taken by at least a single thread of a warp is executed by the whole warp, masking out any threads that did not take given branch. When masked, thread does not execute any reads or writes, but still has to continue execution with other threads in the warp. This is most apparent in loops, where a single thread of a warp executing the loop thousand times will result in the whole warp executing the loop thousand times, even if other threads are masked and do nothing for most of the loops. This cuts the theoretical throughput by a factor of 32, as only one of the 32 threads does useful work.
+If branching occurs, as shown in Figure \ref{fig:thread_divergence_old}, any branch taken by at least a single thread of a warp is executed by the whole warp, masking out any threads that did not take the given branch. When masked, the thread does not execute any reads or writes but still has to continue execution with other threads in the warp. This is most apparent in loops, where a single thread of a warp executing the loop a thousand times will result in the whole warp executing the loop a thousand times, even if other threads are masked and do nothing for most of the loops. This cuts the theoretical throughput by a factor of 32, as only one of the 32 threads does useful work.
 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{cuda_thread_divergence_old.png}
-	\caption{Branching in device \citep{site:cuda}.}
+	\caption{Branching in device code \citep{site:cuda}.}
 	\label{fig:thread_divergence_old}
 \end{figure}
 
 % TODO: Maybe mention global memory access
-On the other side of the spectrum, the SIMT execution model can be compared to the Single instruction, multiple data (SIMD) execution model, where the number of elements processed by a single instruction is directly exposed in the user code, compared to the SIMT model, where the user code itself describes a behavior of a single thread and the grouping of threads is abstracted by the platform. 
+On the other side of the spectrum, the SIMT execution model can be compared to the Single Instruction, Multiple Data (SIMD) execution model, where the number of elements processed by a single instruction is directly exposed in the user code. This can be compared to the SIMT model, where the user code itself describes the behavior of a single thread, and the grouping of threads is abstracted by the platform. 
 
-To maximize performance, one must keep in mind the SIMT model, grouping into warps, thread divergence when branching, coalesced memory accesses etc.
+To maximize performance, one must keep in mind the SIMT model, grouping into warps, thread divergence when branching, coalesced memory accesses, etc.
 
-NVIDIA GPUs are build around an array of \textit{Streaming multiprocessors} (SM). SM of a GPU is similar to a core of a multicore CPU. Each SM has separate execution units, schedulers, register file, shared memory and L1 cache. An example of an SM can be seen in Figure \ref{fig:volta_sm}. Each SM can have multiple schedulers, each scheduling up to one warp per cycle. 
+NVIDIA GPUs are built around an array of \textit{Streaming Multiprocessors} (SM). SM of a GPU is similar to a core of a multicore CPU. Each SM has separate execution units, schedulers, register file, shared memory, and L1 cache. An example of an SM is shown in Figure \ref{fig:volta_sm}. Each SM can have multiple schedulers, each scheduling up to one warp per cycle. 
 
 Each thread block is assigned to a single SM exclusively, and each SM can run multiple thread blocks at once. Warps of all thread blocks resident on the given SM are scheduled regardless of the thread block the warps belong to.
 
@@ -212,11 +212,11 @@ When working with CUDA, there are two main parts of the platform which are versi
 	\item GPU Compute Capability.
 \end{itemize}
 
-CUDA Toolkit represents the software development part of the CUDA platform, encompassing the CUDA runtime library, the \textit{nvcc} compiler and other tools for development of the software.
+The CUDA toolkit represents the software development part of the CUDA platform, encompassing the CUDA runtime library, the \textit{nvcc} compiler, and other tools for software development.
 
-GPU Compute Capability (CC) represents the features provided by the hardware. This includes the number of registers, memory sizes, set of instructions etc. In general, each consumer GPU generation corresponds to a new CC, such as GTX 1000 cards corresponding to CC 6.0 Pascal and RTX 3000 cards corresponding to CC 8.0 Ampere. There are some exceptions, for example CC 7.0 Volta having only enterprise cards. With each release of new Compute Capability cards, there is generally accompanying CUDA Toolkit release providing access to the new features provided by the hardware. 
+GPU Compute Capability (CC) represents the features provided by the hardware. These features include the number of registers, memory sizes, set of instructions, etc. Generally, each consumer GPU generation corresponds to a new CC, such as GTX 1000 cards corresponding to CC 6.0 Pascal and RTX 3000 cards corresponding to CC 8.0 Ampere. An example of an exception to this rule is CC 7.0 Volta which has enterprise cards. With each release of new Compute Capability cards, there is generally an accompanying CUDA Toolkit release providing access to the new features provided by the hardware. 
 
-Compute Capabilities are backwards compatible, so code created for older generation of cards can be ran on newer cards, even though it may not take advantage of new hardware features and may be inefficient on the newer cards.
+Compute Capabilities are backwards compatible, so code created for an older generation of cards can be run on newer cards, even though it may not take advantage of new hardware features and may be inefficient on the newer cards.
 
 \section{Code optimizations}
 
@@ -227,11 +227,11 @@ The observations and recommendations provided in this section are based on the p
 \subsection{Occupancy}
 \label{sec:occupancy}
 
-The GPU design prioritizes high instruction throughput of many concurrent threads over single thread performance at the cost of high latency of each instruction. To hide the high latency between dependent instructions, each scheduler keeps a pool of warps between which it switches, possibly on each instruction. Warps in a pool of a scheduler are called \textit{active} warps.
-Each cycle, there may be multiple warps which have instructions ready to be executed. Such warps are called \textit{eligible} warps.
+The GPU design prioritizes high instruction throughput of many concurrent threads over single thread performance at the cost of high latency of each instruction. To hide the high latency between dependent instructions, each scheduler keeps a pool of warps between which it switches, possibly on each instruction. Warps in a scheduler pool are called \textit{active} warps.
+Each cycle, there may be multiple warps that have instructions ready to be executed. Such warps are called \textit{eligible} warps.
 Each cycle, a warp scheduler can select one of the \textit{eligible} warps as \textit{issued} warp, issuing its instruction to be executed.
 
-For optimal performance, we want to have enough active warps so that there is at least one eligible warp each cycle to enable the GPU to hide the high latency of each instruction. As described in Section \ref{sec:hardware_details}, the number of warps resident on a SM depends on the number and size of thread blocks resident on a SM.
+For optimal performance, we want to have enough active warps so that there is at least one eligible warp each cycle to enable the GPU to hide the high latency of each instruction. As described in Section \ref{sec:hardware_details}, the number of warps resident on an SM depends on the number and size of thread blocks resident on an SM.
 
 The number of thread blocks assigned to an SM is limited by three factors:
 
@@ -241,12 +241,12 @@ The number of thread blocks assigned to an SM is limited by three factors:
 	\item shared memory usage.
 \end{itemize}
 
-The hardware limit differs, but is either 16 or 32 for all currently supported Compute Capabilities. 
+The hardware limit differs but is either 16 or 32 for all currently supported Compute Capabilities. 
 
-To enable no cost execution context switching (program counters, registers, etc.), the whole execution context for all warps is kept on the SM for the whole lifetime of each warp. 
+To enable execution context switching with no cost, the whole execution context (program counters, registers, etc.) for all warps is kept on the SM for the whole lifetime of each warp. 
 
 
-Number of registers used by all warps of all blocks which reside on the given SM must be smaller than or equal to the number of registers in the register file. For example, for SM with 65536 registers, code using 64 registers per thread and 512 threads in a block, there can only be two blocks resident on the SM, as $2*512*64 = 65536$. If the code requires just a single register more, only a single block will be resident on each SM.
+The number of registers used by all warps of all blocks which reside on the given SM must be smaller than or equal to the number of registers in the register file. For example, for an SM with 65536 registers, and code using 64 registers per thread and 512 threads in a block, there can only be two blocks resident on the SM, as $2*512*64 = 65536$. If the code requires a single additional register, only a single block will be resident on each SM.
 
 The total amount of shared memory required by all blocks residing on an SM must be smaller than or equal to the size of shared memory provided by the SM. 
 
@@ -261,7 +261,7 @@ Other than occupancy, there are other possible reasons why no warp may be eligib
 	\item Transcendental and Data Type Conversion Unit (XU).
 \end{itemize}
 
-Each instruction has a Compute Capability specific throughput. If this throughput is exceeded, the pipeline implementing the instruction becomes saturated and is unable to execute additional instructions. This becomes a problem when, for example, many or all warps often execute the same low throughput instruction, such as sinus, cosinus or inverse square root, which are implemented by the XU pipeline. Even for simpler operations implemented by the ALU or FMA, if all warps execute the same instruction, the pipelines may become saturated and warps which are waiting to execute more of the given instruction will not be eligible to be issued.
+Each instruction has a Compute Capability specific throughput. If exceeded, the pipeline implementing the instruction becomes saturated and is unable to execute additional instructions. This becomes a problem when, for example, many or all warps often execute the same low throughput instruction, such as sine, cosine, or inverse square root, which are implemented by the XU pipeline. Even for simpler operations implemented by the ALU or FMA, if all warps execute the same instruction, the pipelines may become saturated, and warps which are waiting to execute more of the given instruction will not be eligible to be issued.
 
 High LSU utilization reflects that the program may be memory bound, waiting for data from global or shared memory, or that the program executes many warp shuffle instructions, which are also implemented by the LSU pipeline. Due to this, the usage of shared memory together with warp shuffles is not advisable, as they both utilize the same pipeline and compete for resources.
 
@@ -270,12 +270,12 @@ High LSU utilization reflects that the program may be memory bound, waiting for 
 \subsection{Global memory access}
 \label{sec:global_memory_access}
 
-As shown in Figure \ref{fig:global_memory_access}, each access to global memory is grouped into 128~B naturally aligned chunks, where any chunk accessed by any of the threads of a warp has to be transferred from global memory. The maximum performance is achieved when access to memory is aligned and coalesced, i.e. all threads of a warp access elements in the same 128~B chunk which is aligned to 128~B. Any other form of access introduces overhead in a form of unnecessary data being transferred from global memory. 
+As shown in Figure \ref{fig:global_memory_access}, each access to the global memory is grouped into 128~B naturally aligned chunks, where any chunk accessed by any of the threads of a warp has to be transferred from the global memory. The maximum performance is achieved when access to memory is aligned and coalesced, i.e., all threads of a warp access elements in the same 128~B chunk, which is aligned to 128~B. Any other form of access introduces overhead in the form of unnecessary data being transferred from global memory. 
 
-When accessing data larger than 32 bits, the access is split into 2 half-warp transactions for 64 bit or 4 quarter warp transactions for 128 bit values, which are then processed independently, again reading any 128~B chunk any of the accesses. 
+When accessing data larger than 32 bits, the access is split into two half-warp transactions for 64-bit or four quarter-warp transactions for 128-bit values, which are then processed independently, again reading any 128~B chunk any of the accesses. 
 
-Access to global memory goes through at least one level of cache. On older architectures, global memory accesses are by default only cached in L2 cache, with L1 cache utilized only for local memory access to speed up register spills. % TODO: referece https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capability-3-0
-Special instructions can be used to cache data in L1 explicitly. For Compute Capabilities newer than 5.0, compiler can generate an instruction to load read-only data, such as the two input matrices in cross-correlation, and cache it in L1 cache. L1 cache, with cache line size of 128~B, is local to each SM and shares hardware with shared memory, described in the following section. L2 cache, with cache line size of 32~B, is still on-chip but is shared by all SMs. Each 128~B memory transfer is either served by a single L1 cache access or split into 4 32~B L2 cache accesses.
+Access to global memory goes through at least one level of cache. On older architectures, global memory accesses are by default only cached in the L2 cache, with the L1 cache utilized only for local memory access to speed up register spills. % TODO: referece https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capability-3-0
+Special instructions can be used to cache data in L1 explicitly. For Compute Capabilities 5.0 or newer, the compiler can generate an instruction to load read-only data, such as the two input matrices in cross-correlation, and cache it in the L1 cache. The L1 cache, with a cache line size of 128~B, is local to each SM and shares hardware with shared memory described in the following section. The L2 cache, with a cache line size of 32~B, is still on-chip but is shared by all SMs. Each 128~B memory transfer is either served by single L1 cache access or split into four 32~B L2 cache accesses.
 
 \begin{figure}[ht]
 	\centering
@@ -285,7 +285,7 @@ Special instructions can be used to cache data in L1 explicitly. For Compute Cap
 \end{figure}
 
 \subsection{Shared memory access}
-To achieve high bandwidth, shared memory is divided into 32 banks. The optimal access pattern the shared memory is designed for is for each thread of a warp to access a different bank. To enable this access pattern, successive 32bit words are mapped to successive shared memory banks. The simplest pattern is that the 32 threads of a warp access 32 consecutive 32bit items from an array in shared memory, shown in the left column of Figure \ref{fig:shared_memory_access}. If multiple threads access different addresses mapped to the same bank, as shown in the middle column of the figure, their accesses are serialized, the throughput of shared memory being divided by the maximum number of different addresses accessed in any of the banks. This is called a \textit{bank conflict}. Read access of the same address by multiple threads does not lead to a bank conflict, instead leading to a broadcast of the value between the threads. Writes to the same address by threads without synchronization results in data-race and an undefined behavior, as does unsychronized read and write access.
+To achieve high bandwidth, shared memory is divided into 32 banks. The optimal access pattern the shared memory is designed for is for each thread of a warp to access a different bank. To enable this access pattern, successive 32-bit words are mapped to successive shared memory banks. The simplest pattern is that the 32 threads of a warp access 32 consecutive 32-bit items from an array in shared memory, shown in the left column of Figure \ref{fig:shared_memory_access}. If multiple threads access different addresses mapped to the same bank, as shown in the middle column of the figure, their accesses are serialized, the throughput of shared memory being divided by the maximum number of different addresses accessed in any of the banks. This is called a \textit{bank conflict}. Read access of the same address by multiple threads does not lead to a bank conflict, resulting instead in a broadcast of the value between the threads. Writes to the same address by threads without synchronization result in a data race and an undefined behavior, as does unsynchronized read and write access.
 
 \begin{figure}[ht]
 	\centering
@@ -296,15 +296,15 @@ To achieve high bandwidth, shared memory is divided into 32 banks. The optimal a
 
 \subsection{General recommendations}
 
-We can summarize the information in previous subsections into few simple rules \citep{site:cuda}:
+We can summarize the information in previous subsections into a few simple rules \citep{site:cuda}:
 
 \begin{enumerate}
-	\item Maximize parallel execution by ensuring that the workload is distributed between large enough number of threads, where each thread requires low enough number of registers and each thread block requires small enough part of shared memory so that enough thread blocks fit onto an SM;
+	\item Maximize parallel execution by ensuring that the workload is distributed between a large enough number of threads, where each thread requires a low enough number of registers and each thread block requires a small enough part of shared memory so that enough thread blocks fit onto an SM;
 	\item Optimize memory usage by minimizing transfers from lower bandwidth memory by reusing data in hardware cache or manually moving data to shared memory. When accessing global memory, utilize coalesced accesses to minimize unnecessary data transferred. When accessing shared memory, minimize bank conflicts;
-	\item Optimize instruction usage by minimizing the use of low throughput instructions such as sinus, cosinus or inverse square root. When working with floating point numbers, use 32 bit numbers if precision is not crucial. Minimize thread divergence to ensure all threads in a warp execute useful instructions.
+	\item Optimize instruction usage by minimizing the use of low throughput instructions such as sine, cosine, or inverse square root. When working with floating point numbers, use 32-bit numbers if precision is not crucial. Minimize thread divergence to ensure all threads in a warp execute useful instructions.
 \end{enumerate}
 
-These rules are used in the design of optimized definition-based cross-correlation implementations described in the following chapter.
+These rules are used in the design of the optimized definition-based cross-correlation implementations described in the following chapter.
 % TODO: Move related work to Analysis chapter
 %\section{Related work}
 

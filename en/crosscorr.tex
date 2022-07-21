@@ -3,9 +3,7 @@
 \label{sec:cross_corr}
 %\addcontentsline{toc}{chapter}{Cross-correlation}
 
-In this chapter, we define cross-correlation and describe the ways for its computation. We first define one-dimensional cross-correlation, extending it into multiple dimensions and introducing circular cross-correlation. We then describe how circular cross-correlation is used to compute cross-correlation using discrete Fourier transform. Lastly we describe the possibilities for optimization and parallelization of cross-correlation, with real-world usage examples where these optimizations can be used.
-
-
+In this chapter, we define cross-correlation and describe algorithms for its computation. We first define one-dimensional cross-correlation, extending it into multiple dimensions and introducing circular cross-correlation. We then illustrate how circular cross-correlation is used to compute cross-correlation using discrete Fourier transform. Lastly we list the possibilities for optimization and parallelization of cross-correlation, with real-world usage examples of where these optimizations can be utilized.
 
 \section{Definition}
 \label{sec:cross_corr_def}
@@ -16,7 +14,7 @@ Cross-correlation of functions $f,g: \mathbb{C} \rightarrow \mathbb{R}$, denoted
 	(f \star g)(\tau) = \int_{-\infty}^{\infty} \overline{f(t)}g(t + \tau) \,dt,
 \] 
 
-where \(\overline{f(t)}\) denotes the complex conjugate of \(f(t)\) and \(\tau\) is the displacement of the two functions \(f\) and \(g\). In simpler words, the value \((f \star g)(\tau)\) tells us how similar the function \(f\) is to \(g\) when \(g\) is shifted by \(\tau\), with higher value representing higher similarity. Figure \ref{fig:cross_corr_example} shows cross-correlation of two example functions.
+where \(\overline{f(t)}\) denotes the complex conjugate of \(f(t)\) and \(\tau\) is the displacement of the two functions \(f\) and \(g\). In simpler words, the value \((f \star g)(\tau)\) tells us how similar the function \(f\) is to \(g\) when \(g\) is shifted by \(\tau\), with a higher value representing higher similarity. Figure \ref{fig:cross_corr_example} shows the cross-correlation of two example functions.
 
 \begin{figure}[h]
 	\centering
@@ -44,32 +42,32 @@ For two discrete functions \( f, g : \mathbb{Z}^2 \rightarrow \mathbb{R} \), cro
 (f \star g)[m,n] = \sum_{i=-\infty}^{\infty} \sum_{j=-\infty}^{\infty} \overline{f[m,n]}g[m + i,n + j],
 \]
 
-Even though cross-correlation is defined on the whole $\mathbb{Z}$ for one dimension and $\mathbb{Z}^2$ for two dimensions, most use cases of cross-correlation work only on finite inputs, such as image processing working on finite images. The only values we are interested in are those where the two images overlap, which limits the computation to $(w_1 + w_2 - 1) * (h_1 + h_2 - 1)$ resulting values, where $w_i$ denotes width of the image $i$ and $h_i$ denotes the height of the image $i$.
+Even though cross-correlation is defined on the whole $\mathbb{Z}$ for one dimension and $\mathbb{Z}^2$ for two dimensions, most use cases of cross-correlation work only on finite inputs, such as image processing working on finite images. The only values we are interested in are those where the two images overlap, which restricts the computation to $(w_1 + w_2 - 1) * (h_1 + h_2 - 1)$ resulting values, where $w_i$ denotes width of the image $i$ and $h_i$ denotes the height of the image $i$.
 
-This limits the part of the output we are interested in and leads us to the time complexity of the definition based algorithm, or \textit{naive} algorithm as it is called in the code associated with the thesis. For each of the $(w_1 + w_2 - 1) * (h_1 + h_2 - 1)$ output values, we need to multiply the overlapping pixel values and sum all the multiplication results together. There will be at most $min(w_1, w_2) * min(h_1, h_2)$ overlapping pixels. For simplicity, let us work with two images of size $w_i*h_i$. Then the time complexity of the definition based algorithm is $((2*w_i-1)*(2 * h_i - 1) * (w_i * h_i))$, which gives us asymptotic complexity of $\mathcal{O}(w_i^2*h_i^2)$.
+This limits the part of the output we are interested in and leads us to the time complexity of the definition based algorithm, or \textit{naive} algorithm as it is called in the code attached to this thesis. For each of the $(w_1 + w_2 - 1) * (h_1 + h_2 - 1)$ output values, we need to multiply the overlapping pixel values and sum up all the multiplication results. There will be at most $min(w_1, w_2) * min(h_1, h_2)$ overlapping pixels. For simplicity, let us work with two images of size $w_i*h_i$. Then the time complexity of the definition based algorithm is $((2*w_i-1)*(2 * h_i - 1) * (w_i * h_i))$, which gives us asymptotic complexity of $\mathcal{O}(w_i^2*h_i^2)$.
 
 \section{Computation using discrete Fourier Transform}
 \label{sec:cross_corr_fft}
 
-In this section, we describe an algorithm which uses discrete Fourier transform to compute cross-correlation of two finite two-dimensional series. The asymptotic complexity of this algorithm will be $\mathcal{O}(w_i*h_i*\log_2(w_i*h_i))$, where $w_i$ is the width of each series and $h_i$ the height of each series. This improves on the asymptotic complexity $\mathcal{O}(w_i^2*h_i^2)$ of the definition based algorithm described in the previous section \ref{sec:cross_corr_def}.
+In this section, we describe an algorithm which uses the discrete Fourier transform to compute the cross-correlation of two finite two-dimensional series. The asymptotic complexity of this algorithm will be $\mathcal{O}(w_i*h_i*\log_2(w_i*h_i))$, where $w_i$ is the width of each series and $h_i$ the height of each series. This improves on the asymptotic complexity $\mathcal{O}(w_i^2*h_i^2)$ of the definition based algorithm described in the previous section \ref{sec:cross_corr_def}.
 
-Discrete Fourier transform can only be used to compute a special type of cross-correlation, so called \textit{circular} cross-correlation.
-For finite series $N \in \mathbb{N} \{x\}_n = x_0, x_1, ..., x_{N-1}, \{y_n\} = y_0, y_1, ..., y_{N-1}$, circular cross-correlation is defined as:
+Discrete Fourier transform can only be used to compute a special type of cross-correlation, the so called \textit{circular} cross-correlation.
+For a finite series $N \in \mathbb{N} \{x\}_n = x_0, x_1, ..., x_{N-1}, \{y_n\} = y_0, y_1, ..., y_{N-1}$, circular cross-correlation is defined as:
 
 \[
 (x \star_N y)_m = \sum_{i=0}^{N-1} \overline{x_m} y_{(m + i) mod N},
 \]
 
-where $\overline{x_m}$ denotes complex conjugate of $x_m$.
+where $\overline{x_m}$ denotes the complex conjugate of $x_m$.
 
 
-Based on the Cross-Correlation Theorem \citep{thesis:wang}, circular cross-correlation $(x \star_N y)_m$ can be computed using discrete Fourier Transform based on the following formula:
+Based on the Cross-Correlation Theorem \citep{thesis:wang}, circular cross-correlation $(x \star_N y)_m$ can be computed using discrete Fourier Transform according to the following formula:
 
 \[
 (x \star_N y)_m = \mathbb{F}^{-1}(\overline{\mathbb{F}(x)}*\mathbb{F}(y))
 \]
 
-where $\mathbb{F}(x)$ and $\mathbb{F}(y)$ denote discrete Fourier Transform of series $x$ and $y$ respectively, $\overline{\mathbb{F}(x)}$ denotes complex conjugate of the discrete Fourier Transform, $*$ denotes element-wise multiplication of two series and $\mathbb{F}^{-1}$ denotes inverse discrete Fourier Transform.
+where $\mathbb{F}(x)$ and $\mathbb{F}(y)$ denote discrete Fourier Transform of series $x$ and $y$ respectively, $\overline{\mathbb{F}(x)}$ denotes the complex conjugate of the discrete Fourier Transform, $*$ denotes element-wise multiplication of two series and $\mathbb{F}^{-1}$ denotes inverse discrete Fourier Transform.
 
 As described by \citet{misko}, to compute non-circular (linear) cross-correlation of non-periodic series of size \textit{N}, we pad both series with \textit{N} zeros to the size \textit{2N}, as can be see in Figure \ref{fig:circular_cross_corr}. The results of circular cross-correlation are then the results of linear cross-correlation, only circularly shifted by $N-1$ places to the left with one additional 0 value at index $N$. 
 
@@ -82,7 +80,7 @@ As described by \citet{misko}, to compute non-circular (linear) cross-correlatio
 \end{figure}
 
 
-This process can be expanded into two dimensions, where the matrices are padded with \textit{N} rows and \textit{N} columns of zeros before being passed through 2D discrete Fourier transform. Here the circular shift of the results can be inverted by swapping the quadrants of the results while discarding row \textit{N} and column \textit{N} which will be filled with zeros \citep{misko}, as shown by Figure \ref{fig:quadrant_swap}. 
+This process can be expanded into two dimensions, where the matrices are padded with \textit{N} rows and \textit{N} columns of zeros before being passed through 2D discrete Fourier transform. Here the circular shift of the results can be inverted by swapping the quadrants of the results while discarding row \textit{N} and column \textit{N}, which will be filled with zeros \citep{misko}, as shown by Figure \ref{fig:quadrant_swap}. 
 
 \begin{figure}[h]
 	\centering
@@ -93,12 +91,12 @@ This process can be expanded into two dimensions, where the matrices are padded 
 \end{figure}
 
 
-Based on this description, we can deduce the time complexity of the algorithm. For two matrices $a,b \in \mathbb{R}^{h \times w}$,the steps of the algorithm are:
+Based on this description, we can deduce the time complexity of the algorithm. For two matrices $a,b \in \mathbb{R}^{h \times w}$, the steps of the algorithm are:
 \begin{enumerate}
 	\item Padding $a_p, b_p \in \mathbb{R}^{2h \times 2w}$ of $a$ and $b$ with $h$ rows and $w$ columns of zeros in $\mathcal{O}(h*w)$;
 	\item Discrete Fourier Transform $A,B 
 	\in \mathbb{C}^{2h \times 2w}$ of $a_p$ and $b_p$ in $\mathcal{O}(h*w*\log_2(h*w))$;
-	\item Element-wise multiplication, also known as Hadamard product, $C \in \mathbb{C}^{2h \times 2w}: C = \overline{A} \circ B$, where $\overline{A}$ denotes complex conjugate of $A$, in $\mathcal{O}(w_i*h_i)$;
+	\item Element-wise multiplication, also known as the Hadamard product, $C \in \mathbb{C}^{2h \times 2w}: C = \overline{A} \circ B$, where $\overline{A}$ the denotes complex conjugate of $A$, in $\mathcal{O}(w_i*h_i)$;
 	\item Inverse Discrete Fourier Transform $c \in \mathbb{R}^{2h \times 2w}$ of $C$ in $\mathcal{O}(h*w*\log_2(h*w))$;
 	\item Quadrant swap in $\mathcal{O}(h*w)$
 \end{enumerate}
@@ -107,24 +105,24 @@ Put together, the steps described above give us an algorithm with asymptotic tim
 
 \section{Definition based optimizations}
 \label{sec:cross_corr_opt}
-In the original thesis by \citet{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as an integer or floating point matrix in another image, also represented as such matrix. This can be done to, for example, find a displacement of certain point of interest between images taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
+In the original thesis by \citet{misko}, and in the field of image processing in general, 2D version of cross-correlation is mostly used to find a grayscale image or a piece of a grayscale image represented as an integer or floating point matrix in another image, also represented as such a matrix. This can be done to, for example, find the displacement of a certain point of interest between images taken at different times, as is done in \citet{misko} and \citet{zhang2015}. 
 
-This thesis will implement cross-correlation of integer and floating point matrices, which encompasses the usage in previously mentioned works. The implementations will be optimized to take advantage of different forms of cross-correlation input, such as cross-correlation of one matrix with many other matrices, different sizes of input matrices etc. 
+This thesis will implement cross-correlation of integer and floating point matrices, which encompasses the usage in the previously mentioned works. These implementations will be optimized to take advantage of different forms of cross-correlation input, such as the cross-correlation of one matrix with many other matrices, different sizes of input matrices etc. 
 
 % TODO: Maybe move to analysis
 \subsection{Data parallelism}
 \label{sec:cross_corr_para}
-Definition based algorithm for computing cross-correlation is highly data parallel. Not only can every element in the result matrix be computed independently, computation of each element can also be parallelized with a simple reduction of the final results.
+The definition based algorithm for computing cross-correlation is highly data parallel. Not only can every element in the result matrix be computed independently, but also the  computation of each element can parallelized with a simple reduction of the final results.
 
-When using the definition based algorithm, each element of the resulting matrix corresponds to an overlap of the two cross-correlated matrices. Every two overlapping elements of the two input matrices are multiplied and results of these multiplications are then summed together to get the final value for given overlap.
+When using the definition based algorithm, each element of the resulting matrix corresponds to an overlap of the two cross-correlated matrices. Every two overlapping elements of the two input matrices are multiplied and the results of these multiplications are then summed up to get the final value for the given overlap.
 
-For each overlap, there is $h_o * w_o$ multiplications, where $h_o$ and $w_o$ describe the number of rows and columns which overlap. The following formula describes the total number of multiplications for all overlaps:
+For each overlap, there is $h_o * w_o$ multiplications, where $h_o$ and $w_o$ describe the number of rows and columns that overlap. The following formula describes the total number of multiplications for all overlaps:
 
 \[
 	(h*(h+1)-1)*(w*(w+1)-1)
 \].
 
-All these multiplications can be done independently in parallel. Afterwards, each overlap has to compute a sum of the $h_o * w_o$ results to produce the final result.
+All these multiplications can be done independently in parallel. Afterwards, each overlap has to compute a sum of the $h_o * w_o$ intermediate results to produce the final result.
 
 % TODO: Grouping, data reuse
 
@@ -132,7 +130,7 @@ All these multiplications can be done independently in parallel. Afterwards, eac
 \subsection{Forms of cross-correlation}
 \label{sec:cross_corr_forms}
 
-In works using cross-correlation, there are several forms of computation which can be used for optimization such as data caching and reuse, batching, precomputing etc. The forms differ in the number of inputs and in the way cross-correlation is computed between the inputs. 
+In works using cross-correlation, there are several forms of computation which allow for different types of optimizations, such as data caching and reuse, batching, and precomputing. These forms differ in the number of inputs and in the way cross-correlation is computed between the inputs. 
 The four basic forms are, as shown in Figure \ref{fig:cross_corr_forms}:
 
 \begin{enumerate}
@@ -142,12 +140,12 @@ The four basic forms are, as shown in Figure \ref{fig:cross_corr_forms}:
 	\item n left inputs, each cross-correlated with all m right inputs, referred to as \textit{n-to-m} and depicted in Figure \ref{fig:cross_corr_n_to_m} (used by \citet{Clark2011}).
 \end{enumerate} 
 
-While each pair of input matrices can always be computed independently, the \textit{one-to-many}, \textit{n-to-mn} and \textit{n-to-m} types allow for the reuse of left input matrix data for computation with multiple right input matrices.
-Additionally, the \textit{n-to-m} allows for reuse of data from the right matrix for computation with multiple left input matrices. 
+While each pair of input matrices can always be computed independently, the \textit{one-to-many}, \textit{n-to-mn} and \textit{n-to-m} types allow for the reuse of the left input matrix data for computation with multiple right input matrices.
+Additionally, the \textit{n-to-m} makes it possible to reuse data from the right matrix for computation with multiple left input matrices. 
 
-For the same size of input data, i.e. $x$ left input matrices and $y$ right input matrices, the \textit{n-to-m} type results in $x*y$ pairs of matrices to be computed, compared to the \textit{n-to-mn} type which results in only $y$ pairs. The increased level of parallelism and increased arithmetic intensity allows for additional optimizations of the \textit{n-to-m} computation type compared to the \textit{n-to-mn} type. The \textit{one-to-one} and \textit{one-to-many} types are described separately as their implementations can more aggressively cache and reuse the left input matrix compared to the general \textit{n-to-mn} or \textit{n-to-m} implementation. 
+For the same size of input data, i.e. $x$ left input matrices and $y$ right input matrices, the \textit{n-to-m} requires computation of $x*y$ pairs of matrices, compared to the \textit{n-to-mn} type which results in only $y$ pairs. The increased level of parallelism and increased arithmetic intensity allow for additional optimizations of the \textit{n-to-m} computation type compared to the \textit{n-to-mn} type. The \textit{one-to-one} and \textit{one-to-many} types are described separately, as compared to the general \textit{n-to-mn} or \textit{n-to-m} implementation, their implementations can more aggressively cache and reuse the left input matrix . 
 
-Implementations of the two simpler types \textit{one-to-one} and \textit{one-to-many} can be used for implementation of either \textit{n-to-m} or \textit{n-to-mn} by running the simpler type implementation multiple times, possibly in parallel. Inversely, any implementation of either \textit{n-to-m} or \textit{n-to-mn} can be used to implement the two simpler types. Another possible subtype is the computation of large number of pairs, which can be implemented by \textit{n-to-mn} with \textit{m} equal to one. The large number of pairs type is not discussed further as it does not provide any additional opportunity for optimization compared to parallel run of many \textit{one-to-one} implementations.
+Implementations of the two simpler types \textit{one-to-one} and \textit{one-to-many} can be used to implement either \textit{n-to-m} or \textit{n-to-mn} by running the simpler type of cross-correlation multiple times, possibly in parallel. Inversely, any implementation of either \textit{n-to-m} or \textit{n-to-mn} can be used to implement the two simpler types. Another type which we could consider is the computation of a large number of pairs, which can be implemented by \textit{n-to-mn} with \textit{m} equal to one. The large number of pairs type is not discussed further as it does not provide any additional opportunity for optimization compared to running the \textit{one-to-one} several times in parallel.
 
 \begin{figure}
 	\centering
@@ -212,15 +210,15 @@ Implementations of the two simpler types \textit{one-to-one} and \textit{one-to-
 
 \section{Post-processing}
 
-In most use cases, cross-correlation itself is not a final output but the results are used further in further processing. It is often used to find position of a smaller signal in larger signal, for example in the field of Digital image processing for template matching, image alignment etc. In these use cases, the only information of interest is the maximum value in the result matrix. 
+In most use cases, the cross-correlation itself is not the final output, but the results are used for further processing. It is often used to find the position of a smaller signal in a larger signal, for example in the field of Digital image processing for template matching, image alignment etc. In these applications, the only information of interest is the maximum value in the result matrix. 
 
 In Digital Image correlation, we are also interested in finding the maximum, but this time with a subpixel precision. This requires us to find the maximum value and use the results in an area around it to interpolate a function \citep{zhang2015} \citep{misko}.
 
-In the field of Seismology, cross-correlation is used for picking, ambient noise monitoring, waveform comparison and signal, event and pattern detection \citep{Ventosa2019}.
+In the field of Seismology, cross-correlation is used for picking, ambient noise monitoring, waveform comparison, and signal, event and pattern detection \citep{Ventosa2019}.
  
-In optical coherence tomography, the whole result of cross-correlation is summed to compute the intensity of each pixel \citep{Kapinchev2015}. 
+In optical coherence tomography, the whole result the of cross-correlation is summed up to compute the intensity of each pixel \citep{Kapinchev2015}. 
 
-Although post-processing is often also a good candidate for optimization and parallelization, it is outside the scope of this thesis. Result of cross-correlation will be taken as-is and validated against preexisting cross-correlation implementations.
+Although post-processing is often also a good candidate for optimization and parallelization, it is outside the scope of this thesis. The cross-correlation results will be taken as they are and validated against a preexisting cross-correlation implementations.
 % TODO: Go through the examples and see what they do with the results
 
 % TODO: Post processing, what is the usual output etc.

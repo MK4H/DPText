@@ -1,10 +1,10 @@
 \chapter{Implementation}
 \label{sec:implementation}
 
-In this chapter, we first give a high level overview of the possibilities for parallelization and data reuse in the implementation of definition-based cross-correlation algorithm, introduced in section \ref{sec:cross_corr_def}. We then describe a basic implementation of the definition-based algorithm with all its problems. Next, we try to mitigate the problems of the basic implementation by introducing a simple implementation based on Warp Shuffle instructions. We continue with several optimizations and create a family of implementations based on Warp Shuffle instructions. Lastly we implement a second family of optimizations designed to solve problems with low occupancy, based on assigning the computation of a single job to larger group of threads.
+In this chapter, we first give a high level overview of the possibilities for parallelization and data reuse in the implementation of the definition-based cross-correlation algorithm, introduced in section \ref{sec:cross_corr_def}. We then describe a basic implementation of the definition-based algorithm with all its problems. Next, we try to mitigate these problems by introducing a simple implementation based on the warp shuffle instructions. We continue with several optimizations and create a family of implementations based on the warp shuffle instructions. Lastly we introduce a second family of optimizations designed to solve the problems with low occupancy, based on the assignment of the computation of a single job to a larger group of threads.
 
 
-The definition-based algorithm has several properties which allow for parallelization, optimization through data reuse and distribution of work. Figure \ref{fig:cross_corr_shifts} depicts the output matrix with corresponding relative shift of the two input matrices, which defines the computed overlap. As described in Section \ref{sec:cross_corr_opt}, each element of the output matrix can be computed independently in parallel.
+The definition-based algorithm has several properties which allow for parallelization, optimization through data reuse and distribution of work. Figure \ref{fig:cross_corr_shifts} depicts an output matrix with the corresponding relative shifts of the two input matrices for each output matrix element. This shift defines the overlap of the two input matrices which needs to be computed for given output matrix element. As described in Section \ref{sec:cross_corr_opt}, each element of the output matrix can be computed independently in parallel.
 
 \begin{figure}[ht]
 	\fontsize{6}{8}\selectfont
@@ -23,11 +23,11 @@ Each overlap defines a unique set of element pairs which are to be multiplied. E
 
 \section{Parallelization}
 \label{sec:implementation_parallelism}
-In this section, we first highlight the independent parallel tasks present in the definition-based cross-correlation algorithm.  
+In this section, we highlight the independent parallel tasks in the definition-based cross-correlation algorithm.  
 
 % REFERENCE file:///home/karel/skola/diplomka/crosscorr/papers/related_work/IJIGSP-V5-N12-4.pdf distributes different shifts of 1D cross correlation between different PCs in LAN. We go step further and distribute each shift to separate treads
 
-The partitioning of the problem into tasks is inspired by \citet{paper:cross_corr_tasks}, who distributes computation of a one dimensional cross-correlation of two signals between nodes in a local network. The range of possible delays between the two signals is split between nodes. In this thesis, we talk about shifts instead of delays as we are computing different ways two matrices overlap. We go further and instead of assigning ranges of shifts, we partition the problem into single shifts or even further, assigning part of a shift computation as a job.
+The partitioning of the problem into tasks is inspired by \citet{paper:cross_corr_tasks}, who distributes the computation of a one dimensional cross-correlation of two signals between nodes in a local network. The range of possible delays between the two signals is split between nodes. In this thesis, we talk about shifts instead of delays as we are computing different ways two matrices overlap. We go further and instead of assigning ranges of shifts, we partition the problem into single shifts or even further, assigning part of a shift computation as a job.
 
 % REFERENCE file:///home/karel/skola/diplomka/crosscorr/papers/related_work/Honz%C3%A1tko-Kruli%C5%A12019_Article_AcceleratingBlock-matchingAnd3.pdf each thread processes patches which mostly overlap, similar to our implementation
 
@@ -41,10 +41,10 @@ function itself can be parallelized internally."
 Definition-based computation of 2D cross-correlation provides similar possibilities for parallelization, where multiple pairs of input matrices can be processed concurrently, each possible overlap of two input matrices can be computed concurrently and even each pair of overlapping items in given overlap can be processed independently and in parallel. 
 
 \subsection{Two matrices}
-When we focus on the computation of cross-correlation between two matrices, called \textit{one-to-one} in the rest of the thesis, we can reformulate the definition-based algorithm as a problem with two levels of independent parallel tasks, as shown in Figure \ref{fig:cross_corr_one_to_one_tasks}. The top level represents the single output matrix, which with only two input matrices represents the result of the whole computation. The second level of tasks, represented by orange boxes, contains one box for each relative shift of the two input matrices, or in other words each orange box corresponding to a single element of the output matrix. Each shift defines an overlap of the two input matrices, which in turn defines a set of independent subtasks, each subtask representing an overlapping pair of elements of the two input matrices. In Figure \ref{fig:cross_corr_one_to_one_tasks}, the subtasks representing pairs of overlapping elements are represented by yellow boxes. Every such subtask belongs to exactly one second level task, creating a tree structure. The set of subtasks which are children of the same orange box defines a submatrix in both input matrices, as shown in Figure \ref{fig:cross_corr_shifts}.
+When we focus on the computation of the cross-correlation between two matrices, called \textit{one-to-one} in the rest of the thesis, we can reformulate the definition-based algorithm as a problem with two levels of independent parallel tasks, as shown in Figure \ref{fig:cross_corr_one_to_one_tasks}. The top level represents the single output matrix, which with only two input matrices is the result of the whole computation. The second level of tasks, represented by orange boxes, contains one box for each relative shift of the two input matrices. In other words each orange box corresponds to a single element of the output matrix. Each shift defines an overlap of the two input matrices, which in turn defines a set of independent subtasks, each subtask representing an overlapping pair of elements of the two input matrices. In Figure \ref{fig:cross_corr_one_to_one_tasks}, the subtasks representing pairs of overlapping elements are represented by yellow boxes. Every such subtask belongs to exactly one second level task, creating a tree structure. The set of subtasks which are the children of the same orange box defines a submatrix in both input matrices, as shown in Figure \ref{fig:cross_corr_shifts}.
 
 
-When we look at the operations, every yellow box represents a single multiplication and every orange box represents a sum of the results of all of its children. 
+When we look at the operations, every yellow box represents a single multiplication and every orange box represents the sum of the results of all of its children. 
 
 \begin{figure}[ht]
 	\fontsize{5}{6}\selectfont
@@ -58,7 +58,7 @@ When we look at the operations, every yellow box represents a single multiplicat
 	\label{fig:cross_corr_one_to_one_tasks}
 \end{figure}
 
-The goal is to distribute the tasks between workers in such a way that we maximize parallelism, maximize data reuse and minimize the need for communication and synchronization between workers.
+The goal is to distribute these tasks between workers in such a way that we maximize parallelism, maximize data reuse and minimize the need for communication and synchronization between workers.
 
 \subsection{Many matrices}
 
@@ -119,7 +119,7 @@ With more than two matrices, we add additional tasks to the top level of the tas
 	\label{fig:implementation_forms}
 \end{figure}
 
-The \textit{one-to-many} type together with the \textit{one-to-one} type, shown in Figures \ref{fig:implementation_one_to_many} and \ref{fig:implementation_one_to_one} respectively, are subtypes of the \textit{n-to-mn} type and \textit{n-to-m}, as implementations of both of these general types can be used to compute the two simpler types. We separate the \textit{one-to-one} and \textit{one-to-many} types as they offer a greater possibility for caching the single left input matrix.
+The \textit{one-to-many} type together with the \textit{one-to-one} type, shown in Figures \ref{fig:implementation_one_to_many} and \ref{fig:implementation_one_to_one} respectively, are subtypes of the \textit{n-to-mn} type and \textit{n-to-m}, as the implementations of both of these general types can be used to compute the two simpler types. We separate the \textit{one-to-one} and \textit{one-to-many} types as they offer a greater possibility for caching the single left input matrix.
 
 All of the described types can be partitioned into many \textit{one-to-one} cross-correlations, as shown in Figure \ref{fig:cross_corr_many_tasks}. For both \textit{n-to-mn} and \textit{n-to-m} types, the number of green top level tasks, corresponding to the number of result matrices, is equal to $n*m$. To reiterate, the difference between the \textit{n-to-mn} and \textit{n-to-m} types is that in the \textit{n-to-mn} type, each of the \textit{n} left input matrices is cross-correlated with a different set of \textit{m} right input matrices, whereas in the \textit{n-to-m} type, all \textit{n} left input matrices are cross-correlated with the same \textit{m} right input matrices. Based on this, the \textit{n-to-m} type allows for greater data reuse, as each right input matrix is used multiple times compared to being used just once in the \textit{n-to-mn} type. 
 
@@ -146,7 +146,7 @@ All boxes on a given level can be processed completely independently.  Results o
 
 % Segway to data reuse and workers
 
-As the number of tasks cannot be reduced, the only directions for optimization are parallelization and data reuse. Even through tasks can be processed independently and in parallel, many tasks can share and reuse data from other tasks. For example, orange boxes from different subtrees representing the same shift between input matrices and sharing the same left input matrix can be computed by reusing the data from the left matrix. Relationships such as this can be used to group tasks into \textbf{jobs} for workers to reuse data or pass data to other neighboring workers to reduce the required memory throughput and keep data closer to the execution units. 
+As the number of tasks cannot be reduced, the only directions for optimization are parallelization and data reuse. Even through tasks can be processed independently and in parallel, many of them can share and reuse data from other tasks. For example, orange boxes from different subtrees representing the same shift between input matrices and sharing the same left input matrix can be computed by reusing the data from the left matrix. Relationships such as this can be used to group tasks into \textbf{jobs} for workers. This grouping then allows each worker to reuse data for multiple computations, or pass data directly to other neighboring workers. Both of these optimizations reduce the required memory throughput and keep data closer to the execution units. 
 
 \section{Data reuse}
 \label{sec:data_reuse}
@@ -175,16 +175,14 @@ When tasks are grouped on the level of overlaps, i.e. orange boxes in the task h
 
 Multiple overlaps can be grouped into a single job in several ways. First is the \textbf{multimat overlap} job size, where multiple overlaps (orange boxes) from different output matrices (green boxes) are grouped into a single job. To enable data reuse, overlaps representing the same shift between different matrices are grouped, as shown in Figure \ref{fig:job_size_modifiers}. There are two versions of this optimization:
 \begin{itemize}
-	\item multimat-right, designed for \textit{n-to-mn} computation type, where job contains overlaps with the same shift between single left input matrix and multiple right input matrices, shown in Figure \ref{fig:job_size_modifiers_n_to_mn};
-	\item multimat-both, designed for \textit{n-to-m} computation type, where job contains overlaps with the same shift between multiple left input matrices and multiple right matrices, shown in Figure \ref{fig:job_size_modifiers_n_to_m}.
+	\item multimat-right, designed for the \textit{n-to-mn} computation type, where each job contains overlaps with the same shift between a single left input matrix and multiple right input matrices, shown in Figure \ref{fig:job_size_modifiers_n_to_mn};
+	\item multimat-both, designed for the \textit{n-to-m} computation type, where each job contains overlaps with the same shift between multiple left input matrices and multiple right input matrices, shown in Figure \ref{fig:job_size_modifiers_n_to_m}.
 \end{itemize}
 
 Another way to reuse data is to compute multiple overlaps which are close to each other in a single output matrix. 
-We call this the \textbf{multirow overlap} job size. Their proximity in the output matrix corresponds to the shifts of the input matrices being very similar, which in turn means that most of the input data is shared between the overlaps, as shown in Figure \ref{fig:multirow_shared_input}. This grouping is also shown in Figure \ref{fig:job_size_modifiers}. Our implementation groups overlaps from multiple consecutive rows of a single column of the output matrix into a single job. The reasons for this grouping choice are further expanded in Section \ref{sec:multirow_right}.
-% TODO: Maybe multirow-right and multirow-both
-
+We call this the \textbf{multirow overlap} job size. As neighboring elements of the output matrix correspond to similar shifts between the input matrices, they share most of the input matrix required for their computation, as shown in Figure \ref{fig:multirow_shared_input}. This grouping is also shown in Figure \ref{fig:job_size_modifiers}. Our implementation groups overlaps from multiple consecutive rows of a single column of the output matrix into a single job. The reasons for this grouping choice are further expanded on in Section \ref{sec:multirow_right}.
 The \textit{multimat} and \textit{multirow} optimizations can be combined as shown in Figure \ref{fig:job_size_modifiers}.
-
+% TODO: Maybe multirow-right and multirow-both
 
 
 \begin{figure}[ht]
@@ -234,13 +232,13 @@ The \textit{multimat} and \textit{multirow} optimizations can be combined as sho
 
 % With work distribution, jobs created from the same overlap do not share any input data, but share data with the jobs with the same ID from neighboring overlaps
 
-With overlaps as the tasks grouped into jobs, load balancing becomes a problem. The amount of work required by each job may differ massively, as illustrated by the two tasks shown by the two overlaps in Figure \ref{fig:row_subset_tasks}. This leads to problems with occupancy once jobs with small amount of work are finished. 
+With overlaps as the tasks grouped into jobs, load balancing becomes a problem. The amount of work required by each job may differ massively, as illustrated by the two overlaps in Figure \ref{fig:row_subset_tasks}. This leads to problems with occupancy once jobs with small amount of work are finished. 
 
-We implement an alternative where instead of grouping overlaps into jobs, we go one step lower in the task hierarchy and group the individual tasks representing multiplication of one overlapping pair of input elements (yellow box) into jobs. This change results in the computation of a single overlap being split into several smaller jobs, improving load balancing between jobs while also increasing parallelism. One problem of this change is the required final reduce operation to consolidate the results of all jobs computing parts of the same overlap.
+We implement an alternative where instead of grouping overlaps into jobs, we go one step lower in the task hierarchy and group the individual tasks representing multiplication of one overlapping pair of input elements (yellow box) into jobs. This change results in the computation of a single overlap being split into several smaller jobs, improving load balancing between jobs while also increasing parallelism. A disadvantage of this change is the required final reduce operation to consolidate the results of all the jobs which are computing parts of the same overlap.
 
-To enable additional optimizations described in the following sections of this chapter, we choose to group the yellow box tasks into jobs by whole rows of the overlap. The number of rows grouped into a single job is configurable through algorithm argument. This grouping is illustrated in Figure \ref{fig:row_subset_tasks}, where \textit{Max job rows} is the argument of the algorithm. Each overlap with $r$ overlapping rows of the two input matrices is split into $\lceil \frac{r}{max\_job\_rows} \rceil$ jobs, with each job containing at most \textit{max\_job\_rows} consecutive rows. With this distribution, each job represents a submatrix of the overlap with the same number of columns as the original overlap. This also means that all overlaps with the same number of rows will be split into the same number of jobs.
+To enable additional optimizations described in the following sections of this chapter, we choose to group the yellow box tasks into jobs by whole rows of the overlap. The number of rows grouped into a single job is configurable through an algorithm argument. This grouping is illustrated in Figure \ref{fig:row_subset_tasks}, where \textit{Max job rows} is the argument of the algorithm. Each overlap with $r$ overlapping rows of the two input matrices is split into $\lceil \frac{r}{max\_job\_rows} \rceil$ jobs, with each job containing at most \textit{max\_job\_rows} consecutive rows. With this distribution of tasks into jobs, the tasks assigned into a single job form a submatrix of the overlap. As we are assigning whole rows, the submatrix has the same number of columns as the original overlap. This distribution also ensures that all overlaps with the same number of rows will be split into the same number of jobs.
 
-For data reuse, one important observation is that jobs from the same overlap do not share any input data, but jobs with the same ID from neighboring overlaps in the same row of the output matrix(i.e. with the same number of rows in the overlap) will share most of the input data, as shown in Figure \ref{fig:row_subset_data_reuse}.
+For data reuse, one important observation is that jobs from the same overlap do not share any input data, but jobs with the same ID from overlaps neighboring in the same row of the output matrix will share most of the input data, as shown in Figure \ref{fig:row_subset_data_reuse}. If they are direct neighbors, the difference will be a single column of the overlap.
 
 \begin{figure}[ht]
 	\centering
@@ -268,30 +266,28 @@ For data reuse, one important observation is that jobs from the same overlap do 
 
 For some optimizations, it is better to group tasks by columns instead of rows. From the data reuse point of view, it is symmetrical to the grouping by rows. Again, column groups from the same shift do not share any input data, but column groups with the same ID from two neighboring overlaps in the same column of the output matrix share most of their input data.
 
-The \textit{multimat} optimization introduced in Section \ref{sec:data_reuse_overlap}, which groups overlaps from multiple output matrices into a single job, can also be used with both row group and column group task grouping. The \textit{multimrow} optimization, which groups multiple overlaps from a single output matrix into a single job, is unfortunately incompatible with both row group and column group task grouping.
+The \textit{multimat} optimization introduced in Section \ref{sec:data_reuse_overlap}, which groups overlaps from multiple output matrices into a single job, can also be used with both row group and column group task grouping. The \textit{multirow} optimization, which groups multiple overlaps from a single output matrix into a single job, is unfortunately incompatible with both row group and column group task grouping.
 
 \subsection{Workers}
 
-
-
-Jobs defined in the previous section are assigned to one level of the CUDA thread group hierarchy, described in Section \ref{sec:thread_hierarchy}. From the CUDA thread hierarchy we utilize the following groups of threads as workers:
+Jobs defined in the previous section are assigned to one level of the CUDA thread hierarchy, described in Section \ref{sec:thread_hierarchy}. From the CUDA thread hierarchy we utilize the following groups of threads as workers:
 \begin{enumerate}
 	\item thread,
 	\item warp,
 	\item thread block.
 \end{enumerate}
 
-As we will see in Section \ref{sec:block_per_shift}, even thread block is too large to properly utilize the GPU threads, which is grid is not utilized here.
-We call each member from the chosen thread hierarchy level, i.e. the thread, warp, or thread block, a \textbf{worker}. Each worker is assigned at most one job, with some workers possibly unused as the number of jobs may not be multiple of warp size or thread block size. Based on the choice of worker size, we can utilize smaller groups in the hierarchy to compute tasks in the assigned job, and primitives provided by larger groups to exchange input data or combine results with other workers.
+As we will see in Section \ref{sec:block_per_shift}, a thread block is already too large to properly utilize the GPU threads our job sizes, which is the reason grid is not utilized here.
+We call each member of the chosen thread hierarchy level, i.e. the thread, warp, or thread block, a \textbf{worker}. Each worker is assigned at most one job, with some workers possibly unused as the number of jobs may not be multiple of warp size or thread block size. Based on the choice of worker size, we can utilize smaller groups in the hierarchy to compute tasks in the assigned job, and primitives provided by larger groups to exchange input data or combine results with other workers.
 
 % REFERENCE file:///home/karel/skola/diplomka/crosscorr/papers/related_work/levenstein.pdf How they decide what part of thread hierarchy should process a stripe
 
-Similar choice is done by \citep{paper:levenstein}, who provide two implementations of the Levenshtein, one assigning stripes (their unit of job size) to warps and one assigning stripes to thread blocks. The warp version utilizes warp shuffle instructions to exchange intermediate results between threads, whereas the thread block version exchanges data through shared memory. Even though we are not exchanging intermediate results but instead trying to reuse input data loaded from device memory multiple times, we will see that these principles can also be used for this purpose. % TODO: Maybe expand
+Similar choice is done by \citet{paper:levenstein}, who provide two implementations of the Levenshtein edit distance, one assigning stripes (their unit of job size) to warps and one assigning stripes to thread blocks. The warp version utilizes warp shuffle instructions to exchange intermediate results between threads, whereas the thread block version exchanges data through shared memory. Even though we are not exchanging intermediate results but instead trying to reuse input data loaded from device memory, we will see that these principles can also be used for this purpose. 
 
 \subsection{List of implementations}
 \label{sec:algorithm_list}
 
-The different implementations of the definition-based cross-correlation utilize different job sizes, worker types, and different ways of assigning jobs to workers. The chosen parameters then lead to different ways of cooperation, communication, synchronization, work distribution, and load balancing. Following is the list of algorithms implemented in this thesis with their choice of job size and worker type. Each algorithm is described in more detail in the following sections of this chapter.
+Different implementations of the definition-based cross-correlation utilize different job sizes, worker types, and different ways of assigning jobs to workers. The chosen parameters then lead to different ways of cooperation, communication, synchronization, work distribution, and load balancing. Following is the list of algorithms implemented in this thesis with their choice of job size and worker type. Each algorithm is described in more detail in the following sections of this chapter.
 
 \begin{center}
 	\begin{tabular}{|p{3cm}|c|c|} 
@@ -328,7 +324,7 @@ Algorithms with multiple job sizes are provided in multiple implementations, eac
 
 
 
-A basic implementation of definition based cross-correlation of two input matrices, in our naming scheme corresponding to the \textit{one-to-one} type, utilizes two dimensional grid of two dimensional thread blocks to start one thread for each element of the output matrix. The overlap to be computed by given thread is derived from the position of the output matrix element, as shown in Figure \ref{fig:basic_algorithm_overlaps}. The thread then iterates over the overlapping parts of the two input matrices, multiplying the overlapped elements and accumulating the result which is then written to the assigned output matrix element. The code for this implementation can be found in the attachments of this thesis in the file \texttt{code/src/naive\_original.cu} as the \texttt{cross\_corr\_naive\_original} kernel.
+A basic implementation of the definition-based cross-correlation of two input matrices, in our naming scheme corresponding to the \textit{one-to-one} type, utilizes a two dimensional grid of two dimensional thread blocks to start one thread for each element of the output matrix. The overlap to be computed by a given thread is derived from the position of the output matrix element, as shown in Figure \ref{fig:basic_algorithm_overlaps}. The thread then iterates over the overlapping parts of the two input matrices, multiplying the pairs of overlapped elements and accumulating the result of these multiplications which is then written to the assigned output matrix element. The code for this implementation can be found in the attachments of this thesis as the \texttt{cross\_corr\_naive\_original} kernel.
 
 \begin{figure}[ht]
 	\fontsize{6}{8}\selectfont
@@ -342,25 +338,25 @@ A basic implementation of definition based cross-correlation of two input matric
 	\label{fig:basic_algorithm_overlaps}
 \end{figure}
 
-This implementation allows for great amount of parallelism, as each element of the output matrix is computed independently.
-The disadvantages on the other hand are no data reuse, thread divergence, and a large difference between workloads assigned to each thread.
+This implementation allows for a great amount of parallelism, as each element of the output matrix is computed independently.
+The disadvantages, on the other hand, are no data reuse, thread divergence, and a large difference between workloads assigned to each thread.
 
 
-The problem with no data reuse is illustrate by Figure \ref{fig:warp_shuffle_shuffle}. The figure shows elements of the left input matrix (in blue) and right input matrix (in red) accessed by thread 0 and thread 1 in iterations 0 to 11. As memory accesses are done in units of 32 threads, also known as warp, when we extrapolate this example, the 32 values loaded from the left input matrix in global memory will contain 31 values read in the previous iteration by the threads of this warp. In other words, we are moving a window of 32 elements across each row of the left matrix 1 element per iteration and reading the window from global memory in each iteration. Even though these global memory accesses will most likely be served from L2 or L1 cache, the cache access still carries  with it additional latency when 31 of the 32 loaded items are already in registers of threads of the warp.
-This problem is exacerbated with thread blocks with the \textit{x} component of their size not multiple of warp size. In this situation, threads of a warp are assigned overlaps which differ in number of rows, and consequently in the rows of the input matrices which are to be read in the given iteration. This means that threads of a single warp access two or more different rows of the left input matrix in each iteration, leading to non-coalesced loads.
+The problem with no data reuse is illustrated in Figure \ref{fig:warp_shuffle_shuffle}. The figure shows elements of the left input matrix (in blue) and right input matrix (in red) accessed by thread 0 and thread 1 in iterations 0 to 11. As memory accesses are done in units of 32 threads, also known as the warp, when we extrapolate this example, the 32 values loaded from the left input matrix in global memory will contain 31 values read in the previous iteration by the threads of this warp. In other words, we are moving a window of 32 elements across each row of the left matrix 1 element per iteration and reading the window from global memory in each iteration. Even though these global memory accesses will most likely be served from L2 or L1 cache, the cache access still carries  with it additional latency compared to accessing registers, even though 31 of the 32 items are already in registers of threads of the warp.
+This problem is exacerbated when the \textit{x} component of the thread block size is not a multiple of warp size. In this situation, the threads of a warp are assigned overlaps from different rows of the output matrix. These overlaps differ in the number of rows they contain, and consequently in the rows of the input matrices which are read in the given iteration. This means that the threads of a single warp access two or more different rows of the left input matrix in each iteration, leading to non-coalesced loads.
 
-In the right input matrix, all threads of the warp will read the same value from global memory in each iteration, resulting in 32 reads of the same block of global memory when reading 32bit values. 
+In the right input matrix, all threads of the warp will read the same value from global memory in each iteration, resulting in 32 reads of the same block of global memory when reading 32~bit values. 
 
 The exact pattern of reads from global memory differs based on the overlaps processed by the threads of the warp, but will always result in repeated reads of the same block of global memory.
 
 
-The problem of thread divergence is also illustrated by Figure \ref{fig:warp_shuffle_shuffle} with iterations 3, 7 and 11.
-The basic implementation of looping over a two dimensional matrix with two nested for loops results in thread 0 reading an element from each input matrix, computing multiplication and accumulating the result in these iterations, while thread 1 has no data to process on this row and its inner for loop being masked due to the range condition being false. While we show only two threads in Figure \ref{fig:warp_shuffle_shuffle}, the situation is much worse as 31 threads of the 32 threads of the warp will be masked and not doing anything in the last iteration. All threads of the warp will go through both for loops based on the size of the largest overlap in the given axis processed by any thread of the warp. 
+The problem of thread divergence is illustrated in Figure \ref{fig:warp_shuffle_shuffle} with iterations 3, 7 and 11.
+The basic implementation of looping over a two dimensional matrix with two nested for loops results in thread 0 reading an element from each input matrix, computing multiplication and accumulating the result in these iterations, while thread 1 has no data to process on this row and as such is masked during the execution of the inner for loop due to the range condition being false. While we show only two threads in Figure \ref{fig:warp_shuffle_shuffle}, the situation is much worse, as 31 of the 32 threads of the warp will be masked and not doing anything in the last iteration. All threads of the warp will go through both for loops based on the size of the largest overlap in the given axis processed by any thread of the warp. 
 
-Last significant problem of the Basic algorithm, largely connected with the previous problem, is that overlaps differ in size. From overlaps containing one element from each input matrix to overlap of the whole input matrices, this difference in workload size means that some threads will finish rather quickly, while small number of threads computing the largest overlaps will take much longer. For example warps of threads assigned overlaps in the first or last row of the output matrix will only read a single row of each input matrix, and finish quickly, while warps assigned overlaps in the middle of the output matrix will read most elements of each input matrix and run for much longer. This results in problems with occupancy of the GPU.
+Last significant problem of the Basic algorithm, largely connected with the previous problem, is that overlaps differ in size. From overlaps containing one element from each input matrix to the overlap of the whole input matrices, this difference in workload size means that some threads will finish rather quickly, while a small number of threads computing the largest overlaps will keep executing much longer. For example, warps of threads assigned overlaps in the first or last row of the output matrix will only read a single row of each input matrix, and finish quickly, while warps assigned overlaps in the middle of the output matrix will read most elements of each input matrix and run for much longer. This results in problems with occupancy of the GPU.
   
   
-Slight modification of this algorithm to allow for an \textit{n-to-mn} computation is implemented by the original thesis \citet{misko}.
+A slight modification of this algorithm to allow for an \textit{n-to-mn} computation is implemented by the original thesis by \citet{misko}.
 
 
 
@@ -381,25 +377,25 @@ Slight modification of this algorithm to allow for an \textit{n-to-mn} computati
 \section{Warp shuffle algorithm family}
 \label{sec:warp_shuffle_alg}
 
-This section describes the implementation of definition-based cross-correlation utilizing Warp Shuffle instructions, which tries to fix the problems of the Basic algorithms described in the previous section. We first introduce a simple version of the implementation, later improving it step by step with optimizations evaluated in Section \ref{sec:results_definition_based}.
+This section describes the implementation of definition-based cross-correlation utilizing warp shuffle instructions, which tries to fix the problems of the Basic algorithms described in the previous section. We first introduce a simple version of the implementation, later improving it step by step with optimizations evaluated in Section \ref{sec:results_definition_based}.
 
 % REFERENCE Contrast with file:///home/karel/skola/diplomka/crosscorr/papers/related_work/levenstein.pdf where we shift intermeddiate results, not input data
-This implementation is based on the warp based implementation of Levenshtein distance by \citep{paper:levenstein}, which utilizes warp shuffle instructions to exchange intermediate results between threads of a warp, providing result of the previous iteration to a neighboring thread in the warp. In our implementation, we do not share intermediate results, instead utilizing registers as L0 cache to keep input data loaded from global memory as close to the execution units as possible. 
+This implementation is based on the warp based implementation of Levenshtein distance by \citet{paper:levenstein}, which utilizes the warp shuffle instructions to exchange intermediate results between threads of a warp. In our implementation, we do not share intermediate results, instead utilizing registers as L0 cache to keep input data loaded from the global memory as close to the execution units as possible. 
 
 
-In the simplified implementation, Warp Shuffle instructions are utilized to shuffle data loaded from the left input matrix and broadcast data loaded from the right input matrix between threads in a warp. As shown in Section \ref{sec:algorithm_list}, each CUDA thread is assigned a single overlap to compute, which is exactly as was done in the Basic algorithm. The difference from the Basic algorithm is only in the reuse of input data once it is loaded into registers. The code for this implementation can be found in the attachments of this thesis as the \texttt{ccn\_shuffle} kernel.
+In the simplified implementation, warp shuffle instructions are utilized to shuffle data loaded from the left input matrix and broadcast data loaded from the right input matrix between the threads of a warp. As shown in Section \ref{sec:algorithm_list}, each CUDA thread is assigned a single overlap to compute, which is exactly as was done in the Basic algorithm. The difference from the Basic algorithm is only in the reuse of input data once it is loaded into registers. The code for this implementation can be found in the attachments of this thesis as the \texttt{ccn\_shuffle} kernel.
 
 The main idea behind this algorithm is illustrated in Figure \ref{fig:warp_shuffle_shuffle}. The two threads computing overlaps with shifts $[0,1]$ and $[1,1]$ process elements of the two input matrices in the indicated iterations of a \textit{for loop} in the code.
 
 
-The element from the left matrix read by the thread processing shift $[x, y]$ in iteration \textit{i} is required by thread processing shift $[x + 1,y]$ in iteration \textit{i + 1}. This holds for any two neighboring shifts and maps exactly onto the Warp Shuffle Down function, described in Section \ref{sec:thread_cooperation}. When looking at the right matrix in any given iteration, both shifts require the exact same element from the right matrix. This broadcast can be implemented using the general Warp Shuffle function with direct source lane indexing. Iterations 3, 7, and 11 are skipped by thread 1 to preserve this property.
+The element from the left matrix read by the thread processing shift $[x, y]$ in iteration \textit{i} is required by the thread processing shift $[x + 1,y]$ in iteration \textit{i + 1}. This fact holds for any two neighboring shifts and maps exactly onto the \textit{warp shuffle down} function, described in Section \ref{sec:thread_cooperation}. When looking at the right matrix in any given iteration, both shifts require the exact same element from the right matrix. This broadcast can be implemented using the general warp shuffle function with direct source lane indexing. Iterations 3, 7, and 11 are skipped by thread 1 to preserve this property.
 
 % Distribution of shifts between threads and blocks, block dimensions etc.
 
-To utilize these properties, threads of a single warp process 32 consecutive overlaps in a row of the output matrix, as shown in Figure \ref{fig:warp_shuffle_simple_dist}. The \textit{x} axis of \textit{thread block size} is set to \textit{warp size} for simplified grouping of threads into warps. The number of warps per thread block is configurable using a run-time algorithm argument. The grid size is set so that the output matrix is fully covered by threads. Any unused threads do not write to the output matrix and during computations are handled by the bound checked reads described next.
+To utilize this relationship, threads of a single warp process 32 consecutive elements in a row of the output matrix, as shown in Figure \ref{fig:warp_shuffle_simple_dist}. The number of warps per thread block is configurable using a run-time algorithm argument. The grid size is set so that there is at least one thread started for each element of the output matrix. Any unused threads do not write to the output matrix and during computations are handled by the bound checked reads described next.
 
 % TODO: Maybe show how this solves the problem of first iterations
-The problem of iterations 3, 7, and 11 in Figure \ref{fig:warp_shuffle_shuffle}, in which thread 1 does not have any value to compute, can be solved in several ways. If we were programming a program to run on a CPU, we would give the two for loops implementing the two worker threads different bounds so that the second worker stops earlier. A more GPU friendly implementation needs to prevent thread divergence. This is achieved by executing the range check only once when loading the data from the left matrix into a register of the thread. If the thread is loading value outside the matrix, it loads 0 instead. This makes the result of the multiplication performed in each step 0 which is then added to the sum, effectively skipping the iteration while preventing thread divergence. There will most often be additional work introduced by loading 0 and executing all iterations instead of doing checks in the for loop and utilizing thread divergence. This additional work is balanced out by the ability to unroll the loop, as it has fixed number of iterations. This also handles any extra threads introduced due to the fixed size of thread block and overlap sizes not divisible by warp size.
+The problem of iterations 3, 7, and 11 in Figure \ref{fig:warp_shuffle_shuffle}, in which thread 1 does not have any value to compute, can be solved in several ways. If we were creating a program to run on a CPU, we would give the two for loops implementing the two worker threads different bounds so that the second worker would stop earlier. A more GPU friendly implementation needs to prevent thread divergence. This is achieved by executing the range check only once when loading the data from the left matrix into a register of the thread. If the thread is loading a value outside the matrix, it loads 0 instead. This makes the result of the multiplication performed in each step 0, which is then added to the sum, effectively skipping the iteration while preventing thread divergence and allowing further optimizations such as loop unrolling. There will most often be additional work introduced by loading 0 and executing all iterations instead of doing checks in the for loop and utilizing thread divergence. This additional work is balanced out by the ability to unroll the loop, as it has fixed number of iterations. This also handles any extra threads introduced due to the fixed size of a thread block and overlap sizes not divisible by warp size.
 
 \begin{figure}[ht]
 	\centering
@@ -417,7 +413,7 @@ The problem of iterations 3, 7, and 11 in Figure \ref{fig:warp_shuffle_shuffle},
 
 % REFERENCE file:///home/karel/skola/diplomka/crosscorr/papers/related_work/levenstein.pdf SImilar to their loading of stripe
 
-The following description assumes \textit{warp size} to be 32, as is the case for all currently existing Nvidia GPUs. The actual value of this constant is not important for our algorithms and is just defined as a constant in our code. To utilize coalesced loading from global memory, the buffer that is shuffled between threads of a warp, containing data from the left input matrix, is split into two parts of 32 items each, which together function as a single 64 item ring buffer. We call the parts \textit{top} and \textit{bottom}, where new data is always loaded to the top part and then shuffled towards the bottom part, as shown in Figure \ref{fig:shuffle_buffer}. As described above, any out of bounds loads are range checked and instead of trying to load from global memory return value 0. This is done by the following code:
+The following description assumes \textit{warp size} to be 32, as is the case for all currently existing Nvidia GPUs. The actual value of this constant is not important for our algorithms and is defined as a constant in our code. To utilize coalesced loading from global memory, the buffer that is shuffled between the threads of a warp, containing data from the left input matrix, is split into two parts of 32 items each, which together function as a single 64 item ring buffer. We call the parts the \textit{top} and the \textit{bottom}, where new data is always loaded to the top part and then shuffled towards the bottom part, as shown in Figure \ref{fig:shuffle_buffer}. As described above, any out of bounds loads are range checked and instead of trying to load from the global memory return value 0. This is done by the following code:
 \begin{lstlisting}[
 style=cuda
 ]
@@ -441,7 +437,7 @@ T thread_left_bottom = load_with_bounds_check(
 
 \end{lstlisting}
 
-Each thread holds single value of \texttt{thread\_left\_bottom}. Same is done for \texttt{thread\_left\_top}, creating a 64 item ring buffer distributed between threads of a warp which is shuffled using the Warp Shuffle instructions as shown in Figure \ref{fig:shuffle_buffer}.
+The values of the buffer are held in two variables in each thread. The bottom part of the buffer is held in the variable \texttt{thread\_left\_bottom} and the top part in the variable \texttt{thread\_left\_top}. This creates a 64 item ring buffer distributed between threads of a warp, which is shuffled using the warp shuffle instructions as shown in Figure \ref{fig:shuffle_buffer}.
 
 \begin{figure}[ht]
 	\centering
@@ -454,13 +450,13 @@ Each thread holds single value of \texttt{thread\_left\_bottom}. Same is done fo
 	\label{fig:shuffle_buffer}
 \end{figure}
 
-For the data loaded from the right matrix, which we use for broadcasting, we require only a single value per thread, as in the 32 iterations of the innermost loop, we will broadcast only these 32 values, whereas we need 64 from the left matrix as the 32 values loaded into the top part will be shifted all the way to the bottom part.
+For the data loaded from the right matrix, which we use for broadcasting, we require only a single value per thread. In the 32 iterations of the innermost loop, we will broadcast only these 32 values, whereas we need 64 from the left matrix as the 32 values loaded into the top part will be shifted all the way to the bottom part.
 
-The core of the implementation is illustrated in Listing \ref{lst:warp_shuffle_core}. The 32 threads of a warp are assigned 32 consecutive overlaps in a row of the output matrix. Overlap is defined by the shift between the two input matrices, with the overlap assigned to thread 0 of the warp having shift \texttt{warp\_min\_shift} and overlap assigned to thread 31 (or the last used thread if some of the threads have no jobs assigned to them) having shift \texttt{warp\_max\_shift}. Overlap assigned to thread \textit{i} then has shift $[warp\_min\_shift.x + i, warp\_min\_shift.y]$,  with \texttt{warp\_max\_shift} equal to $[warp\_min\_shift.x + 31, warp\_max\_shift.y]$ if there are no unused threads, otherwise the \textit{x} component is clamped to the maximum shift defined by the output matrix. The \texttt{warp\_min\_shift} and \texttt{warp\_max\_shift} define a submatrix of both input matrices which contain elements required by any thread in the warp, shown in Figure \ref{fig:common_submatrix}. We call this the \textit{warp submatrix}.
+The core of the implementation is illustrated in Listing \ref{lst:warp_shuffle_core}. The 32 threads of a warp are assigned 32 consecutive overlaps in a row of the output matrix. Each overlap is defined by the shift between the two input matrices, with the overlap assigned to thread 0 of the warp having shift \texttt{warp\_min\_shift} and overlap assigned to thread 31 (or the last used thread if some of the threads have no jobs assigned to them) having shift \texttt{warp\_max\_shift}. Overlap assigned to thread \textit{i} then has shift $[warp\_min\_shift.x + i, warp\_min\_shift.y]$,  with \texttt{warp\_max\_shift} equal to $[warp\_min\_shift.x + 31, warp\_max\_shift.y]$ if there are no unused threads, otherwise the \textit{x} component is clamped to the maximum shift defined by the output matrix. The \texttt{warp\_min\_shift} and \texttt{warp\_max\_shift} define a submatrix of both input matrices which contain elements required by any thread in the warp, shown in Figure \ref{fig:common_submatrix}. We call this the \textit{warp submatrix}.
 
-The two outer and middle loop then iterate over the warp submatrix in the right input matrix, outer loop iterating over rows of the submatrix with the \texttt{warp\_y\_right} variable and the inner loop iterating in buffer load size steps over the columns of the submatrix with the \texttt{warp\_x\_right} variable. Bounds of the for loops are computed using the \texttt{warp\_min\_shift} and \texttt{warp\_max\_shift} variables defining the warp submatrix. As described above, we have two buffers. The buffer holding data from the right matrix is made up of 32 registers, one per each thread represented by the variable \texttt{thread\_right}. The buffer holding data from the left matrix is made up of 64 registers with 2 registers per thread, represented by the variables \texttt{thread\_left\_bottom} and \texttt{thread\_left\_top}. Both buffers are loaded 32 items at the time to allow for coalesced loads, with the left buffer loading into the top part. 
+The outer and middle loop then iterate over the warp submatrix in the right input matrix, outer loop iterating over rows of the submatrix with the \texttt{warp\_y\_right} variable and the inner loop iterating in buffer load size steps over the columns of the submatrix with the \texttt{warp\_x\_right} variable. Bounds of the for loops are computed using the \texttt{warp\_min\_shift} and \texttt{warp\_max\_shift} variables defining the warp submatrix. As described above, we have two buffers. The buffer holding data from the right matrix is made up of 32 registers, one per each thread represented by the variable \texttt{thread\_right}. The buffer holding data from the left matrix is made up of 64 registers with 2 registers per thread, represented by the variables \texttt{thread\_left\_bottom} and \texttt{thread\_left\_top}. Both buffers are loaded 32 items at the time to allow for coalesced loads, with the left buffer loading into the top part. 
 
-The innermost loop, which we call the \textit{main loop}, then does 32 (warp size) iterations. In iteration $i$ we broadcast value stored in the part of the \textit{right buffer} owned by thread $i$, which is then multiplied by each thread with the value from the \textit{bottom left buffer} stored by given thread. We then shuffle the whole \textit{left buffer} one step towards the index 0 of the bottom part of the buffer using two warp shuffle instructions. After the 32 steps, the top part of the \textit{left buffer} is now in the bottom part of the \textit{left buffer} and all the values from \textit{right buffer} have been broadcast. 
+The innermost loop then does 32 (warp size) iterations. In iteration $i$ we broadcast the value stored in the part of the \textit{right buffer} owned by the thread $i$. This value is then multiplied by each thread with the value from the \textit{bottom left buffer} stored by given the thread. We then shuffle the whole \textit{left buffer} one step towards the index 0 of the bottom part of the buffer using two warp shuffle instructions. After the 32 steps, the top part of the \textit{left buffer} is now in the bottom part of the \textit{left buffer} and all the values from \textit{right buffer} have been broadcast. 
 
 The next iteration of the middle loop then loads 32 values to the top part of the \textit{left buffer} and 32 values to the \textit{right buffer} which are then processed by the \textit{main loop}. This is repeated until the whole row of the warp submatrix is processed, where we continue to next iteration of the outer loop and process the next row. This is repeated until the whole warp submatrix is processed.
 \begin{lstlisting}[
@@ -634,7 +630,7 @@ Another problem of the simplified implementation not solved by work distribution
 There are several ways to improve the ratio of SHFL instructions to FFMA instructions. The one with easiest changes to the code of the Simple warp shuffle implementation is to utilize the \textit{one-to-many} type of computation, and let each worker compute cross-correlation between one left matrix and many right matrices at once, as described in section \ref{sec:data_reuse_overlap} under the name \textit{multimat}. We call this exact implementation usable for \textit{one-to-many} and \textit{n-to-mn} types the \textit{multimat\_right} optimization, as each job contains multiple overlaps of a single left matrix with multiple right matrices. The obvious advantage is data reuse, as the data from the left matrix is used to compute multiple results. The main advantage is that each additional right matrix only adds a single SHFL instruction, while also adding one FFMA instruction. The ratio of SHFL to FFMA instructions can then be expressed as $2 + r : r$, where $r$ is the number of overlaps (from $r$ right matrices) computed by each worker, which for larger values of $r$ significantly improves the $3:1$ ratio of the simplified warp shuffle algorithm.
 
 
-The code changes required to implement this are very straightforward, and can be found applied in the attachments of this thesis in the \texttt{ccn\_shuffle\_multimat\_right} kernel. Combination of this optimization and the \textit{work distribution} optimization described in Section \ref{sec:warp_shuffle_work_dist} can be found as the \texttt{ccn\_shuffle\_multimat\_right\_work\_distribution} in the same file.
+The code changes required to implement this are very straightforward, and can be found in the attachments of this thesis in the \texttt{ccn\_shuffle\_multimat\_right} kernel. The kernel \texttt{ccn\_shuffle\_multimat\_right\_work\_distribution} then implements a combination of this optimization and the \textit{work distribution} optimization described in Section \ref{sec:warp_shuffle_work_dist}.
 
 As each job contains the same overlap between one left matrix and multiple right matrices, the three for loops and their bounds described in Section \ref{sec:simplified_warp_shuffle_steps} are left unchanged. The main difference is that the \textit{sum} and the \textit{thread\_right} variables in each thread are changed into arrays, utilizing the CUDA local array optimization described in Appendix \ref{sec:local_array_optimization}. This increases the amount of data present in registers and allows us to reuse data loaded from the left matrix with data from multiple right matrices. The code changes are illustrated in Listing \ref{lst:multimat_right_changes}.
 
@@ -694,7 +690,7 @@ The core of the implementation is similar to the simplified algorithm. We comput
 
 As each overlap in a given job has different shift in the \textit{y} axis, each overlap will contain different number of rows as shown in Figure \ref{fig:multirow_shifts}, but thanks to the column-wise grouping of overlaps, corresponding overlaps in each job assigned to threads of a single warp will contain the same group of rows. This again allows us to reuse much of the simplified implementation code, which expects a warp to process overlaps with the same number of rows.
 
-The problem experienced by this optimization is in its nature similar to the one shown in the Simple Warp shuffle implementation, where some of the threads need to execute the first few and the last few iterations of the innermost loop by adding zero to their sum thanks to bound checked loads. This is caused by the different shifts of the overlaps assigned to threads of a single warp, where some of the overlaps do not use whole warp submatrix, which contains input data used by any of the overlaps assigned to the threads of the warp.
+The problem experienced by this optimization is in its nature similar to the one shown in the Simple warp shuffle implementation, where some of the threads need to execute the first few and the last few iterations of the innermost loop by adding zero to their sum thanks to bound checked loads. This is caused by the different shifts of the overlaps assigned to threads of a single warp, where some of the overlaps do not use whole warp submatrix, which contains input data used by any of the overlaps assigned to the threads of the warp.
 
 As we now group several overlaps into a single job computed by a single thread, the same problem arises where only a subset of the overlaps has the first few rows and last few rows of the warp submatrix as inputs. More precisely, some of the first $0$ to $job\_size - 1$ and the last $0$ to $job\_size - 1$ rows are only required by some of the overlaps assigned to the given thread, and as all threads of a warp are assigned overlaps from the same rows of the output matrix in 32 consecutive columns, the subset of overlaps to which each row of warp submatrix is an input is the same for all threads of a warp.
 
@@ -927,7 +923,7 @@ Each thread of a warp is assigned subset of the multiplication tasks (yellow box
 \begin{lstlisting}[
 style=cuda,
 float,
-caption=Main loop of the Base Warp per shift implementation,
+caption=Main loop of the Base warp per shift implementation,
 label=lst:warp_per_shift_base
 ]
 for (
@@ -1040,14 +1036,14 @@ Simple indexing warps on the other hand are more often stalled on the \texttt{St
 \label{sec:warp_per_shift_shared_mem}
 
 % REFERENCE https://link.springer.com/content/pdf/10.1007/978-3-642-38718-0_38.pdf Access to shared memory to reduce accesses to global memory, block size, max blocks per SM etc.
-This optimization of the base Warp per shift implementation is based on the work by \citet{paper:parameter_optimization}, who evaluate the impact of global memory access, occupancy and other parameters on execution time of a CUDA implementation of Levenshtein edit distance. Their implementation loads input data into shared memory to reduce the number of accesses to global memory, which is exactly what we want to achieve here.
+This optimization of the Base warp per shift implementation is based on the work by \citet{paper:parameter_optimization}, who evaluate the impact of global memory access, occupancy and other parameters on execution time of a CUDA implementation of Levenshtein edit distance. Their implementation loads input data into shared memory to reduce the number of accesses to global memory, which is exactly what we want to achieve here.
 
 We also take inspiration from the warp shuffle algorithm and its \textit{multirow} optimization. Instead of sharing input values by shuffling and broadcasting across threads of a warp, we load input values into shared memory and reuse them by all warps of the thread block.
 
 Similarly to the warp shuffle algorithm, we utilize two alternating parts forming a ring buffer for data from the left input matrix and a single buffer for data from the right input matrix. Compared to the warp shuffle algorithm, the buffers are placed in the shared memory and are shared by all warps of each thread block. The data is not shuffled across threads as was done by warp shuffle, instead staying in place until overwritten by next load of the buffer, with each warp accessing the subset of the buffer it requires. The windows of the input data loaded into buffers are not moved along the rows of the input matrices, but along a group of columns from top to bottom, processing the whole columns group before moving onto the next column group, as shown in Figure \ref{fig:shared_mem_buffer_iterations}. This access pattern is based on the work of \citet{paper:krulis_3d_block}, who access the columns between overlapping patches in similar way.
 
 
-With appropriately sized column groups, this enables us to maximize the throughput when loading data from global memory using coalesced loads. The appropriate size here is multiple of 32, i.e. warp size.  We call this the \textit{shared\_mem\_row\_size}, as it is also the size of each row of the shared memory buffers. The number of rows in each of the three shared memory buffers (two for data from the left matrix and one for data from the right matrix) is a run-time algorithm argument and stored in variable \textit{shared\_mem\_num\_rows}.
+With appropriately sized column groups, this enables us to maximize the throughput when loading data from global memory using coalesced loads. The appropriate size here is a multiple of 32, i.e., warp size.  We call the variable holding the width of the column group the \textit{shared\_mem\_row\_size}, as it also determines the size of each row of the shared memory buffers. The number of rows in each of the three shared memory buffers (two for data from the left matrix and one for data from the right matrix) is a run-time algorithm argument and stored in variable \textit{shared\_mem\_num\_rows}.
 Another reason we choose column groups instead of row groups is because of the way we assign overlaps to warps of a thread block. To prevent bank conflicts when accessing shared memory, we assign consecutive overlaps from a single column of the output matrix to the warps of a single thread block. This is explained in more detail further in this section.
 
 
@@ -1055,7 +1051,7 @@ Another reason we choose column groups instead of row groups is because of the w
 	\centering	
 	\begin{subfigure}{\textwidth}
 		\centering
-		\def\svgwidth{0.66\textwidth}
+		\def\svgwidth{0.61\textwidth}
 		\fontsize{8}{10}\selectfont
 		% Must be relative to current directory
 		% as input ignores graphicspath, which is
@@ -1067,7 +1063,7 @@ Another reason we choose column groups instead of row groups is because of the w
 
 	\begin{subfigure}{\textwidth}
 		\centering
-		\def\svgwidth{0.66\textwidth}
+		\def\svgwidth{0.61\textwidth}
 		\fontsize{8}{10}\selectfont
 		% Must be relative to current directory
 		% as input ignores graphicspath, which is
@@ -1258,7 +1254,7 @@ This optimizations improves occupancy, further improving the main benefit of the
 
 Another possible way to further increase occupancy is to switch from warps as workers to whole thread blocks as workers. This can massively increase the number of threads started for given size of input, saturating the GPU even for smaller inputs. This optimization is again inspired by the work of \citet{paper:levenstein}, who assign stride, which is their unit of work, to be processed by a whole thread block. In our case, the implementation is rather simple. The thread block index directly maps to the position in the output matrix and consequently to the overlap computed by given thread block. This is why we call this the \textit{Block per shift} optimization. We then compute the bounds of the overlapping submatrix and iterate over the overlapping elements using block stride loop. We then utilize \texttt{reduce} function provided by Cooperative Groups API to sum results in each warp, which are then stored into shared memory and reduced again by warp 0 \citep{site:cuda_reduction}. The final result is then stored into the output matrix. 
 
-This implementation should further improve occupancy, but at the cost of lower workload per thread, unbalanced workloads between workers and no data reuse. Based on our measurements presented in Section \ref{sec:results_occupancy_improvements}, this implementation does not improve run time over the base Warp per shift algorithm even for small input matrices. This is most likely caused by the simple warp per shift algorithm already saturating the GPU. Even for more powerful GPUs, the improved occupancy does not offset the problems listed above.
+This implementation should further improve occupancy, but at the cost of lower workload per thread, unbalanced workloads between workers and no data reuse. Based on our measurements presented in Section \ref{sec:results_occupancy_improvements}, this implementation does not improve run time over the Base warp per shift algorithm even for small input matrices. This is most likely caused by the simple warp per shift algorithm already saturating the GPU. Even for more powerful GPUs, the improved occupancy does not offset the problems listed above.
 
 \subsection{Summary}
 

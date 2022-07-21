@@ -1,5 +1,5 @@
 % Metadata to be stored in PDF, see documentation of the pdfx package for more details.
 
 \Author{Karel Maděra}
-\Title{Accelerating cross-correlation with GPUs}
-\Publisher{Charles University}
+\Title{Akcelerace vzájemné korelace pomocí GPU}
+\Publisher{Univerzita Karlova}
