@@ -380,7 +380,7 @@ Slight modification of this algorithm to allow for an \textit{n-to-mn} computati
 \section{Warp shuffle algorithm family}
 \label{sec:warp_shuffle_alg}
 
-This section describes the implementation of definition-based cross-correlation utilizing Warp Shuffle instructions, which tries to fix the problems of the Basic algorithms described in the previous section. We first introduce a simple version of the implementation, later improving it step by step with optimizations evaluated in Section \ref{sec:results_warp_shuffle}.
+This section describes the implementation of definition-based cross-correlation utilizing Warp Shuffle instructions, which tries to fix the problems of the Basic algorithms described in the previous section. We first introduce a simple version of the implementation, later improving it step by step with optimizations evaluated in Section \ref{sec:results_definition_based}.
 
 % REFERENCE Contrast with file:///home/karel/skola/diplomka/crosscorr/papers/related_work/levenstein.pdf where we shift intermeddiate results, not input data
 This implementation is based on the warp based implementation of Levenshtein distance by \citep{paper:levenstein}, which utilizes warp shuffle instructions to exchange intermediate results between threads of a warp, providing result of the previous iteration to a neighboring thread in the warp. In our implementation, we do not share intermediate results, instead utilizing registers as L0 cache to keep input data loaded from global memory as close to the execution units as possible. 
