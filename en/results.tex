@@ -4,6 +4,7 @@
 In this chapter, we first describe our setup for measurement and validation of the implementations described in the previous chapter. We then compare the definition-based cross-correlation implementations against each other before comparing them with an FFT-based CUDA implementation. Finally we compare the definition-based implementations with existing real world cross-correlation implementations in Python SciPy library and in Matlab.
 
 \section{Experiments}
+\label{sec:experiments}
 As the main aim of this thesis is to compare implementations of an algorithm, the code is heavily instrumented to enable measurements and comparisons of different parts of the implementation. This instrumentation is designed to limit its impact and to allow measurements which minimize background noise and imprecision of the time measurement tools provided by the CUDA C++ language.
 
 As part of this thesis, we have also developed a benchmarking tool which allows the use of declarative description of the set of benchmarks to be executed. The tool generates input and validation data, runs the benchmarks for all inputs and with all argument combinations specified and records the times and validation results. As such, the tool is used both for measurements and for validation of the implementation. 
@@ -349,6 +350,36 @@ The maximum absolute improvement is for the $512 \times 512$ matrix size with 10
 \subsection{Warp shuffle optimizations with the n-to-m input}
 The final input type has a group of implementations specifically optimized for this type, the \textit{multimat\_both} optimization and its combinations with other optimizations. We also reuse some \textit{one-to-many} implementations, running them $n$ times in parallel, once for each left input matrix, this time all with the same set of right input matrices.
 
+Again, Figure \ref{fig:warp_shuffle_n_to_m_results} shows that \textit{work distribution} is advantageous for smaller inputs, but is not required for larger inputs. As expected, the \textit{multimat both} optimization specifically designed for this input type gives the best performance. For smaller inputs, it is best when combined with \textit{work distribution}, for medium and large inputs it is best when combined with \textit{multirow both} optimization. As \textit{multimat right} improvement does not reuse data from the left input matrices, it falls behind the \textit{multimat both}.
+
+The maximum absolute improvement is for the $512 \times 512$ matrix size with 50 left matrices to 50 right matrices, where we see decrease from $163.95$~s to $31.66$~s on gpulab. For laptop, the input with $512 \times 512$ and the 50 left matrices and 50 right matrices does not fit into GPU memory, as such the maximum absolute improvement is for the size $256 \times 256$ with 50 and 50 matrices, decreasing from $49$~s to $14$~s.
+
+\begin{figure}[ht]
+	\centering	
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_m_2_4_gpulab.pdf_tex}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_m_4_16_gpulab.pdf_tex}
+		%\label{fig:pipeline_utilization_shared_mem}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.35\textwidth}
+		\centering
+		\def\svgwidth{\textwidth}
+		\input{./img/warp_shuffle_n_to_m_50_50_gpulab.pdf_tex}
+		%\label{fig:executed_instructions_shared_mem}
+	\end{subfigure}
+	
+	\caption{Speedup of \textit{n-to-m} warp shuffle optimizations on gpulab.}
+	\label{fig:warp_shuffle_n_to_m_results}
+\end{figure}
+
 \begin{center}
 	\begin{tabular}{|l|l|c|} 
 		\hline
@@ -403,35 +434,9 @@ The final input type has a group of implementations specifically optimized for t
 	\end{tabular}
 \end{center}
 
-\begin{figure}[ht]
-	\centering	
-	\begin{subfigure}{0.4\textwidth}
-		\centering
-		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_m_2_4_gpulab.pdf_tex}
-		%\label{fig:executed_instructions_shared_mem}
-	\end{subfigure}
-	\begin{subfigure}{0.4\textwidth}
-		\centering
-		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_m_4_16_gpulab.pdf_tex}
-		%\label{fig:pipeline_utilization_shared_mem}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.4\textwidth}
-		\centering
-		\def\svgwidth{\textwidth}
-		\input{./img/warp_shuffle_n_to_m_50_50_gpulab.pdf_tex}
-		%\label{fig:executed_instructions_shared_mem}
-	\end{subfigure}
-	
-	\caption{Speedup of \textit{n-to-m} warp shuffle optimizations on gpulab.}
-	\label{fig:warp_shuffle_n_to_m_results}
-\end{figure}
 
-Again, Figure \ref{fig:warp_shuffle_n_to_m_results} shows that \textit{work distribution} is advantageous for smaller inputs, but is not required for larger inputs. As expected, the \textit{multimat both} optimization specifically designed for this input type gives the best performance. For smaller inputs, it is best when combined with \textit{work distribution}, for medium and large inputs it is best when combined with \textit{multirow both} optimization. As \textit{multimat right} improvement does not reuse data from the left input matrices, it falls behind the \textit{multimat both}.
 
-The maximum absolute improvement is for the $512 \times 512$ matrix size with 50 left matrices to 50 right matrices, where we see decrease from $163.95$~s to $31.66$~s on gpulab. For laptop, the input with $512 \times 512$ and the 50 left matrices and 50 right matrices does not fit into GPU memory, as such the maximum absolute improvement is for the size $256 \times 256$ with 50 and 50 matrices, decreasing from $49$~s to $14$~s.
+
 
 \subsection{Warp per shift optimizations with the one-to-one inputs}
 \label{sec:results_occupancy_improvements}
@@ -468,10 +473,6 @@ The following table lists the Warp per shift algorithm family implementations, t
 
 From the results in Figure \ref{fig:warp_per_shift_results}, we see that the base Warp per shift implementation is enough to saturate the GPU. Due to this, the Block per shift algorithm and Work distribution optimization do not improve the run time. While still slower than the base Warp per shift implementation, the increasing speed of work distribution with increasing input size is most likely caused by the increasing size of each job and correspondingly decreasing proportion of the overhead caused by distributing the jobs and collecting the results.
 
-The shared memory optimization is not beneficial for inputs smaller than 64x64, mostly due to adding synchronization overhead between warps of a thread block when loading data into shared memory. For larger input data sizes, the reduced number of global memory accesses gives this optimization an advantage over the base Warp per shift implementation.
-
-The largest absolute improvement in run time is for the $512 \times 512$ input matrix size from $0.158$~s to $0.074$~s.
-
 \begin{figure}[ht]
 	\centering	
 	\begin{subfigure}{0.4\textwidth}
@@ -497,6 +498,12 @@ The largest absolute improvement in run time is for the $512 \times 512$ input m
 	\caption{Relative speed of warp per shift optimizations.}
 	\label{fig:warp_per_shift_results}
 \end{figure}
+
+The shared memory optimization is not beneficial for inputs smaller than 64x64, mostly due to adding synchronization overhead between warps of a thread block when loading data into shared memory. For larger input data sizes, the reduced number of global memory accesses gives this optimization an advantage over the base Warp per shift implementation.
+
+The largest absolute improvement in run time is for the $512 \times 512$ input matrix size from $0.158$~s to $0.074$~s.
+
+
 
 \subsection{Comparison with Basic algorithm}
 \label{sec:comparison_with_basic}

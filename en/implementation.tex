@@ -1,4 +1,5 @@
 \chapter{Implementation}
+\label{sec:implementation}
 
 In this chapter, we first give a high level overview of the possibilities for parallelization and data reuse in the implementation of definition-based cross-correlation algorithm, introduced in section \ref{sec:cross_corr_def}. We then describe a basic implementation of the definition-based algorithm with all its problems. Next, we try to mitigate the problems of the basic implementation by introducing a simple implementation based on Warp Shuffle instructions. We continue with several optimizations and create a family of implementations based on Warp Shuffle instructions. Lastly we implement a second family of optimizations designed to solve problems with low occupancy, based on assigning the computation of a single job to larger group of threads.
 
@@ -386,7 +387,7 @@ This section describes the implementation of definition-based cross-correlation 
 This implementation is based on the warp based implementation of Levenshtein distance by \citep{paper:levenstein}, which utilizes warp shuffle instructions to exchange intermediate results between threads of a warp, providing result of the previous iteration to a neighboring thread in the warp. In our implementation, we do not share intermediate results, instead utilizing registers as L0 cache to keep input data loaded from global memory as close to the execution units as possible. 
 
 
-In the simplified implementation, Warp Shuffle instructions are utilized to shuffle data loaded from the left input matrix and broadcast data loaded from the right input matrix between threads in a warp. As shown in Section \ref{sec:algorithm_list}, each CUDA thread is assigned a single overlap to compute, which is exactly as was done in the Basic algorithm. The difference from the Basic algorithm is only in the reuse of input data once it is loaded into registers. The code for this implementation can be found in the attachments of this thesis in the file \texttt{code/src/naive\_shuffle.cu} as the \texttt{ccn\_shuffle} kernel.
+In the simplified implementation, Warp Shuffle instructions are utilized to shuffle data loaded from the left input matrix and broadcast data loaded from the right input matrix between threads in a warp. As shown in Section \ref{sec:algorithm_list}, each CUDA thread is assigned a single overlap to compute, which is exactly as was done in the Basic algorithm. The difference from the Basic algorithm is only in the reuse of input data once it is loaded into registers. The code for this implementation can be found in the attachments of this thesis as the \texttt{ccn\_shuffle} kernel.
 
 The main idea behind this algorithm is illustrated in Figure \ref{fig:warp_shuffle_shuffle}. The two threads computing overlaps with shifts $[0,1]$ and $[1,1]$ process elements of the two input matrices in the indicated iterations of a \textit{for loop} in the code.
 
@@ -529,7 +530,7 @@ if (/* thread output not out of bounds */) {
 \subsection{Work distribution}
 \label{sec:warp_shuffle_work_dist}
 
-The work distribution optimization changes job size from a whole overlap used by the simplified implementation to a row group, as described in Section \ref{sec:data_reuse_row_column_group}. Each job is still assigned to a single thread, with jobs of the same ID from 32 consecutive overlaps in a row of the output matrix assigned to threads of a single warp. This enables us to again compute the warp submatrix of the right input matrix containing elements used by all threads of the warp and reuse the core computation code of the simplified implementation described in the previous section without any change by just providing different bounds to the outer and middle for loops. The code of this implementation can be found in the file \texttt{code/src/naive\_shuffle.cu} as the \texttt{ccn\_shuffle\_work\_distribution}.
+The work distribution optimization changes job size from a whole overlap used by the simplified implementation to a row group, as described in Section \ref{sec:data_reuse_row_column_group}. Each job is still assigned to a single thread, with jobs of the same ID from 32 consecutive overlaps in a row of the output matrix assigned to threads of a single warp. This enables us to again compute the warp submatrix of the right input matrix containing elements used by all threads of the warp and reuse the core computation code of the simplified implementation described in the previous section without any change by just providing different bounds to the outer and middle for loops. The code of this implementation can be found in the attachments as the \texttt{ccn\_shuffle\_work\_distribution}.
 
 % REFERENCE https://developer.nvidia.com/blog/faster-parallel-reductions-kepler/ for atomic reduction
 
@@ -633,7 +634,7 @@ Another problem of the simplified implementation not solved by work distribution
 There are several ways to improve the ratio of SHFL instructions to FFMA instructions. The one with easiest changes to the code of the Simple warp shuffle implementation is to utilize the \textit{one-to-many} type of computation, and let each worker compute cross-correlation between one left matrix and many right matrices at once, as described in section \ref{sec:data_reuse_overlap} under the name \textit{multimat}. We call this exact implementation usable for \textit{one-to-many} and \textit{n-to-mn} types the \textit{multimat\_right} optimization, as each job contains multiple overlaps of a single left matrix with multiple right matrices. The obvious advantage is data reuse, as the data from the left matrix is used to compute multiple results. The main advantage is that each additional right matrix only adds a single SHFL instruction, while also adding one FFMA instruction. The ratio of SHFL to FFMA instructions can then be expressed as $2 + r : r$, where $r$ is the number of overlaps (from $r$ right matrices) computed by each worker, which for larger values of $r$ significantly improves the $3:1$ ratio of the simplified warp shuffle algorithm.
 
 
-The code changes required to implement this are very straightforward, and can be found applied in the attachments of this thesis in the file \texttt{code/src/naive\_shuffle\_multimat\_right.cu} as the \texttt{ccn\_shuffle\_multimat\_right} kernel. Combination of this optimization and the \textit{work distribution} optimization described in Section \ref{sec:warp_shuffle_work_dist} can be found as the \texttt{ccn\_shuffle\_multimat\_right\_work\_distribution} in the same file.
+The code changes required to implement this are very straightforward, and can be found applied in the attachments of this thesis in the \texttt{ccn\_shuffle\_multimat\_right} kernel. Combination of this optimization and the \textit{work distribution} optimization described in Section \ref{sec:warp_shuffle_work_dist} can be found as the \texttt{ccn\_shuffle\_multimat\_right\_work\_distribution} in the same file.
 
 As each job contains the same overlap between one left matrix and multiple right matrices, the three for loops and their bounds described in Section \ref{sec:simplified_warp_shuffle_steps} are left unchanged. The main difference is that the \textit{sum} and the \textit{thread\_right} variables in each thread are changed into arrays, utilizing the CUDA local array optimization described in Appendix \ref{sec:local_array_optimization}. This increases the amount of data present in registers and allows us to reuse data loaded from the left matrix with data from multiple right matrices. The code changes are illustrated in Listing \ref{lst:multimat_right_changes}.
 
@@ -674,7 +675,7 @@ The effects of this optimization shown in Figure \ref{fig:multimat_right_profili
 \subsection{Multiple rows from the right matrix}
 \label{sec:multirow_right}
 
-Another way to improve the instruction ratio is to process multiple overlaps from the same output matrix, which can be used even for the \textit{one-to-one} type of computation. We call this the \textit{multirow\_right} optimization, as we compute overlaps from multiple consecutive rows of a single column of the output matrix as shown in Figure \ref{fig:multirow_shifts}, where we see two different jobs, each containing 4 overlaps, i.e. \textit{job\_size} is 4. We call it \textit{multirow\_right} as it loads multiple rows from the right matrix at once to compute the assigned overlaps. This optimization provides us a different way to improve the ratio of warp shuffle to fused multiply-add instructions, independent of the changes in \textit{multimat\_right}. Thanks to this it can be combined with \textit{multimat\_right}. It is not however able to be combined with the \textit{work distribution} optimization. The code of this optimization can be found in the attachments of this thesis in the file \texttt{code/src/naive\_shuffle\_multirow\_right.cu} as the \texttt{ccn\_shuffle\_multirow\_right} kernel. 
+Another way to improve the instruction ratio is to process multiple overlaps from the same output matrix, which can be used even for the \textit{one-to-one} type of computation. We call this the \textit{multirow\_right} optimization, as we compute overlaps from multiple consecutive rows of a single column of the output matrix as shown in Figure \ref{fig:multirow_shifts}, where we see two different jobs, each containing 4 overlaps, i.e. \textit{job\_size} is 4. We call it \textit{multirow\_right} as it loads multiple rows from the right matrix at once to compute the assigned overlaps. This optimization provides us a different way to improve the ratio of warp shuffle to fused multiply-add instructions, independent of the changes in \textit{multimat\_right}. Thanks to this it can be combined with \textit{multimat\_right}. It is not however able to be combined with the \textit{work distribution} optimization. The code of this optimization can be found in the attachments of this thesis as the \texttt{ccn\_shuffle\_multirow\_right} kernel. 
 
 
 \begin{figure}[ht]
@@ -763,7 +764,7 @@ This optimization is an extension of the \textit{multimat\_right} aiming at the 
 
 Similarly to the \textit{multimat\_right} optimization, we group overlaps represented by elements at the same index in multiple output matrices into a single job. These overlaps represent the same shift between the input matrices, with each representing an overlap of a different pair of input matrices. Whereas the \textit{multimat\_right} output matrices represented cross-correlation between a single left input matrix and multiple right matrices, with \textit{multimat\_both} the output matrices represent cross-correlations of the \textit{n-to-m} (\textit{all-to-all}) type between multiple left and multiple right matrices, as explained in Section \ref{sec:data_reuse_overlap}
 
-The implementation of this optimization can be found in the attachments of this thesis in the file \texttt{code/src/naive\_shuffle\_n\_to\_m\_multimat\_both.cu} in the \texttt{ccn\_shuffle\_n\_to\_m\_multimat\_both\_work\_distribution}. As the name suggests, this optimization can be combined with the \textit{work distribution} optimization. To measure the performance without work distribution, we use the \textit{None} distribution type described in Section \ref{sec:warp_shuffle_work_dist}.
+The implementation of this optimization can be found in the attachments of this thesis as the  \texttt{ccn\_shuffle\_n\_to\_m\_multimat\_both\_work\_distribution} kernel. As the name suggests, this optimization can be combined with the \textit{work distribution} optimization. To measure the performance without work distribution, we use the \textit{None} distribution type described in Section \ref{sec:warp_shuffle_work_dist}.
 
 
 The changes to the \textit{multimat\_right} optimization code to implement \textit{multimat\_both} again utilize the Local array optimization described in Appendix \ref{sec:local_array_optimization}, changing the variable representing the left buffer in each thread into an array representing multiple buffers. 
@@ -802,7 +803,7 @@ $31.2\%$ of its maximum throughput. Comparison of the effects on execution time 
 
 When improving the \textit{one-to-one} computation using the \textit{multirow\_right} optimization described in Section \ref{sec:multirow_right}, which processes multiple overlaps from consecutive rows of a single column of the output matrix, we hinted at a further improvement using multiple rows from the left matrix in the main loop. This not only improves the ratio of warp shuffle to fused multiply-add instructions, but also reduces the number of times every row from the right input matrix is read. 
 
-The main change to the code of \textit{multirow\_right} optimization is that the main loop now advances by multiple left input matrix rows instead of a single row. This new implementation can be found in the attachments of this thesis in the file \texttt{code/src/naive\_shuffle\_multirow\_both.cu} as the \texttt{ccn\_shuffle\_multirow\_both} kernel.
+The main change to the code of \textit{multirow\_right} optimization is that the main loop now advances by multiple left input matrix rows instead of a single row. This new implementation can be found in the attachments of this thesis as the \texttt{ccn\_shuffle\_multirow\_both} kernel.
 
 The exact number of left rows to advance by in each iteration is configured by an algorithm argument. An additional stage between this multistep main loop and Finish is also needed to compute the remaining rows from the left input matrix when the total number of left input matrix rows is not divisible by the main loop step. This stage utilizes the original single step main loop. The Init and Finish parts are left unchanged.
 
@@ -921,7 +922,7 @@ Implementation of the \textit{Warp per shift} algorithm is very simple compared 
 
 As in the Basic cross-correlation algorithm, introduced in Section \ref{sec:basic_alg}, this implementation uses two dimensional grid of two dimensional thread blocks to assign elements of the output matrix to workers. The difference is in how we use each dimension to map threads to overlaps, this time based on which warp and thread block they are part of. All threads of a warp are assigned the same overlap and they cooperate to compute all the tasks (yellow boxes) which belong to this overlap. The mapping from thread blocks and warps to overlaps of the output matrix is illustrated by Figure \ref{fig:warp_per_shift_warps}. Warps of each thread block are assigned consecutive overlaps in a row of the output matrix. The number of warps per thread block is configurable by algorithm argument.
 
-Each thread of a warp is assigned subset of the multiplication tasks (yellow boxes), as shown in Figure \ref{fig:warp_per_shift_normal_indexing}, which it computes and holds the sum in local variable. This distribution is done using the code in Listing \ref{lst:warp_per_shift_base}, which is a snippet of the kernel \texttt{ccn\_warp\_per\_shift} found in the file \texttt{code/src/naive\_warp\_per\_shift.cu} in thesis attachments.
+Each thread of a warp is assigned subset of the multiplication tasks (yellow boxes), as shown in Figure \ref{fig:warp_per_shift_normal_indexing}, which it computes and holds the sum in local variable. This distribution is done using the code in Listing \ref{lst:warp_per_shift_base}, which is a snippet of the kernel \texttt{ccn\_warp\_per\_shift} found  in thesis attachments.
 
 \begin{lstlisting}[
 style=cuda,
@@ -969,7 +970,7 @@ The sums computed by each thread of the warp are then combined using the \texttt
 \subsection{Simplified indexing}
 \label{sec:simplified_indexing}
 
-The Simplified indexing is an attempt to solve the problems highlighted in the previous section, namely the uncoalesced global memory access and the low throughput division instruction in the main loop. To fix these problems, we change the distribution of tasks between threads as shown in Figure \ref{fig:warp_per_shift_simplified_indexing}, which is much closer to the task distribution done by \citet{paper:krulis_3d_block}, but still not exactly the same. Compared to their implementation, each row of the overlap is processed independently and fully before continuing to the next row. Code of this implementation can be found in the attachments of this thesis in the file \texttt{code/src/naive\_warp\_per\_shift.cu} as the \texttt{ccn\_warp\_per\_shift\_simple\_indexing} kernel.
+The Simplified indexing is an attempt to solve the problems highlighted in the previous section, namely the uncoalesced global memory access and the low throughput division instruction in the main loop. To fix these problems, we change the distribution of tasks between threads as shown in Figure \ref{fig:warp_per_shift_simplified_indexing}, which is much closer to the task distribution done by \citet{paper:krulis_3d_block}, but still not exactly the same. Compared to their implementation, each row of the overlap is processed independently and fully before continuing to the next row. Code of this implementation can be found in the attachments of this thesis as the \texttt{ccn\_warp\_per\_shift\_simple\_indexing} kernel.
 
 Compared to Basic indexing described in the previous section, this assures coalesced access to the global memory, but leads to thread divergence if the row size of the overlap is not a multiple of warp size, as is the case in Figure \ref{fig:warp_per_shift_simplified_indexing}. 
 
@@ -1054,7 +1055,7 @@ Another reason we choose column groups instead of row groups is because of the w
 	\centering	
 	\begin{subfigure}{\textwidth}
 		\centering
-		\def\svgwidth{0.7\textwidth}
+		\def\svgwidth{0.66\textwidth}
 		\fontsize{8}{10}\selectfont
 		% Must be relative to current directory
 		% as input ignores graphicspath, which is
@@ -1063,10 +1064,10 @@ Another reason we choose column groups instead of row groups is because of the w
 		\caption{Computation of a single column group showcasing different warp offsets and left bottom buffer preload offset.}
 		\label{fig:shared_mem_buffer_iterations}
 	\end{subfigure}
-	\hfill
+
 	\begin{subfigure}{\textwidth}
 		\centering
-		\def\svgwidth{0.7\textwidth}
+		\def\svgwidth{0.66\textwidth}
 		\fontsize{8}{10}\selectfont
 		% Must be relative to current directory
 		% as input ignores graphicspath, which is
@@ -1082,7 +1083,7 @@ Another reason we choose column groups instead of row groups is because of the w
 
 As warp shuffle algorithm had warp submatrix, i.e. submatrix of each of the input matrices containing elements required by any of the threads of the given warp, this algorithm computes thread block submatrix containing elements of the input matrices required by overlaps assigned to any of the warps of the given thread block . This thread block submatrix is what we partition into column groups and what we iterate over and load into the shared memory buffers.
 
-The implementation is again made up of three nested for loops, which can be found in the attachments of this thesis in the file \texttt{code/src/naive\_warp\_per\_shift\_shared\_mem.cu} as the \texttt{ccn\_warp\_per\_shift\_shared\_mem} kernel. The outer loop iterates over column groups while the middle loop iterates over rows of the column group in \textit{shared\_mem\_num\_rows} sized steps. These loops are shown in Listing \ref{lst:shared_memory_outer}. Threads of the whole thread block go through these two loops synchronously to allow cooperation when loading data to the shared memory buffers. 
+The implementation is again made up of three nested for loops, which can be found in the attachments of this thesis as the \texttt{ccn\_warp\_per\_shift\_shared\_mem} kernel. The outer loop iterates over column groups while the middle loop iterates over rows of the column group in \textit{shared\_mem\_num\_rows} sized steps. These loops are shown in Listing \ref{lst:shared_memory_outer}. Threads of the whole thread block go through these two loops synchronously to allow cooperation when loading data to the shared memory buffers. 
 
 When loading the bottom part of the left shared memory buffer in the outer loop, we need to limit which rows are loaded to the buffer and offset the loaded rows, as shown in Figure \ref{fig:shared_mem_buffer_iterations}. If we were to just load the full buffer as shown in Figure \ref{fig:left_buffer_no_preload}, we would encounter a situation where rows loaded in the second iteration of the middle loop into the right buffer overlap rows which were loaded during the first load of bottom left buffer, which at that point is already overwritten.  
 
@@ -1243,7 +1244,7 @@ This change should allow for additional parallelization as each column group is 
 \subsection{Work distribution}
 \label{sec:warp_per_shift_work_dist}
 
-As described in Section \ref{sec:warp_shuffle_work_dist} with the warp shuffle algorithm, there are massive differences between work done by different workers in the basic algorithm. This optimization can only be applied to the base Warp per shift algorithm, as the use of Column groups by the shared memory optimization cannot be combined with Row groups used with work distribution. The implementation shares much of the code with the warp shuffle algorithm, only difference being the size of workers. We can choose from the \texttt{triangle} or \texttt{rectangle} distributions and set the maximum number of rows processed by a worker. The code of this optimization can be found in the attachments of this thesis in the file \texttt{code/src/naive\_warp\_per\_shift.cu} as the \texttt{ccn\_warp\_per\_shift\_work\_distribution} kernel.
+As described in Section \ref{sec:warp_shuffle_work_dist} with the warp shuffle algorithm, there are massive differences between work done by different workers in the basic algorithm. This optimization can only be applied to the base Warp per shift algorithm, as the use of Column groups by the shared memory optimization cannot be combined with Row groups used with work distribution. The implementation shares much of the code with the warp shuffle algorithm, only difference being the size of workers. We can choose from the \texttt{triangle} or \texttt{rectangle} distributions and set the maximum number of rows processed by a worker. The code of this optimization can be found in the attachments as the \texttt{ccn\_warp\_per\_shift\_work\_distribution} kernel.
 
 
 This optimizations improves occupancy, further improving the main benefit of the Warp per shift family of algorithms. As described above, it also improves load balancing by reducing the differences between workloads of different workers. The disadvantage of this optimization is the reduced workload of each worker, which has to be balanced with the overhead of each worker such as scheduling, index calculations, atomic instructions to combine results from multiple workers etc. The optimization should provide improvements until the GPU is saturated. Additionally, without the use of shared memory described in Section \ref{sec:warp_per_shift_shared_mem}, the added strain onto global memory due to no data reuse between workers limits the performance of this optimization. 
